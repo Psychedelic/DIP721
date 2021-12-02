@@ -1,8 +1,9 @@
 ## Introduction
 
-Token standard is essential for the Internet Computer ecosystem, especially for the decentralized finance(DeFi) system. We implemented an ERC-20 style token standard in both Motoko and Rust, the standard is named DIP20.
+DIP721 is an ERC-721 style non-fungible token standard built mirroring its Ethereum counterpart and adapting it to the Internet Computer, maintaining the same interface.
 
-You can find the interface descriptions in the [specification file](./spec.md).
+This standard aims to adopt the EIP-721 to the Internet Computer; providing a
+simple, non-ambiguous, extendable API for the transfer and tracking ownership of NFTs.
 
 [This branch](https://github.com/dfinance-tech/ic-token/tree/templates) contains code of several other token canister templates.
 
