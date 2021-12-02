@@ -1,4 +1,5 @@
-## Introduction
+![Group 5969 (1)](https://user-images.githubusercontent.com/73345016/144507489-bc0bbcfb-7ec5-409a-9fb2-a3d845166f6c.png)
+## DIP721 - Introduction
 
 DIP721 is an ERC-721 style non-fungible token standard built mirroring its Ethereum counterpart and adapting it to the Internet Computer, maintaining the same interface.
 
