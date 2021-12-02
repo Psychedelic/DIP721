@@ -6,8 +6,8 @@ DIP721 is an ERC-721 style non-fungible token standard built mirroring its Ether
 This standard aims to adopt the EIP-721 to the Internet Computer; providing a
 simple, non-ambiguous, extendable API for the transfer and tracking ownership of NFTs.
 
-[This branch](https://github.com/dfinance-tech/ic-token/tree/templates) contains code of several other token canister templates.
-
+- [Candid](https://github.com/Psychedelic/DIP721/blob/main/nft/candid/nft.did) and interface.
+- [Description](https://github.com/Psychedelic/DIP721/blob/main/nft/DIP-721.md).
 
 ## Development
 
