@@ -1,22 +1,22 @@
-#dfxDir="/home/piraya/.config/dfx"
-candidDir="/home/ubuntu/crowns-master/nft/candid"
+dfxDir="/home/piraya/.config/dfx"
+candidDir="/home/piraya/repos/rust-ic/tokens/nft/candid"
 
-#NftID=$(dfx canister id nft)
-#DefaultPem="${dfxDir}/identity/default/identity.pem"
-#AlicePem="${dfxDir}/identity/Alice/identity.pem"
-#BobPem="${dfxDir}/identity/Bob/identity.pem"
-#CharliePem="${dfxDir}/identity/Charlie/identity.pem"
+NftID=$(dfx canister id nft)
+DefaultPem="${dfxDir}/identity/default/identity.pem"
+AlicePem="${dfxDir}/identity/Alice/identity.pem"
+BobPem="${dfxDir}/identity/Bob/identity.pem"
+CharliePem="${dfxDir}/identity/Charlie/identity.pem"
 NftCandidFile="${candidDir}/nft.did"
-#DefaultPrincipalId=$(dfx identity use Default 2>/dev/null;dfx identity get-principal)
-#AlicePrincipalId=$(dfx identity use Alice 2>/dev/null;dfx identity get-principal)
-#BobPrincipalId=$(dfx identity use Bob 2>/dev/null;dfx identity get-principal)
-#CharliePrincipalId=$(dfx identity use Charlie 2>/dev/null;dfx identity get-principal)
-#DefaultAccountId=$(dfx identity use default 2>/dev/null;dfx ledger account-id)
-#AliceAccountId=$(dfx identity use Alice 2>/dev/null;dfx ledger account-id)
-#BobAccountId=$(dfx identity use Bob 2>/dev/null;dfx ledger account-id)
-#CharlieAccountId=$(dfx identity use Charlie 2>/dev/null;dfx ledger account-id)
+DefaultPrincipalId=$(dfx identity use Default 2>/dev/null;dfx identity get-principal)
+AlicePrincipalId=$(dfx identity use Alice 2>/dev/null;dfx identity get-principal)
+BobPrincipalId=$(dfx identity use Bob 2>/dev/null;dfx identity get-principal)
+CharliePrincipalId=$(dfx identity use Charlie 2>/dev/null;dfx identity get-principal)
+DefaultAccountId=$(dfx identity use default 2>/dev/null;dfx ledger account-id)
+AliceAccountId=$(dfx identity use Alice 2>/dev/null;dfx ledger account-id)
+BobAccountId=$(dfx identity use Bob 2>/dev/null;dfx ledger account-id)
+CharlieAccountId=$(dfx identity use Charlie 2>/dev/null;dfx ledger account-id)
 IcxPrologueNft="--candid=${NftCandidFile}"
-#dfx identity use default 2>/dev/null
+dfx identity use default 2>/dev/null
 
 # declare -A nameToPrincipal=( ["Alice"]="$AlicePrincipalId" ["Bob"]="$BobPrincipalId" ["Charlie"]="$CharliePrincipalId" ["default"]="$DefaultPrincipalId")
 # declare -A nameToPem=( ["Alice"]="$AlicePem" ["Bob"]="$BobPem" ["Charlie"]="$CharliePem" ["Default"]="$DefaultPem")
@@ -37,25 +37,14 @@ help()
 }
 
 deploy() {
-  #eval "dfx deploy cap"
+  eval "dfx deploy cap"
   principal=$(dfx identity get-principal)
   cap_principal=$(cat .dfx/local/canister_ids.json | jq ".cap.local" -r)
-  echo "principal: $principal"
-  echo "cap_principal: $cap_principal"
-  #fn init(owner: Principal, symbol: String, name: String, history: Principal)
-  echo "dfx deploy nft --argument '(principal \"$principal\", \"tkn\", \"token\", principal \"$cap_principal\")'"
-}
-
-deploy_mainnet_test() {
-  #eval "dfx deploy --network ic cap"
- 
-  principal=$(dfx identity get-principal)
-  cap_principal=$(cat canister_ids.json | jq ".cap.ic" -r)
   
   echo "principal: $principal"
   echo "cap_principal: $cap_principal"
   #fn init(owner: Principal, symbol: String, name: String, history: Principal)
-  echo "dfx deploy --network ic nft --argument '(principal \"$principal\", \"tkn\", \"token\", principal \"$cap_principal\")'"
+  eval "dfx deploy nft --argument '(principal \"$principal\", \"tkn\", \"token\", principal \"$cap_principal\")'"
 }
 
 # deploy
@@ -200,6 +189,4 @@ tests() {
   # getAllMetadataForUser
 }
 
-deploy
-# deploy_mainnet_test
-# tests
+tests
