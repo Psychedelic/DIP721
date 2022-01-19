@@ -1,0 +1,14 @@
+{
+  "name": "dip721",
+  "description": "This package provides the DIP-721 developer utility scripts",
+  "version": "0.0.1",
+  "main": "index.js",
+  "repository": "https://github.com/Psychedelic/DIP721.git",
+  "author": "Helder Oliveira <helder@fleek.co>",
+  "license": "MIT",
+  "scripts": {
+    "cap:start": "cd ./cap && dfx deploy ic-history-router && dfx canister id ic-history-router > ../.temp/ic-history-router-id",
+    "dip721:test": "./nft/scripts/test.sh",
+    "reset": "rm -rf .dfx && rm -rf ./target && rm -rf ./cap/.dfx && rm -rf ./cap/target && rm ./.temp/ic-history-router-id"
+  }
+}

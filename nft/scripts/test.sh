@@ -2,15 +2,37 @@
 
 cd "$(dirname "${BASH_SOURCE[0]}")" || exit;
 
+# TEMP_DIR="../../.temp"
+
+# echo "🙏 Verifying the Cap Service status, please wait..."
+
+# CANISTER_CAP_ID=$(cat "$TEMP_DIR/ic-history-router-id")
+
+# IS_CAP_SERVICE_RUNNING=$(dfx canister id "$CANISTER_CAP_ID")
+
+# if [ -z "$IS_CAP_SERVICE_RUNNING" ];
+# then
+#   printf "🤖 Oops! The Cap Service Canister (%s) is not running..." "$CANISTER_CAP_ID"
+
+#   exit 1;
+# fi
+
+# printf "🌈 Cap Service running as canister id (%s)" "$CANISTER_CAP_ID"
+
+dfx identity use default 2>/dev/null
+
+DFX_IDENTITY_PRINCIPAL=$(dfx identity get-principal)
+
 dfxDir="$HOME/.config/dfx"
-candidDir="../../nft/candid"
+NftCandidFile="../../nft/candid/nft.did"
 
 NftID=""
+
+# PEM files
 DefaultPem=""
 AlicePem=""
 BobPem=""
 
-NftCandidFile="${candidDir}/nft.did"
 DefaultPrincipalId=$(dfx identity use Default 2>/dev/null;dfx identity get-principal)
 AlicePrincipalId=""
 BobPrincipalId=""
@@ -19,15 +41,18 @@ CharliePrincipalId=""
 AliceAccountId=""
 BobAccountId=""
 CharlieAccountId=""
+
 IcxPrologueNft="--candid=${NftCandidFile}"
+
 dfx identity use default 2>/dev/null
 
 nameToPrincipal=""
 
-deploy() {
-  eval "dfx deploy cap"
+deploy() {  
+  # eval "dfx deploy cap"
   principal=$(dfx identity get-principal)
-  cap_principal=$(cat .dfx/local/canister_ids.json | jq ".cap.local" -r)
+  # cap_principal=$(cat .dfx/local/canister_ids.json | jq ".cap.local" -r)
+  cap_principal=$(cat ../../.temp/ic-history-router-id)
   
   echo "principal: $principal"
   echo "cap_principal: $cap_principal"
@@ -82,8 +107,6 @@ info() {
 ### BEGIN OF DIP-721 ###
 mintDip721() {
   mint_for="${AlicePrincipalId}"
-
-  echo "🤖 [debug] $mint_for"
 
   icx --pem=$DefaultPem update $NftID mintDip721 "(principal \"$mint_for\", vec{})" $IcxPrologueNft
 }
