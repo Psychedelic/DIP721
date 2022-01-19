@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd "$(dirname "${BASH_SOURCE[0]}")" || exit;
+
 dfxDir="$HOME/.config/dfx"
 candidDir="../../nft/candid"
 
@@ -7,13 +9,13 @@ NftID=""
 DefaultPem=""
 AlicePem=""
 BobPem=""
-# CharliePem=""
+
 NftCandidFile="${candidDir}/nft.did"
 DefaultPrincipalId=$(dfx identity use Default 2>/dev/null;dfx identity get-principal)
 AlicePrincipalId=""
 BobPrincipalId=""
 CharliePrincipalId=""
-# DefaultAccountId=""
+
 AliceAccountId=""
 BobAccountId=""
 CharlieAccountId=""
@@ -21,7 +23,6 @@ IcxPrologueNft="--candid=${NftCandidFile}"
 dfx identity use default 2>/dev/null
 
 nameToPrincipal=""
-# nameToPem=""
 
 deploy() {
   eval "dfx deploy cap"
