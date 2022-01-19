@@ -20,8 +20,8 @@ CharlieAccountId=$(dfx identity use Charlie 2>/dev/null;dfx ledger account-id)
 IcxPrologueNft="--candid=${NftCandidFile}"
 dfx identity use default 2>/dev/null
 
-# declare -A nameToPrincipal=( ["Alice"]="$AlicePrincipalId" ["Bob"]="$BobPrincipalId" ["Charlie"]="$CharliePrincipalId" ["default"]="$DefaultPrincipalId")
-# declare -A nameToPem=( ["Alice"]="$AlicePem" ["Bob"]="$BobPem" ["Charlie"]="$CharliePem" ["Default"]="$DefaultPem")
+nameToPrincipal=( ["Alice"]="$AlicePrincipalId" ["Bob"]="$BobPrincipalId" ["Charlie"]="$CharliePrincipalId" ["default"]="$DefaultPrincipalId")
+nameToPem=( ["Alice"]="$AlicePem" ["Bob"]="$BobPem" ["Charlie"]="$CharliePem" ["Default"]="$DefaultPem")
 
 help() {
     printf "\n\nPrincipal ids\n"
@@ -153,32 +153,32 @@ tests() {
     
   printf "Running mintDip721..."
   mintDip721
-#   printf "Running supportedInterfacesDip721..."
-#   supportedInterfacesDip721
-#   printf "Running nameDip721..."
-#   nameDip721
-#   printf "Running symbolDip721..."
-#   symbolDip721
-#   printf "Running getMetadataDip721..."
-#   getMetadataDip721
-#   printf "Running getMetadataForUserDip721 for Alice..."
-#   getMetadataForUserDip721
-#   printf "Running bearer..."
-#   bearer
-#   printf "Running supply..."
-#   supply
-#   printf "Running totalSupply..."
-#   totalSupplyDip721
-#   printf "Running balanceOfDip721..."
-#   balanceOfDip721
-#   printf "Rinning ownerOfDip721..."
-#   ownerOfDip721
-#   printf "Running transferFromDip721 Alice to Bob..."
-#   transferFromDip721
-#   printf "Running safeTransferFromDip721 Bob to Alice..."
-#   safeTransferFromDip721
-#   printf "Running transfer Alice to Bob..."
-#   transfer
+  printf "Running supportedInterfacesDip721..."
+  supportedInterfacesDip721
+  printf "Running nameDip721..."
+  nameDip721
+  printf "Running symbolDip721..."
+  symbolDip721
+  printf "Running getMetadataDip721..."
+  getMetadataDip721
+  printf "Running getMetadataForUserDip721 for Alice..."
+  getMetadataForUserDip721
+  printf "Running bearer..."
+  bearer
+  printf "Running supply..."
+  supply
+  printf "Running totalSupply..."
+  totalSupplyDip721
+  printf "Running balanceOfDip721..."
+  balanceOfDip721
+  printf "Rinning ownerOfDip721..."
+  ownerOfDip721
+  printf "Running transferFromDip721 Alice to Bob..."
+  transferFromDip721
+  printf "Running safeTransferFromDip721 Bob to Alice..."
+  safeTransferFromDip721
+  printf "Running transfer Alice to Bob..."
+  transfer
 
   ### not testable
   # printf "Running mintNFT"
