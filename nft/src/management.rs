@@ -1,4 +1,4 @@
-use ic_kit::{candid::CandidType, Principal};
+use ic_kit::{candid::CandidType, ic, Principal};
 use serde::Deserialize;
 
 #[derive(CandidType, Deserialize)]
@@ -10,7 +10,6 @@ impl Default for Fleek {
     }
 }
 
-pub fn is_fleek(_account: &Principal) -> bool {
-    // ic::get::<Fleek>().0.contains(account)
-    true
+pub fn is_fleek(account: &Principal) -> bool {
+    ic::get::<Fleek>().0.contains(account)
 }

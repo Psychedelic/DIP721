@@ -18,8 +18,6 @@ then
   exit 0;
 fi
 
-cd "$(dirname "${BASH_SOURCE[0]}")" || exit;
-
 TEMP_DIR="./.temp"
 
 printf "🙏 Verifying the Cap Service status, please wait...\n\n"
