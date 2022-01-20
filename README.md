@@ -12,6 +12,8 @@ simple, non-ambiguous, extendable API for the transfer and tracking ownership of
 
 - [Specification](#-specification)
 - [NFT Implementation example](#-nft-implementation-example)
+  - [Requirements](#-requirements)
+  - [Getting started](#-getting-started)
 - [Contribution guideline](#-contributing)
 
 ## 🎓 Specification
