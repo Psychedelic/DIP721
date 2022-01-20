@@ -10,6 +10,7 @@
 **/dist
 **/.dfx/**
 /target/**/**
+.temp
 
 # misc
 .DS_Store
