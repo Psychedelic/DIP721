@@ -8,6 +8,12 @@
 This standard aims to adopt the EIP-721 to the Internet Computer; providing a
 simple, non-ambiguous, extendable API for the transfer and tracking ownership of NFTs and expanding/building upon the EXT standard with partial compatibility.
 
+## 🎓 Specification
+
+The document for the [DIP-721](docs/spec.md) is available [here](docs/spec.md).
+
+⚠️ This is an an in-development standard, consider it a work in progress as we finalize details in its design and gather feedback from the community.
+
 ## 👋 Community
 
 We'd like to collaborate with the community to provide a better [token standard implementation](docs/spec.md) for the developers on the IC, if you have some ideas you'd like to discuss, submit an issue, if you want to improve the code or you made a different implementation, make a pull request by following our [contribution guideline](#-Contributing), please!
@@ -51,12 +57,6 @@ yarn cap:start
 ```
 
 ✨ If everything goes well, you should see the output for a generalist flow, where a user mints a DIP-721 token, gets metadata, get balance, transfers, etc.
-
-## 🎓 Specification
-
-The document for the [DIP-721](docs/spec.md) is available [here](docs/spec.md).
-
-⚠️ This is an an in-development standard, consider it a work in progress as we finalize details in its design and gather feedback from the community.
 
 ## 🙏 Contributing
 
