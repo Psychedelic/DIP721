@@ -38,16 +38,16 @@ Launch the local replica in the foreground (you're advised to do it, to monitor 
 dfx start --clean
 ```
 
-Once ready, start a local replica  by deploying [Cap Service](https://github.com/Psychedelic/cap) to your local replica.
-
-```sh
-yarn cap:start
-```
-
-You can complete by doing a healthcheck for the implementation by running the command
+Once ready, launch the healtcheck for our Nft implementation example by running the command:
 
 ```sh
 yarn healthcheck
+```
+
+Through the process the [Cap Service](https://github.com/Psychedelic/cap) is deployed to your local replica. Depending on your needs, this can be useful, so the service can be started separately by running:
+
+```sh
+yarn cap:start
 ```
 
 ✨ If everything goes well, you should see the output for a generalist flow, where a user mints a DIP-721 token, gets metadata, get balance, transfers, etc.

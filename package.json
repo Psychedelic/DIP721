@@ -9,6 +9,6 @@
   "scripts": {
     "cap:start": "cd ./cap && dfx deploy ic-history-router && mkdir -p ../.temp && dfx canister id ic-history-router > ../.temp/ic-history-router-id",
     "dip721:healthcheck": "./healthcheck.sh",
-    "reset": "rm -rf .dfx && rm -rf ./target && rm -rf ./cap/.dfx && rm -rf ./cap/target && rm -rf ./.temp"
+    "reset": "dfx stop && rm -rf .dfx && rm -rf ./target && rm -rf ./cap/.dfx && rm -rf ./cap/target && rm -rf ./.temp"
   }
 }
