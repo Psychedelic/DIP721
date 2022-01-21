@@ -26,6 +26,8 @@ The document for the [DIP-721](spec.md) is available [here](spec.md).
 
 We'd like to collaborate with the community to provide a better [token standard implementation](spec.md) for the developers on the IC, if you have some ideas you'd like to discuss, submit an issue, if you want to improve the code or you made a different implementation, make a pull request by following our [contribution guideline](#-Contributing), please!
 
+Check the [roadmap](docs/roadmap.md)
+
 ## 👩‍🎤 NFT Implementation example
 
 An NFT (non-fungible token) implementation which follows the [DIP-721](spec.md) specification is available and can be used as a base for your projects.
