@@ -1,7 +1,7 @@
 ![Group 5982](https://user-images.githubusercontent.com/73345016/144523337-fe7d6b49-d0a7-4621-852d-daeee344d4e2.png)
 
 # 💎 DIP-721
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-blue.svg)](https://conventionalcommits.org)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-blue.svg)](https://conventionalcommits.org) [![CI 🚑 Healthcheck](https://github.com/Psychedelic/DIP721/actions/workflows/pr-healthcheck-runner.yml/badge.svg)](https://github.com/Psychedelic/DIP721/actions/workflows/pr-healthcheck-runner.yml)
 
 [DIP-721](spec.md) is an ERC-721 style non-fungible token standard built mirroring its Ethereum counterpart and adapting it to the Internet Computer, maintaining the same interface.
 
