@@ -7,12 +7,6 @@
       "candid": "nft/candid/nft.did",
       "wasm": "target/wasm32-unknown-unknown/release/nft.wasm",
       "type": "custom"
-    },
-    "cap": {
-      "build": "echo",
-      "candid": "cap.did",
-      "wasm": "cap.wasm",
-      "type": "custom"
     }
   },
   "defaults": {
