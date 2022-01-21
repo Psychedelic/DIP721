@@ -18,5 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: DFX Service
+        run: dfx start --background
+
       - name: 🚑 Healthcheck
         run: yes Y | yarn dip721:healthcheck
