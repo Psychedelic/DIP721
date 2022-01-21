@@ -1,5 +1,5 @@
 use ic_kit::candid::{CandidType, Principal};
-use ic_types::PrincipalError;
+use ic_kit::candid::types::ic_types::PrincipalError;
 
 use crate::sha224::Sha224;
 use ic_kit::candid::types::{Serializer, Type, TypeId};
