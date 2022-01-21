@@ -21,5 +21,8 @@ jobs:
       - name: DFX Service
         run: dfx start --background
 
+      - name: Cap Service
+        run: yarn cap:start
+
       - name: 🚑 Healthcheck
         run: yes Y | yarn dip721:healthcheck
