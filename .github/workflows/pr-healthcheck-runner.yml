@@ -1,4 +1,4 @@
-name: PR 🚑 Healthcheck
+name: CI 🚑 Healthcheck
 
 on:
   pull_request:
@@ -20,7 +20,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.PAT }}
 
       - name: 🚑 Healthcheck
         run: yarn healthcheck
