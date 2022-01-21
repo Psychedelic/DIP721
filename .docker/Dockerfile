@@ -96,3 +96,5 @@ RUN cd agent-rs && cargo build
 ENV PATH="/home/target/agent-rs/target/debug:${PATH}"
 
 RUN rustup install stable && rustup default stable
+
+RUN rustup target add wasm32-unknown-unknown
