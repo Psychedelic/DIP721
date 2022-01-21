@@ -10,8 +10,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::collections::VecDeque;
 
-use cap_sdk::DetailValue;
-use cap_sdk::Event;
 use cap_sdk::IndefiniteEvent;
 use cap_std::dip721::DIP721TransactionType;
 
@@ -313,14 +311,6 @@ pub enum TransactionRequestFilter {
 pub struct TransactionsRequest {
     query: TransactionRequestFilter,
     token: TokenIdentifier,
-}
-
-fn get_detail_value(key: &str, details: Vec<(String, DetailValue)>) -> Option<DetailValue> {
-    let entry = details.iter().find(|&x| x.0.as_str() == key);
-    match entry {
-        Some(x) => Some(x.1.clone()),
-        None => None,
-    }
 }
 
 #[derive(Default)]
