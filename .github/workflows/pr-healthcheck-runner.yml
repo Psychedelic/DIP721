@@ -1,0 +1,19 @@
+name: PR 🚑 Healthcheck
+
+on:
+  pull_request:
+    branches: [ develop, main ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/psychedelic/ci-dip-721
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: 🚑 Healthcheck
+        run: yarn healthcheck
