@@ -94,3 +94,5 @@ RUN git clone https://github.com/dfinity/agent-rs
 RUN cd agent-rs && cargo build
 
 ENV PATH="/home/target/agent-rs/target/debug:${PATH}"
+
+RUN rustup install stable && rustup default stable
