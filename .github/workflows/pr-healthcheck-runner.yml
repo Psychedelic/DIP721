@@ -21,8 +21,14 @@ jobs:
       - name: DFX Service
         run: dfx start --background
 
+      - name: Cap repo clone
+        uses: actions/checkout@v1
+        with:
+          repository: psychedelic/cap
+          password: ${{ secrets.PAT }}
+
       - name: Cap Service
-        run: yarn cap:init && yarn cap:start
+        run: yarn cap:start
 
       - name: 🚑 Healthcheck
         run: yes Y | yarn dip721:healthcheck
