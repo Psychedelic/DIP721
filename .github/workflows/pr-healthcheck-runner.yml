@@ -19,4 +19,4 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: 🚑 Healthcheck
-        run: yarn dip721:healthcheck
+        run: yes Y | yarn dip721:healthcheck
