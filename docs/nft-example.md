@@ -1,0 +1,43 @@
+# 👩‍🎤 NFT Implementation example
+
+An NFT (non-fungible token) implementation which follows the [DIP-721](spec.md) specification is available and can be used as a base for your projects.
+
+### ⚙️ Requirements
+
+TLDR; We're providing implementation examples and related test or use-cases for your convinence, if you are just interested in the specifications find it [here](spec.md).
+
+The requirements listed here are for running the [DIP-721](spec.md) example implementations that are available in this repository. If you are just interested in the specification for [DIP-721](spec.md) followed the link [here](spec.md).
+
+- Nodejs
+- Yarn or NPM
+- The [DFX SDK](https://smartcontracts.org/) to run the CLI
+
+💡 During the guide we'll be using `yarn`, but this can be easily replaced by `npm`, if that's your preference.
+
+### 🤔 Getting started
+
+We'll use Nodejs `package.json` to provide and describe convenient methods to bootstrap, build or reset the state of the provided test cases.
+
+We'll be using [Cap](https://github.com/Psychedelic/cap), an Open Internet Service to store transaction history for NFTs/Tokens on the Internet Computer. If you haven't learn about it yet, find about [here](https://github.com/Psychedelic/cap).
+
+>Note: Make sure you have the [DFX SDK](https://smartcontracts.org/) installed to run the DFX cli, otherwise visit the [Dfinity](https://dfinity.org/) for instructions
+
+Launch the local replica in the foreground (you're advised to do it, to monitor the service, otherwise feel free to add the --background flag). You can open a new shell session afterwards while monitoring the local replica network.
+
+```sh
+dfx start --clean
+```
+
+Once ready, launch the healtcheck for our Nft implementation example by running the command:
+
+```sh
+yarn healthcheck
+```
+
+Through the process the [Cap Service](https://github.com/Psychedelic/cap) is deployed to your local replica. Depending on your needs, this can be useful, so the service can be started separately by running:
+
+```sh
+yarn cap:start
+```
+
+✨ If everything goes well, you should see the output for a generalist flow, where a user mints a DIP-721 token, gets metadata, get balance, transfers, etc.
