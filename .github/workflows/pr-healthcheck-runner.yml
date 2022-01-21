@@ -11,16 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/psychedelic/ci-dip-721
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.PAT }}
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.PAT }}
 
       - name: 🚑 Healthcheck
         run: yarn healthcheck
