@@ -20,6 +20,16 @@ We'll use Nodejs `package.json` to provide and describe convenient methods to bo
 
 We'll be using [Cap](https://github.com/Psychedelic/cap), an Open Internet Service to store transaction history for NFTs/Tokens on the Internet Computer. If you haven't learn about it yet, find about [here](https://github.com/Psychedelic/cap).
 
+The `DIP-721 example` runs against the CAP canister within the local replica network, as such you have [CAP](https://github.com/psychedelic/cap) as a submodule (if you're already running the Service separatily on your own, feel free to skip these steps).
+
+You have to pull the `CAP` submodule content as follows:
+
+```sh
+yarn cap:init
+```
+
+You only need to do it once, for example, after you cloned the `CAP Explorer` repository.
+
 >Note: Make sure you have the [DFX SDK](https://smartcontracts.org/) installed to run the DFX cli, otherwise visit the [Dfinity](https://dfinity.org/) for instructions
 
 Launch the local replica in the foreground (you're advised to do it, to monitor the service, otherwise feel free to add the --background flag). You can open a new shell session afterwards while monitoring the local replica network.
