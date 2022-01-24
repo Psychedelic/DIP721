@@ -26,6 +26,9 @@ jobs:
       - name: DEBUG path
         run: echo "$PATH"
 
+      - name: DEBUG stable
+        run: rustup install stable && rustup default stable
+
       - name: DEBUG rustup version
         run: rustup --version
 
