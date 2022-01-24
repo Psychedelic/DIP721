@@ -29,6 +29,9 @@ jobs:
       - name: Path
         run: mkdir -p /github/home/.cargo && ln -s "/root/.cargo/bin" /github/home/.cargo
 
+      - name: Identity
+        run: ln -s "/home/target/.config" /github/home/
+
       - name: DEBUG path
         run: echo "$PATH"
 
@@ -51,6 +54,8 @@ jobs:
 
       - name: Cap Service
         run: dfx start --background && yarn cap:start && yes Y | yarn dip721:healthcheck
+        env:
+          NODE_ENV: ci
 
       # - name: 🚑 Healthcheck
       #   run: yarn dip721:healthcheck
