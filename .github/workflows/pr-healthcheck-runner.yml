@@ -23,16 +23,16 @@ jobs:
       - name: Path
         run: mkdir -p /github/home/.cargo && ln -s "/root/.cargo/bin" /github/home/.cargo
 
-      - name: [debug] path
+      - name: DEBUG path
         run: echo "$PATH"
 
-      - name: [debug] rustup version
+      - name: DEBUG rustup version
         run: rustup --version
 
-      - name: [debug] cargo version
+      - name: DEBUG cargo version
         run: cargo --version
 
-      - name: [debug] toolchain
+      - name: DEBUG toolchain
         run: rustup toolchain list
 
       - name: DFX Service
