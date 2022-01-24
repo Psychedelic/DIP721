@@ -20,42 +20,28 @@ jobs:
         with:
           submodules: 'recursive'
 
-      # - name: Rust toolchain
-      #   uses: actions-rs/toolchain@v1
-      #   with:
-      #     toolchain: stable
-      #     target: wasm32-unknown-unknown
+      - name: Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
 
-      - name: Path
-        run: mkdir -p /github/home/.cargo && ln -s "/root/.cargo/bin" /github/home/.cargo
+      # - name: Path
+      #   run: mkdir -p /github/home/.cargo && ln -s "/root/.cargo/bin" /github/home/.cargo
 
-      - name: Identity
-        run: ln -s "/home/target/.config" /github/home/
+      # - name: DEBUG stable
+      #   run: rustup install stable && rustup default stable && rustup target add wasm32-unknown-unknown
 
-      - name: DEBUG path
-        run: echo "$PATH"
+      # - name: DEBUG rustup version
+      #   run: rustup --version
 
-      - name: DEBUG stable
-        run: rustup install stable && rustup default stable && rustup target add wasm32-unknown-unknown
+      # - name: DEBUG cargo version
+      #   run: cargo --version
 
-      - name: DEBUG rustup version
-        run: rustup --version
-
-      - name: DEBUG cargo version
-        run: cargo --version
-
-      - name: DEBUG toolchain
-        run: rustup toolchain list
-
-      # - name: DFX Service
-      #   run: dfx start --background
-
-      # - run: rustup install stable && rustup default stable & rustup target add wasm32-unknown-unknown
+      # - name: DEBUG toolchain
+      #   run: rustup toolchain list
 
       - name: Cap Service
         run: dfx start --background && yarn cap:start && yes Y | yarn dip721:healthcheck
         env:
           NODE_ENV: ci
-
-      # - name: 🚑 Healthcheck
-      #   run: yarn dip721:healthcheck
