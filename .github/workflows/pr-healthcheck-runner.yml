@@ -27,7 +27,7 @@ jobs:
         run: echo "$PATH"
 
       - name: DEBUG stable
-        run: rustup install stable && rustup default stable
+        run: rustup install stable && rustup default stable && rustup target add wasm32-unknown-unknown
 
       - name: DEBUG rustup version
         run: rustup --version
