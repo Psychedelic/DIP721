@@ -20,11 +20,28 @@ jobs:
         with:
           submodules: 'recursive'
 
+      - name: Path
+        run: mkdir -p /github/home/.cargo && ln -s "/root/.cargo/bin" /github/home/.cargo
+
+      - name: [debug] path
+        run: echo "$PATH"
+
+      - name: [debug] rustup version
+        run: rustup --version
+
+      - name: [debug] cargo version
+        run: cargo --version
+
+      - name: [debug] toolchain
+        run: rustup toolchain list
+
       - name: DFX Service
         run: dfx start --background
+
+      # - run: rustup install stable && rustup default stable & rustup target add wasm32-unknown-unknown
 
       - name: Cap Service
         run: yarn cap:start
 
       - name: 🚑 Healthcheck
-        run: yes Y | yarn dip721:healthcheck
+        run: yarn dip721:healthcheck
