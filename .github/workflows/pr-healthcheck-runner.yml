@@ -20,6 +20,12 @@ jobs:
         with:
           submodules: 'recursive'
 
+      # - name: Rust toolchain
+      #   uses: actions-rs/toolchain@v1
+      #   with:
+      #     toolchain: stable
+      #     target: wasm32-unknown-unknown
+
       - name: Path
         run: mkdir -p /github/home/.cargo && ln -s "/root/.cargo/bin" /github/home/.cargo
 
@@ -38,13 +44,13 @@ jobs:
       - name: DEBUG toolchain
         run: rustup toolchain list
 
-      - name: DFX Service
-        run: dfx start --background
+      # - name: DFX Service
+      #   run: dfx start --background
 
       # - run: rustup install stable && rustup default stable & rustup target add wasm32-unknown-unknown
 
       - name: Cap Service
-        run: yarn cap:start
+        run: dfx start --background && yarn cap:start && yarn dip721:healthcheck
 
-      - name: 🚑 Healthcheck
-        run: yarn dip721:healthcheck
+      # - name: 🚑 Healthcheck
+      #   run: yarn dip721:healthcheck
