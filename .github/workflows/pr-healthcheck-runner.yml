@@ -20,17 +20,11 @@ jobs:
         with:
           submodules: 'recursive'
 
+      - name: Path
+        run: mkdir -p /github/home/.cargo && ln -s "/root/.cargo/bin" /github/home/.cargo
+
       - name: Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
-
-      # - name: Path
-      #   run: mkdir -p /github/home/.cargo && ln -s "/root/.cargo/bin" /github/home/.cargo
-
-      # - name: DEBUG stable
-      #   run: rustup install stable && rustup default stable && rustup target add wasm32-unknown-unknown
+        run: rustup install stable && rustup default stable && rustup target add wasm32-unknown-unknown
 
       # - name: DEBUG rustup version
       #   run: rustup --version
