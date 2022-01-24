@@ -44,6 +44,8 @@ Once ready, launch the healtcheck for our Nft implementation example by running 
 yarn healthcheck
 ```
 
+💡 Optionally, skip some prompts, such as the reset request, by prefixing the command with `SKIP_PROMPTS=1`
+
 Through the process the [Cap Service](https://github.com/Psychedelic/cap) is deployed to your local replica. Depending on your needs, this can be useful, so the service can be started separately by running:
 
 ```sh

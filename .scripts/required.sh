@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -d ./.dfx/local/canisters/nft ];
+if [ -d ./.dfx/local/canisters/nft ] && [[ ! SKIP_PROMPTS -eq 1 ]];
 then
   printf "🚩 The process seem to have run before, it's probably best to reset the state and only after run the healthcheck, please!\n\n"  
 
@@ -9,13 +9,9 @@ then
 
   if [ "$CONT" = "Y" ]; then
     yarn reset
-  else
-    exit 1;
-  fi
 
-  printf "🙏 Remember to re-start the local-replica, before starting this process\n\n"  
-  
-  exit 0;
+    printf "🙏 Remember to re-start the local-replica, before starting this process\n\n"  
+  fi
 fi
 
 TEMP_DIR="./.temp"
@@ -53,3 +49,29 @@ then
 fi
 
 printf "🌈 Cap Service running as canister id (%s)\n\n" "$CANISTER_CAP_ID"
+
+DFX_IDENTITY_PRINCIPAL=""
+
+if [[ $NODE_ENV != "ci" ]] && [[ ! SKIP_PROMPTS -eq 1 ]];
+then
+  # The extra space is intentional, used for alignment
+  read -r -p "🤖 Is it ok to set dfx to use the default identity (required) [Y/n]? " CONT
+
+  if [ "$CONT" = "Y" ]; then
+    dfx identity use default
+
+    DFX_IDENTITY_PRINCIPAL=$(dfx identity get-principal)
+
+    printf "🌈 The DFX Identity is set to (%s)\n\n" "$DFX_IDENTITY_PRINCIPAL"
+  else
+    printf "🚩 The default Identity is a requirement, I'm afraid.\n\n"
+
+    exit 1;
+  fi
+else
+  dfx identity use default
+
+  DFX_IDENTITY_PRINCIPAL=$(dfx identity get-principal)
+
+  init
+fi
