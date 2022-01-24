@@ -1,4 +1,4 @@
-name: CI 🚑 Healthcheck
+name: 🚑 Healthcheck
 
 on:
   pull_request:
