@@ -1,4 +1,4 @@
-name: 🚑 Healthcheck
+name: Healthcheck
 
 on:
   pull_request:
