@@ -50,7 +50,7 @@ jobs:
       # - run: rustup install stable && rustup default stable & rustup target add wasm32-unknown-unknown
 
       - name: Cap Service
-        run: dfx start --background && yarn cap:start && yarn dip721:healthcheck
+        run: dfx start --background && yarn cap:start && yes Y | yarn dip721:healthcheck
 
       # - name: 🚑 Healthcheck
       #   run: yarn dip721:healthcheck
