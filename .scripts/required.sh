@@ -11,6 +11,8 @@ then
     yarn reset
 
     printf "🙏 Remember to re-start the local-replica, before starting this process\n\n"  
+
+    exit 0;
   fi
 fi
 
