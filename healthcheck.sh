@@ -3,8 +3,6 @@
 source "${BASH_SOURCE%/*}/.scripts/required.sh"
 source "${BASH_SOURCE%/*}/.scripts/dfx-identity.sh"
 
-echo "ALICE_PUBLIC_KEY ------~~~~>> $ALICE_PUBLIC_KEY"
-
 dfxDir="$HOME/.config/dfx"
 NftCandidFile="./nft/candid/nft.did"
 
