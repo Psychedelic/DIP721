@@ -110,15 +110,15 @@ safeTransferFromDip721() {
   from_principal="${AlicePrincipalId}"
   to_principal="${BobPrincipalId}"
   token_id="0"
-  
+
   icx --pem="$AlicePem" update "$NftID" safeTransferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
 }
 
 transferFromDip721() {
   printf "🤖 Call the transferFromDip721\n"
   
-  from_principal="${AlicePrincipalId}"
-  to_principal="${BobPrincipalId}"
+  from_principal="${BobPrincipalId}"
+  to_principal="${AlicePrincipalId}"
   token_id="0"
 
   icx --pem="$BobPem" update "$NftID" transferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
@@ -220,11 +220,11 @@ tests() {
   ownerOfDip721
 
   # TODO: [Canister rkp4c-7iaaa-aaaaa-aaaca-cai] Panicked at 'unable to find previous owner', nft/src/ledger.rs:121:14
-  # transferFromDip721
   safeTransferFromDip721
+  transferFromDip721
 
   # TODO: throws not admin
-  # transfer
+  transfer
 
   ### not testable
   # printf "Running mintNFT"

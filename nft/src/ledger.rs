@@ -104,7 +104,7 @@ impl Ledger {
     }
 
     pub fn transfer(&mut self, from: &User, to: &User, token_identifier: &TokenIdentifier) {
-        // changeing token owner in the tokens map
+        // change token owner in the tokens map
         let token_index = into_token_index(token_identifier);
         let mut token_metadata = ledger()
             .tokens

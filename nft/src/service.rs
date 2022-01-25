@@ -30,7 +30,7 @@ fn owner_of_dip721(token_id: u64) -> Result<Principal, ApiError> {
 }
 
 #[update(name = "safeTransferFromDip721")]
-async fn safe_transfer_from_dip721(_from: Principal, to: Principal, _token_id: u64) -> TxReceipt {
+async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
     // TODO: The EIP721 states that should throw, unless caller is the current owner
     // an authorised operator (controller), or an approved address
     if !has_ownership_or_approval(&ic::caller()) {
@@ -43,60 +43,56 @@ async fn safe_transfer_from_dip721(_from: Principal, to: Principal, _token_id: u
         "transfer request to cannot be the zero principal"
     );
 
-    // ledger().transfer(
-    //     &User::principal(caller()),
-    //     &User::principal(to),
-    //     &token_id.to_string(),
-    // );
+    ledger().transfer(
+        &User::principal(caller()),
+        &User::principal(to),
+        &token_id.to_string(),
+    );
 
-    // let event = IndefiniteEventBuilder::new()
-    //     .caller(caller())
-    //     .operation("transfer")
-    //     .details(vec![
-    //         ("from".into(), DetailValue::Principal(caller())),
-    //         ("to".into(), DetailValue::Principal(to)),
-    //         ("token_id".into(), DetailValue::U64(token_id)),
-    //     ])
-    //     .build()
-    //     .unwrap();
+    let event = IndefiniteEventBuilder::new()
+        .caller(caller())
+        .operation("transfer")
+        .details(vec![
+            ("from".into(), DetailValue::Principal(caller())),
+            ("to".into(), DetailValue::Principal(to)),
+            ("token_id".into(), DetailValue::U64(token_id)),
+        ])
+        .build()
+        .unwrap();
 
-    // let tx_id = insert_into_cap(event).await.unwrap();
+    let tx_id = insert_into_cap(event).await.unwrap();
 
-    Ok(12345.into())
+    Ok(tx_id.into())
 }
 
 #[update(name = "transferFromDip721")]
-async fn transfer_from_dip721(_from: Principal, _to: Principal, _token_id: u64) -> TxReceipt {
+async fn transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
     // TODO: The EIP721 states that should throw, unless caller is the current owner
     // an authorised operator (controller), or an approved address
     if !has_ownership_or_approval(&ic::caller()) {
         return Err(ApiError::Unauthorized);
     }
 
-    // ledger().transfer(
-    //     &User::principal(caller()),
-    //     &User::principal(to),
-    //     &token_id.to_string(),
-    // );
+    ledger().transfer(
+        &User::principal(caller()),
+        &User::principal(to),
+        &token_id.to_string(),
+    );
 
-    // let event = IndefiniteEventBuilder::new()
-    //     .caller(caller())
-    //     .operation("transfer")
-    //     .details(vec![
-    //         ("from".into(), DetailValue::Principal(caller())),
-    //         ("to".into(), DetailValue::Principal(to)),
-    //         ("token_id".into(), DetailValue::U64(token_id)),
-    //     ])
-    //     .build()
-    //     .unwrap();
+    let event = IndefiniteEventBuilder::new()
+        .caller(caller())
+        .operation("transfer")
+        .details(vec![
+            ("from".into(), DetailValue::Principal(caller())),
+            ("to".into(), DetailValue::Principal(to)),
+            ("token_id".into(), DetailValue::U64(token_id)),
+        ])
+        .build()
+        .unwrap();
 
-    // let tx_id = insert_into_cap(event).await.unwrap();
+    let tx_id = insert_into_cap(event).await.unwrap();
 
-    if !has_ownership_or_approval(&ic::caller()) {
-        return Err(ApiError::Unauthorized);
-    }
-
-    Ok(12345.into())
+    Ok(tx_id.into())
 }
 
 #[query(name = "supportedInterfacesDip721")]
@@ -174,9 +170,12 @@ async fn mint_dip721(to: Principal, metadata_desc: MetadataDesc) -> MintReceipt 
 
 #[update]
 async fn transfer(transfer_request: TransferRequest) -> TransferResponse {
-    if !is_fleek(&ic::caller()) {
-        return Err(TransferError::Unauthorized("Not Admin".to_string()));
+    // TODO: The EIP721 states that should throw, unless caller is the current owner
+    // an authorised operator (controller), or an approved address
+    if !has_ownership_or_approval(&ic::caller()) {
+        return Err(TransferError::Unauthorized("Unauthorized".to_string()));
     }
+
     expect_principal(&transfer_request.from);
     expect_principal(&transfer_request.to);
     assert_ne!(
