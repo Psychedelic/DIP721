@@ -74,6 +74,4 @@ else
   dfx identity use default
 
   DFX_IDENTITY_PRINCIPAL=$(dfx identity get-principal)
-
-  init
 fi
