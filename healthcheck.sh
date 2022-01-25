@@ -44,8 +44,8 @@ init() {
   BobPrincipalId=$(dfx identity use Bob 2>/dev/null;dfx identity get-principal)
   CharliePrincipalId=$(dfx identity use Charlie 2>/dev/null;dfx identity get-principal)
 
-  AlicePem="${dfxDir}/identity/Alice/identity.pem"
-  BobPem="${dfxDir}/identity/Bob/identity.pem"
+  AlicePem="${dfxDir}/identity/alice/identity.pem"
+  BobPem="${dfxDir}/identity/bob/identity.pem"
 
   AliceAccountId=$(dfx identity use Alice 2>/dev/null;dfx ledger account-id)
   BobAccountId=$(dfx identity use Bob 2>/dev/null;dfx ledger account-id)
@@ -128,11 +128,11 @@ ownerOfDip721() {
 safeTransferFromDip721() {
   printf "🤖 Call the safeTransferFromDip721\n"
 
-  from_principal="${BobPrincipalId}"
-  to_principal="${AlicePrincipalId}"
+  from_principal="${AlicePrincipalId}"
+  to_principal="${BobPrincipalId}"
   token_id="0"
-
-  icx --pem="$DefaultPem" update "$NftID" safeTransferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
+  
+  icx --pem="$AlicePem" update "$NftID" safeTransferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
 }
 
 transferFromDip721() {
@@ -142,7 +142,7 @@ transferFromDip721() {
   to_principal="${BobPrincipalId}"
   token_id="0"
 
-  icx --pem="$DefaultPem" update "$NftID" transferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
+  icx --pem="$BobPem" update "$NftID" transferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
 }
 
 logoDip721() {
@@ -242,7 +242,7 @@ tests() {
 
   # TODO: [Canister rkp4c-7iaaa-aaaaa-aaaca-cai] Panicked at 'unable to find previous owner', nft/src/ledger.rs:121:14
   # transferFromDip721
-  # safeTransferFromDip721
+  safeTransferFromDip721
 
   # TODO: throws not admin
   # transfer
