@@ -97,3 +97,11 @@ pub async fn insert_into_cap_priv(tx_record: IndefiniteEvent) -> TxReceipt {
 pub fn tx_log<'a>() -> &'a mut TxLog {
     ic_kit::ic::get_mut::<TxLog>()
 }
+
+pub fn has_ownership_or_approval(principal: &Principal) -> bool {
+    // 1) Check if token id exists
+    // 2) Check if owner, or
+    // has approval
+
+    true
+}
