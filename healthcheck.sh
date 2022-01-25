@@ -218,12 +218,8 @@ tests() {
   totalSupplyDip721
   balanceOfDip721
   ownerOfDip721
-
-  # TODO: [Canister rkp4c-7iaaa-aaaaa-aaaca-cai] Panicked at 'unable to find previous owner', nft/src/ledger.rs:121:14
   safeTransferFromDip721
   transferFromDip721
-
-  # TODO: throws not admin
   transfer
 
   ### not testable
