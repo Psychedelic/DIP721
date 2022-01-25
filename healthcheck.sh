@@ -1,6 +1,9 @@
 #!/bin/bash
 
 source "${BASH_SOURCE%/*}/.scripts/required.sh"
+source "${BASH_SOURCE%/*}/.scripts/dfx-identity.sh"
+
+echo "ALICE_PUBLIC_KEY ------~~~~>> $ALICE_PUBLIC_KEY"
 
 dfxDir="$HOME/.config/dfx"
 NftCandidFile="./nft/candid/nft.did"
@@ -14,11 +17,6 @@ BobPem=""
 
 AlicePrincipalId=""
 BobPrincipalId=""
-CharliePrincipalId=""
-
-AliceAccountId=""
-BobAccountId=""
-CharlieAccountId=""
 
 IcxPrologueNft="--candid=${NftCandidFile}"
 
@@ -35,24 +33,15 @@ deploy() {
 init() {
   printf "🤖 Initialisation of environment process variables\n"
 
-  DefaultPem="${dfxDir}/identity/default/identity.pem"
+  DefaultPem="$HOME/.config/dfx/identity/default/identity.pem"
 
   NftID=$(dfx canister id nft)
 
-  # ⚠️ Warning: This changes the identity state, set back to initial state afterwards
-  AlicePrincipalId=$(dfx identity use Alice 2>/dev/null;dfx identity get-principal)
-  BobPrincipalId=$(dfx identity use Bob 2>/dev/null;dfx identity get-principal)
-  CharliePrincipalId=$(dfx identity use Charlie 2>/dev/null;dfx identity get-principal)
+  AlicePrincipalId=$ALICE_PRINCIPAL_ID
+  BobPrincipalId=$BOB_PRINCIPAL_ID
 
-  AlicePem="${dfxDir}/identity/alice/identity.pem"
-  BobPem="${dfxDir}/identity/bob/identity.pem"
-
-  AliceAccountId=$(dfx identity use Alice 2>/dev/null;dfx ledger account-id)
-  BobAccountId=$(dfx identity use Bob 2>/dev/null;dfx ledger account-id)
-  CharlieAccountId=$(dfx identity use Charlie 2>/dev/null;dfx ledger account-id)
-
-  # ⚠️ Warning: Resets the identity state
-  dfx identity use default
+  AlicePem=$ALICE_PEM
+  BobPem=$BOB_PEM
 
   printf "\n"
 }
@@ -63,14 +52,6 @@ info() {
   printf "🙋‍♀️ Principal ids\n"
   printf "Alice: %s\n" "$AlicePrincipalId"
   printf "Bob: %s \n" "$BobPrincipalId"
-  printf "Charlie %s\n" "$CharliePrincipalId"
-
-  printf "\n"
-
-  printf "🙋‍♀️ Account ids\n"
-  printf "Alice: %s\n" "$AliceAccountId"
-  printf "Bob: %s\n" "$BobAccountId"
-  printf "Charlie: %s\n" "$CharlieAccountId"
 
   printf "\n"
 }
