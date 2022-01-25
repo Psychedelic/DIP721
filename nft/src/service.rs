@@ -30,69 +30,75 @@ fn owner_of_dip721(token_id: u64) -> Result<Principal, ApiError> {
 }
 
 #[update(name = "safeTransferFromDip721")]
-async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
-    if !is_fleek(&ic::caller()) {
-        return Err(ApiError::Unauthorized);
-    }
+async fn safe_transfer_from_dip721(_from: Principal, to: Principal, _token_id: u64) -> TxReceipt {
+    // TODO: The EIP721 states that should throw, unless caller is the current owner
+    // an authorised operator (controller), or an approved address
+    // if !is_fleek(&ic::caller()) {
+    //     return Err(ApiError::Unauthorized);
+    // }
+
     assert_ne!(
         to,
         Principal::from_slice(&[0; 29]),
         "transfer request to cannot be the zero principal"
     );
 
-    ledger().transfer(
-        &User::principal(caller()),
-        &User::principal(to),
-        &token_id.to_string(),
-    );
+    // ledger().transfer(
+    //     &User::principal(caller()),
+    //     &User::principal(to),
+    //     &token_id.to_string(),
+    // );
 
-    let event = IndefiniteEventBuilder::new()
-        .caller(caller())
-        .operation("transfer")
-        .details(vec![
-            ("from".into(), DetailValue::Principal(caller())),
-            ("to".into(), DetailValue::Principal(to)),
-            ("token_id".into(), DetailValue::U64(token_id)),
-        ])
-        .build()
-        .unwrap();
+    // let event = IndefiniteEventBuilder::new()
+    //     .caller(caller())
+    //     .operation("transfer")
+    //     .details(vec![
+    //         ("from".into(), DetailValue::Principal(caller())),
+    //         ("to".into(), DetailValue::Principal(to)),
+    //         ("token_id".into(), DetailValue::U64(token_id)),
+    //     ])
+    //     .build()
+    //     .unwrap();
 
-    let tx_id = insert_into_cap(event).await.unwrap();
+    // let tx_id = insert_into_cap(event).await.unwrap();
 
-    Ok(tx_id.into())
+    Ok(12345.into())
 }
 
 #[update(name = "transferFromDip721")]
-async fn transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
-    if !is_fleek(&ic::caller()) {
-        return Err(ApiError::Unauthorized);
-    }
-    assert_ne!(
-        caller(),
-        to,
-        "transfer request caller and to cannot be the same"
-    );
+async fn transfer_from_dip721(_from: Principal, _to: Principal, _token_id: u64) -> TxReceipt {
+    // TODO: The EIP721 states that should throw, unless caller is the current owner
+    // an authorised operator (controller), or an approved address
+    // if !is_fleek(&ic::caller()) {
+    //     return Err(ApiError::Unauthorized);
+    // }
 
-    ledger().transfer(
-        &User::principal(caller()),
-        &User::principal(to),
-        &token_id.to_string(),
-    );
+    // assert_ne!(
+    //     caller(),
+    //     to,
+    //     "transfer request caller and to cannot be the same"
+    // );
 
-    let event = IndefiniteEventBuilder::new()
-        .caller(caller())
-        .operation("transfer")
-        .details(vec![
-            ("from".into(), DetailValue::Principal(caller())),
-            ("to".into(), DetailValue::Principal(to)),
-            ("token_id".into(), DetailValue::U64(token_id)),
-        ])
-        .build()
-        .unwrap();
+    // ledger().transfer(
+    //     &User::principal(caller()),
+    //     &User::principal(to),
+    //     &token_id.to_string(),
+    // );
 
-    let tx_id = insert_into_cap(event).await.unwrap();
+    // let event = IndefiniteEventBuilder::new()
+    //     .caller(caller())
+    //     .operation("transfer")
+    //     .details(vec![
+    //         ("from".into(), DetailValue::Principal(caller())),
+    //         ("to".into(), DetailValue::Principal(to)),
+    //         ("token_id".into(), DetailValue::U64(token_id)),
+    //     ])
+    //     .build()
+    //     .unwrap();
 
-    Ok(tx_id)
+    // let tx_id = insert_into_cap(event).await.unwrap();
+
+    Ok(12345.into())
 }
 
 #[query(name = "supportedInterfacesDip721")]
