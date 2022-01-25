@@ -33,9 +33,9 @@ fn owner_of_dip721(token_id: u64) -> Result<Principal, ApiError> {
 async fn safe_transfer_from_dip721(_from: Principal, to: Principal, _token_id: u64) -> TxReceipt {
     // TODO: The EIP721 states that should throw, unless caller is the current owner
     // an authorised operator (controller), or an approved address
-    // if !is_fleek(&ic::caller()) {
-    //     return Err(ApiError::Unauthorized);
-    // }
+    if !has_ownership_or_approval(&ic::caller()) {
+        return Err(ApiError::Unauthorized);
+    }
 
     assert_ne!(
         to,
@@ -69,15 +69,9 @@ async fn safe_transfer_from_dip721(_from: Principal, to: Principal, _token_id: u
 async fn transfer_from_dip721(_from: Principal, _to: Principal, _token_id: u64) -> TxReceipt {
     // TODO: The EIP721 states that should throw, unless caller is the current owner
     // an authorised operator (controller), or an approved address
-    // if !is_fleek(&ic::caller()) {
-    //     return Err(ApiError::Unauthorized);
-    // }
-
-    // assert_ne!(
-    //     caller(),
-    //     to,
-    //     "transfer request caller and to cannot be the same"
-    // );
+    if !has_ownership_or_approval(&ic::caller()) {
+        return Err(ApiError::Unauthorized);
+    }
 
     // ledger().transfer(
     //     &User::principal(caller()),
@@ -97,6 +91,10 @@ async fn transfer_from_dip721(_from: Principal, _to: Principal, _token_id: u64) 
     //     .unwrap();
 
     // let tx_id = insert_into_cap(event).await.unwrap();
+
+    if !has_ownership_or_approval(&ic::caller()) {
+        return Err(ApiError::Unauthorized);
+    }
 
     Ok(12345.into())
 }
