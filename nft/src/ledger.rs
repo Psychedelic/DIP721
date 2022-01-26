@@ -12,11 +12,10 @@ use std::default::Default;
 pub struct Ledger {
     tokens: HashMap<TokenIndex, TokenMetadata>,
     user_tokens: HashMap<User, Vec<TokenIndex>>,
+    token_approvals: HashMap<TokenIndex, User>,
 }
 
 impl Ledger {
-    // BEGIN DIP-721 //
-
     #[allow(non_snake_case)]
     pub fn mintNFT(&mut self, to: &Principal, metadata_desc: &MetadataDesc) -> MintReceipt {
         let token_index = ledger().tokens.len() as TokenIndex;
@@ -86,7 +85,16 @@ impl Ledger {
             .collect()
     }
 
-    // END DIP-721 //
+    pub fn get_approved(&self, token_id: u64) -> Result<User, ApiError> {
+        let approved_result = self
+            .token_approvals
+            .get(&token_id);
+
+        match approved_result {
+            Some(user) => Ok(user.clone()),
+            _ => Err(ApiError::Unauthorized)
+        }
+    }
 
     pub fn owner_of(&self, token_identifier: &TokenIdentifier) -> OwnerResult {
         let token_result = ledger()

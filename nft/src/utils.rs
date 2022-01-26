@@ -112,19 +112,43 @@ pub fn has_ownership(ledger: &mut Ledger, enquire_principal: &Principal, token_i
     }
 }
 
+pub fn has_approval(ledger: &mut Ledger, enquire_principal: &Principal, token_id: u64) -> bool {
+    // Check if the token does exist
+    if ! ledger.does_token_exist(token_id) {
+        return false;
+    }
+
+    // Check if owner
+    // a owner has high precedence in regards of approval
+    // so we return early if the enquire principal owns it
+    if has_ownership(ledger, enquire_principal, token_id) {
+        return true;
+    }
+
+    match ledger.get_approved(token_id) {
+        Ok(user) => {
+            match user {
+                User::principal(principal) => principal == *enquire_principal,
+                // TODO: consider the "account" case too
+                _ => false,
+            }
+        },
+        _ => false,
+    }
+}
+
 pub fn has_ownership_or_approval(ledger: &mut Ledger, principal: &Principal, token_id: u64) -> bool {
     // Check if the token does exist
     if ! ledger.does_token_exist(token_id) {
         return false;
     }
 
-    // Check if the token does exist
-    if ! has_ownership(ledger, principal, token_id) {
+    // Either has ownership or is approved
+    // otherwise, exit immediately
+    // TODO: Enable or disable approval for a third party ("operator") to manage
+    if ! has_ownership(ledger, principal, token_id) || ! has_approval(ledger, principal, token_id) {
         return false;
     }
-
-    // TODO: Check if has approval
-    // ...
 
     true
 }
@@ -164,4 +188,12 @@ mod tests {
 
         assert_eq!(has_ownership(&mut ledger, &alice(), 0), true);
     }
+
+    // #[test]
+    // fn test_approval() {
+    //     // assert_eq!(2 + 2, 4);
+    //     let mut ledger = setup_ledger();
+
+    //     assert_eq!(has_approval(&mut ledger, &alice(), 0), true);
+    // }
 }
