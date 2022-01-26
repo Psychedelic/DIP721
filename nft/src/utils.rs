@@ -128,3 +128,40 @@ pub fn has_ownership_or_approval(ledger: &mut Ledger, principal: &Principal, tok
 
     true
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ledger::*;
+
+    use ic_kit::mock_principals::*;
+    use ic_kit::MockContext;
+
+    fn setup_ledger() -> Ledger {
+        MockContext::new().inject();
+        let mut ledger = Ledger::default();
+        let metadata_desc = vec![MetadataPart {
+            purpose: MetadataPurpose::Rendered,
+            key_val_data: vec![MetadataKeyVal {
+                key: "location".to_owned(),
+                val: MetadataVal::TextContent("mycanister1".to_owned()),
+            }],
+            data: vec![],
+        }];
+
+        match ledger.mintNFT(&alice(), &metadata_desc) {
+            Ok(receipt) => ic_cdk::println!("[debug] mint_res_a -> receipt.token_id -> {:?}", receipt.token_id),
+            _ => ic_cdk::println!("[debug] empty"),
+        }
+
+        ledger
+    }
+
+    #[test]
+    fn test_ownership() {
+        // assert_eq!(2 + 2, 4);
+        let mut ledger = setup_ledger();
+
+        assert_eq!(has_ownership(&mut ledger, &alice(), 0), true);
+    }
+}
