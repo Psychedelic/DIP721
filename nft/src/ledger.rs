@@ -85,14 +85,29 @@ impl Ledger {
             .collect()
     }
 
+    pub fn approve(&self, enquire_principal: &Principal, approves_principal: &Principal, token_id: u64) {
+        let ledger_instance = ledger();
+
+        if ! has_ownership_or_approval(ledger_instance, enquire_principal, token_id) {
+            return;
+        }
+
+        ledger_instance
+            .token_approvals
+            .insert(
+                token_id,
+                User::from(*approves_principal),
+            );
+    }
+
     pub fn get_approved(&self, token_id: u64) -> Result<User, ApiError> {
-        let approved_result = self
+        let approved_result = ledger()
             .token_approvals
             .get(&token_id);
 
         match approved_result {
             Some(user) => Ok(user.clone()),
-            _ => Err(ApiError::Unauthorized)
+            None => Err(ApiError::Unauthorized)
         }
     }
 

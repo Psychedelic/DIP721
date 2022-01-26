@@ -98,7 +98,7 @@ pub fn tx_log<'a>() -> &'a mut TxLog {
     ic_kit::ic::get_mut::<TxLog>()
 }
 
-pub fn has_ownership(ledger: &mut Ledger, enquire_principal: &Principal, token_id: u64) -> bool {
+pub fn has_ownership(ledger: &Ledger, enquire_principal: &Principal, token_id: u64) -> bool {
     let owner_of_result = ledger.owner_of(&token_id.to_string());
 
     // Check if owner
@@ -112,7 +112,7 @@ pub fn has_ownership(ledger: &mut Ledger, enquire_principal: &Principal, token_i
     }
 }
 
-pub fn has_approval(ledger: &mut Ledger, enquire_principal: &Principal, token_id: u64) -> bool {
+pub fn has_approval(ledger: &Ledger, enquire_principal: &Principal, token_id: u64) -> bool {
     // Check if the token does exist
     if ! ledger.does_token_exist(token_id) {
         return false;
@@ -137,16 +137,18 @@ pub fn has_approval(ledger: &mut Ledger, enquire_principal: &Principal, token_id
     }
 }
 
-pub fn has_ownership_or_approval(ledger: &mut Ledger, principal: &Principal, token_id: u64) -> bool {
+pub fn has_ownership_or_approval(ledger: &Ledger, principal: &Principal, token_id: u64) -> bool {
     // Check if the token does exist
     if ! ledger.does_token_exist(token_id) {
         return false;
     }
 
+    // TODO: exit immediately if Zero address
+
     // Either has ownership or is approved
     // otherwise, exit immediately
     // TODO: Enable or disable approval for a third party ("operator") to manage
-    if ! has_ownership(ledger, principal, token_id) || ! has_approval(ledger, principal, token_id) {
+    if ! has_ownership(ledger, principal, token_id) && ! has_approval(ledger, principal, token_id) {
         return false;
     }
 
@@ -161,39 +163,49 @@ mod tests {
     use ic_kit::mock_principals::*;
     use ic_kit::MockContext;
 
-    fn setup_ledger() -> Ledger {
+    fn setup_ledger(principal: &Principal) -> Ledger {
         MockContext::new().inject();
         let mut ledger = Ledger::default();
         let metadata_desc = vec![MetadataPart {
             purpose: MetadataPurpose::Rendered,
             key_val_data: vec![MetadataKeyVal {
                 key: "location".to_owned(),
-                val: MetadataVal::TextContent("mycanister1".to_owned()),
+                val: MetadataVal::TextContent("Canister A".to_owned()),
             }],
             data: vec![],
         }];
 
-        match ledger.mintNFT(&alice(), &metadata_desc) {
-            Ok(receipt) => ic_cdk::println!("[debug] mint_res_a -> receipt.token_id -> {:?}", receipt.token_id),
-            _ => ic_cdk::println!("[debug] empty"),
+        match ledger.mintNFT(principal, &metadata_desc) {
+            Ok(_mint_receipt) => ledger,
+            _ => panic!("Oops! Failed to mint nft"),
         }
-
-        ledger
     }
 
     #[test]
     fn test_ownership() {
-        // assert_eq!(2 + 2, 4);
-        let mut ledger = setup_ledger();
+        // Actors
+        let alice = &alice();
 
-        assert_eq!(has_ownership(&mut ledger, &alice(), 0), true);
+        // Business logic
+        let ledger = setup_ledger(alice);
+
+        // Should Alice should have ownership
+        assert_eq!(has_ownership(&ledger, alice, 0), true);
     }
 
-    // #[test]
-    // fn test_approval() {
-    //     // assert_eq!(2 + 2, 4);
-    //     let mut ledger = setup_ledger();
+    #[test]
+    fn test_approval() {
+        // Actors
+        let alice = &alice();
+        let bob = &bob();
 
-    //     assert_eq!(has_approval(&mut ledger, &alice(), 0), true);
-    // }
+        // Business logic
+        let ledger = setup_ledger(alice);
+
+        // Before each, Alice approves Bob
+        ledger.approve(alice, bob, 0);
+
+        // Should Bob be approved
+        assert_eq!(has_approval(&ledger, bob, 0), true);
+    }
 }
