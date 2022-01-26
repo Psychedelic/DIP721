@@ -89,14 +89,14 @@ impl Ledger {
     // END DIP-721 //
 
     pub fn owner_of(&self, token_identifier: &TokenIdentifier) -> OwnerResult {
-        OwnerResult::Ok(
-            ledger()
-                .tokens
-                .get(&into_token_index(&token_identifier))
-                .expect("unable to locate token id")
-                .principal
-                .clone(),
-        )
+        let token_result = ledger()
+            .tokens
+            .get(&into_token_index(&token_identifier));
+
+        match token_result {
+            Some(token_metadata) => OwnerResult::Ok(token_metadata.principal.clone()),
+            _ => OwnerResult::Err(ApiError::InvalidTokenId)
+        }
     }
 
     pub fn balance_of(&self, user: &User) -> u64 {
