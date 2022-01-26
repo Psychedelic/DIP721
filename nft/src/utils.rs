@@ -99,16 +99,19 @@ pub fn tx_log<'a>() -> &'a mut TxLog {
 }
 
 pub fn has_ownership_or_approval(_principal: &Principal, token_id: u64) -> bool {
-    // Check if the token exists
-    let is_existing_token = ledger()
-        .does_token_exist(token_id);
+    let ledger_instance = ledger();
 
-    if !is_existing_token {
-        return false
+    // Check if the token exists
+    if ! ledger_instance.does_token_exist(token_id) {
+        return false;
     }
 
+    let token_identifier = &token_id.to_string();
+
     // Check if owner
-    // --
+    if ledger_instance .owner_of(token_identifier).is_err() {
+        return false;
+    }
 
     // Check if has approval
     // --
