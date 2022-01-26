@@ -29,6 +29,8 @@ fn owner_of_dip721(token_id: u64) -> Result<Principal, ApiError> {
     ledger().owner_of(&token_id.to_string())
 }
 
+// TODO: the safe transfer from dip721 should be more inline with the original EIP 721
+// noted that its quite similar to the none safe version
 #[update(name = "safeTransferFromDip721")]
 async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
     let ledger_instance = ledger();
@@ -64,9 +66,11 @@ async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u6
 
     let tx_id = insert_into_cap(event).await.unwrap();
 
-    Ok(tx_id.into())
+    Ok(tx_id)
 }
 
+// TODO: the transfer from dip721 should be more inline with the original EIP 721
+// noted that its quite similar to the safe version
 #[update(name = "transferFromDip721")]
 async fn transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
     let ledger_instance = ledger();
@@ -96,7 +100,7 @@ async fn transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) ->
 
     let tx_id = insert_into_cap(event).await.unwrap();
 
-    Ok(tx_id.into())
+    Ok(tx_id)
 }
 
 #[query(name = "supportedInterfacesDip721")]
