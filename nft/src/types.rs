@@ -21,7 +21,7 @@ pub type Balance = Nat;
 pub type Memo = Vec<u8>;
 pub type SubAccount = Vec<u8>;
 pub type TokenIdentifier = String;
-pub type TokenIndex = u32;
+pub type TokenIndex = u64;
 pub type AccountIdentifier = String;
 pub type Date = u64;
 pub type TransactionId = Nat;
@@ -195,7 +195,7 @@ impl From<AccountIdentifier> for User {
 
 pub fn into_token_index(token_identifier: &TokenIdentifier) -> TokenIndex {
     token_identifier
-        .parse::<u32>()
+        .parse::<u64>()
         .expect("unable to convert token identifier to token index")
 }
 
