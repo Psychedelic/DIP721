@@ -53,3 +53,15 @@ yarn cap:start
 ```
 
 ✨ If everything goes well, you should see the output for a generalist flow, where a user mints a DIP-721 token, gets metadata, get balance, transfers, etc.
+
+### 👨🏾‍💻 Development
+
+A develop watcher is available, that builds and runs the healthcheck for any NFT source file changes.
+
+```sh
+yarn dev:watch
+```
+
+This is useful if you are interested in providing features or changes to the code base.
+
+Also, check our [contributing guidelines](/docs/contributing.md).

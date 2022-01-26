@@ -10,6 +10,7 @@
     "cap:init": "git submodule update --init --recursive",
     "cap:start": "cd ./cap && dfx deploy ic-history-router && mkdir -p ../.temp && dfx canister id ic-history-router > ../.temp/ic-history-router-id",
     "dip721:healthcheck": "./healthcheck.sh",
-    "reset": "dfx stop && rm -rf .dfx && rm -rf ./target && rm -rf ./cap/.dfx && rm -rf ./cap/target && rm -rf ./.temp"
+    "reset": "dfx stop && rm -rf .dfx && rm -rf ./cap/.dfx && rm -rf ./.temp",
+    "dev:watch": "cargo watch -w ./nft/src -s 'yarn reset && dfx start --background && yes Y | SKIP_PROMPTS=1 yarn dip721:healthcheck'"
   }
 }
