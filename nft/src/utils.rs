@@ -99,16 +99,9 @@ pub fn tx_log<'a>() -> &'a mut TxLog {
 }
 
 pub fn has_ownership(ledger: &Ledger, enquire_principal: &Principal, token_id: u64) -> bool {
-    let owner_of_result = ledger.owner_of(&token_id.to_string());
-
-    // Check if owner
-    if owner_of_result.is_err() {
-        return false;
-    }
-
-    match owner_of_result {
+    match ledger.owner_of(&token_id.to_string()) {
         Ok(owner_actual_principal) => owner_actual_principal == *enquire_principal,
-        Err(_e) => false
+        _ => false
     }
 }
 
