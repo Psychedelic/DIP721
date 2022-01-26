@@ -148,6 +148,12 @@ impl Ledger {
         )
     }
 
+    pub fn does_token_exist(&self, token_id: u64) -> bool {
+        ledger()
+            .tokens
+            .contains_key(&into_token_index(&token_id.to_string()))
+    }
+
     pub fn supply(&self, _token_identifier: &TokenIdentifier) -> BalanceReturn {
         BalanceReturn::Ok(ledger().tokens.len().into())
     }

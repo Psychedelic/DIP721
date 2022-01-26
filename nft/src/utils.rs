@@ -98,10 +98,20 @@ pub fn tx_log<'a>() -> &'a mut TxLog {
     ic_kit::ic::get_mut::<TxLog>()
 }
 
-pub fn has_ownership_or_approval(principal: &Principal) -> bool {
-    // 1) Check if token id exists
-    // 2) Check if owner, or
-    // has approval
+pub fn has_ownership_or_approval(_principal: &Principal, token_id: u64) -> bool {
+    // Check if the token exists
+    let is_existing_token = ledger()
+        .does_token_exist(token_id);
+
+    if !is_existing_token {
+        return false
+    }
+
+    // Check if owner
+    // --
+
+    // Check if has approval
+    // --
 
     true
 }
