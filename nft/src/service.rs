@@ -33,8 +33,6 @@ fn owner_of_dip721(token_id: u64) -> Result<Principal, ApiError> {
 async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
     let ledger_instance = ledger();
 
-    // TODO: The EIP721 states that should throw, unless caller is the current owner
-    // an authorised operator (controller), or an approved address
     if !has_ownership_or_approval(ledger_instance, &ic::caller(), token_id) {
         return Err(ApiError::Unauthorized);
     }
@@ -67,14 +65,10 @@ async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u6
     Ok(tx_id)
 }
 
-// TODO: the transfer from dip721 should be more inline with the original EIP 721
-// noted that its quite similar to the safe version
 #[update(name = "transferFromDip721")]
 async fn transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
     let ledger_instance = ledger();
 
-    // TODO: The EIP721 states that should throw, unless caller is the current owner
-    // an authorised operator (controller), or an approved address
     if !has_ownership_or_approval(ledger_instance, &ic::caller(), token_id) {
         return Err(ApiError::Unauthorized);
     }
@@ -151,10 +145,9 @@ fn get_token_ids_for_user_dip721(user: Principal) -> Vec<u64> {
 #[update(name = "mintDip721")]
 async fn mint_dip721(to: Principal, metadata_desc: MetadataDesc) -> MintReceipt {
     // TODO: Implementations are encouraged to only allow minting by the owner of the smart contract
-    // should check the canister controllers
-    // if !is_controller(&ic::caller()) {
-    //     return Err(ApiError::Unauthorized);
-    // }
+    if !is_controller(&ic::caller()) {
+        return Err(ApiError::Unauthorized);
+    }
 
     let response = ledger().mintNFT(&to, &metadata_desc).unwrap();
     let event = IndefiniteEventBuilder::new()
@@ -182,8 +175,6 @@ async fn transfer(transfer_request: TransferRequest) -> TransferResponse {
     let token_id = &transfer_request.token.parse::<u64>().unwrap();
     let ledger_instance = ledger();
 
-    // TODO: The EIP721 states that should throw, unless caller is the current owner
-    // an authorised operator (controller), or an approved address
     if !has_ownership_or_approval(ledger_instance, &ic::caller(), *token_id) {
         return Err(TransferError::Unauthorized("Unauthorized".to_string()));
     }

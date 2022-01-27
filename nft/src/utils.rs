@@ -143,6 +143,14 @@ pub fn has_ownership_or_approval(ledger: &Ledger, principal: &Principal, token_i
     true
 }
 
+// TODO: check if caller is a controller
+// is required that the canister has the correct controllers
+// which should include the canister id itself
+// to let the canister call the `aaaaa-aa` Management API `canister_status`
+pub fn is_controller(_principal: &Principal) -> bool {
+    true
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
