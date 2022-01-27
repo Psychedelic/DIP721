@@ -2,6 +2,7 @@ use crate::types::*;
 use crate::utils::*;
 
 use ic_kit::candid::CandidType;
+use ic_kit::ic;
 
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -13,6 +14,7 @@ pub struct Ledger {
     tokens: HashMap<TokenIndex, TokenMetadata>,
     user_tokens: HashMap<User, Vec<TokenIndex>>,
     token_approvals: HashMap<TokenIndex, User>,
+    operator_approvals: HashMap<User, Vec<User>>,
 }
 
 impl Ledger {
@@ -98,6 +100,52 @@ impl Ledger {
                 token_id,
                 User::from(*approves_principal),
             );
+    }
+
+    // EIP 721
+    // @notice Enable or disable approval for a third party ("operator") to manage
+    //  all of `msg.sender`'s assets
+    // @dev Emits the ApprovalForAll event. The contract MUST allow
+    //  multiple operators per owner.
+    // @param _operator Address to add to the set of authorized operators
+    // @param _approved True if the operator is approved, false to revoke approval
+    //
+    // DIP 721
+    // Enable or disable an operator to manage all of the tokens for the caller of this function.
+    // Multiple operators can be given permission at the same time. Approvals granted by the approveDip721
+    // function are independent from the approvals granted by setApprovalForAll function.
+    // The zero address indicates there are no approved operators.
+    pub fn set_approval_for_all(&self, approves_principal: &Principal, _approved: bool) {
+        // TODO: check if caller is not operator, otherwise return early
+        let user = User::from(ic::caller());
+
+        if ic::caller() == *approves_principal {
+            return;
+        }
+
+        let ledger_instance = ledger();
+
+        let approvals = ledger_instance
+            .operator_approvals
+            .entry(user)
+            .or_default();
+
+        approvals.push(User::from(*approves_principal));
+    }
+
+    // EIP 721
+    // @notice Query if an address is an authorized operator for another address
+    // @param _owner The address that owns the NFTs
+    // @param _operator The address that acts on behalf of the owner
+    // @return True if `_operator` is an approved operator for `_owner`, false otherwise
+    //
+    // DIP 721
+    // Returns true if the given operator is an approved operator for all the tokens owned
+    // by the caller, returns false otherwise.
+    pub fn is_approved_for_all(&self, _principal: &Principal) -> bool {
+        // TODO:
+
+        true
     }
 
     pub fn get_approved(&self, token_id: u64) -> Result<User, ApiError> {
