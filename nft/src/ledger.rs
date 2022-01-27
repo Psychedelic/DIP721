@@ -1,20 +1,21 @@
 use crate::types::*;
 use crate::utils::*;
 
-use ic_kit::candid::CandidType;
-use ic_kit::ic;
+use ic_kit::{candid::CandidType, ic};
 
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::convert::Into;
 use std::default::Default;
 
+type Approvals = Vec<User>;
+
 #[derive(CandidType, Clone, Default, Deserialize)]
 pub struct Ledger {
     tokens: HashMap<TokenIndex, TokenMetadata>,
     user_tokens: HashMap<User, Vec<TokenIndex>>,
     token_approvals: HashMap<TokenIndex, User>,
-    operator_approvals: HashMap<User, Vec<User>>,
+    operator_approvals: HashMap<User, Approvals>,
 }
 
 impl Ledger {
