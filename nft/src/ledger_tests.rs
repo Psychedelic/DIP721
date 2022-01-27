@@ -14,7 +14,7 @@ mod tests {
 
         MockContext::new()
             .with_caller(id.clone())
-           .inject();
+            .inject();
         let mut ledger = Ledger::default();
         let mut metadata_desc = vec![MetadataPart {
             purpose: MetadataPurpose::Rendered,

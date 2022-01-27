@@ -94,7 +94,7 @@ impl Ledger {
             return;
         }
 
-        ledger_instance
+        ledger()
             .token_approvals
             .insert(
                 token_id,
@@ -109,9 +109,7 @@ impl Ledger {
             return;
         }
 
-        let ledger_instance = ledger();
-
-        let approvals = ledger_instance
+        let approvals = ledger()
             .operator_approvals
             .entry(user.clone())
             .or_default();
