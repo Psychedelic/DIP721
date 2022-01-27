@@ -102,21 +102,7 @@ impl Ledger {
             );
     }
 
-    // EIP 721
-    // @notice Enable or disable approval for a third party ("operator") to manage
-    //  all of `msg.sender`'s assets
-    // @dev Emits the ApprovalForAll event. The contract MUST allow
-    //  multiple operators per owner.
-    // @param _operator Address to add to the set of authorized operators
-    // @param _approved True if the operator is approved, false to revoke approval
-    //
-    // DIP 721
-    // Enable or disable an operator to manage all of the tokens for the caller of this function.
-    // Multiple operators can be given permission at the same time. Approvals granted by the approveDip721
-    // function are independent from the approvals granted by setApprovalForAll function.
-    // The zero address indicates there are no approved operators.
     pub fn set_approval_for_all(&self, approves_principal: &Principal, _approved: bool) {
-        // TODO: check if caller is not operator, otherwise return early
         let user = User::from(ic::caller());
 
         if ic::caller() == *approves_principal {
