@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod tests {
-
     use crate::ledger::*;
     use crate::types::*;
 
@@ -10,11 +9,10 @@ mod tests {
     fn setup_ledger() -> Ledger {
         let id = alice();
 
-        ic_cdk::println!("[debug] setup_ledger -> id -> {:?}", id.to_string());
-
         MockContext::new()
             .with_caller(id.clone())
             .inject();
+
         let mut ledger = Ledger::default();
         let mut metadata_desc = vec![MetadataPart {
             purpose: MetadataPurpose::Rendered,
@@ -24,6 +22,7 @@ mod tests {
             }],
             data: vec![],
         }];
+
         ledger.mintNFT(&alice(), &metadata_desc).unwrap();
         metadata_desc[0].key_val_data[0].val = MetadataVal::TextContent("mycanister2".to_owned());
         ledger.mintNFT(&alice(), &metadata_desc).unwrap();
