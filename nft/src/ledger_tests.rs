@@ -8,7 +8,13 @@ mod tests {
     use ic_kit::MockContext;
 
     fn setup_ledger() -> Ledger {
-        MockContext::new().inject();
+        let id = alice();
+
+        ic_cdk::println!("[debug] setup_ledger -> id -> {:?}", id.to_string());
+
+        MockContext::new()
+            .with_caller(id.clone())
+           .inject();
         let mut ledger = Ledger::default();
         let mut metadata_desc = vec![MetadataPart {
             purpose: MetadataPurpose::Rendered,
@@ -70,6 +76,15 @@ mod tests {
             &User::principal(bob()),
             &"0".to_owned(),
         );
+    }
+
+    #[test]
+    fn approval() {
+        let ledger = setup_ledger();
+
+        ledger.set_approval_for_all(&bob(), true);
+
+        assert_eq!(ledger.is_approved_for_all(&alice(), &bob()), true);
     }
 
     // END DIP-721 //
