@@ -135,7 +135,6 @@ pub fn has_ownership_or_approval(ledger: &Ledger, principal: &Principal, token_i
 
     // Either has ownership or is approved
     // otherwise, exit immediately
-    // TODO: Enable or disable approval for a third party ("operator") to manage
     if ! has_ownership(ledger, principal, token_id) && ! has_approval(ledger, principal, token_id) {
         return false;
     }
