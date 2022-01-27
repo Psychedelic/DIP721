@@ -103,7 +103,7 @@ impl Ledger {
     }
 
     pub fn set_approval_for_all(&self, approves_principal: &Principal, _approved: bool) {
-        let user = User::from(ic::caller());
+        let user = User::principal(ic::caller());
 
         if ic::caller() == *approves_principal {
             return;
@@ -113,25 +113,23 @@ impl Ledger {
 
         let approvals = ledger_instance
             .operator_approvals
-            .entry(user)
+            .entry(user.clone())
             .or_default();
 
         approvals.push(User::from(*approves_principal));
     }
 
-    // EIP 721
-    // @notice Query if an address is an authorized operator for another address
-    // @param _owner The address that owns the NFTs
-    // @param _operator The address that acts on behalf of the owner
-    // @return True if `_operator` is an approved operator for `_owner`, false otherwise
-    //
-    // DIP 721
-    // Returns true if the given operator is an approved operator for all the tokens owned
-    // by the caller, returns false otherwise.
-    pub fn is_approved_for_all(&self, _principal: &Principal) -> bool {
-        // TODO:
+    pub fn is_approved_for_all(&self, owner: &Principal, operator: &Principal) -> bool {        
+        let approvals = ledger()
+            .operator_approvals
+            .get(&User::principal(*owner));
 
-        true
+        approvals.map_or(
+            false,
+            |list| list.contains(
+                &User::principal(*operator)
+            ),
+        )
     }
 
     pub fn get_approved(&self, token_id: u64) -> Result<User, ApiError> {
