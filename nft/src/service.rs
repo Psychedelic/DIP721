@@ -1,5 +1,3 @@
-use crate::management::is_fleek;
-use crate::management::Fleek;
 use crate::types::*;
 use crate::utils::*;
 
@@ -152,9 +150,12 @@ fn get_token_ids_for_user_dip721(user: Principal) -> Vec<u64> {
 
 #[update(name = "mintDip721")]
 async fn mint_dip721(to: Principal, metadata_desc: MetadataDesc) -> MintReceipt {
-    if !is_fleek(&ic::caller()) {
-        return Err(ApiError::Unauthorized);
-    }
+    // TODO: Implementations are encouraged to only allow minting by the owner of the smart contract
+    // should check the canister controllers
+    // if !is_controller(&ic::caller()) {
+    //     return Err(ApiError::Unauthorized);
+    // }
+
     let response = ledger().mintNFT(&to, &metadata_desc).unwrap();
     let event = IndefiniteEventBuilder::new()
         .caller(caller())
@@ -222,13 +223,14 @@ async fn transfer(transfer_request: TransferRequest) -> TransferResponse {
     Ok(Nat::from(tx_id))
 }
 
+// TODO: The mintNFT can be removed, doing nothing here
 #[allow(non_snake_case, unreachable_code, unused_variables)]
 #[update]
 async fn mintNFT(mint_request: MintRequest) -> Option<TokenIdentifier> {
     trap("Disabled as current EXT metadata doesn't allow multiple assets per token");
-    if !is_fleek(&ic::caller()) {
-        return None;
-    }
+    // if !is_fleek(&ic::caller()) {
+    //     return None;
+    // }
     expect_principal(&mint_request.to);
     expect_caller(&token_level_metadata().owner.expect("token owner not set"));
 
@@ -270,11 +272,12 @@ fn metadata(token_identifier: TokenIdentifier) -> MetadataReturn {
     ledger().metadata(&token_identifier)
 }
 
+// TODO: this can be removed, is doing nothing here
 #[update]
 async fn add(transfer_request: TransferRequest) -> Option<TransactionId> {
-    if !is_fleek(&ic::caller()) {
-        return None;
-    }
+    // if !is_fleek(&ic::caller()) {
+    //     return None;
+    // }
     expect_principal(&transfer_request.from);
     expect_principal(&transfer_request.to);
 
@@ -300,7 +303,6 @@ fn store_data_in_stable_store() {
     let data = StableStorageBorrowed {
         ledger: ledger(),
         token: token_level_metadata(),
-        fleek: fleek_db(),
     };
     ic::stable_store((data,)).expect("failed");
 }
@@ -309,12 +311,10 @@ fn restore_data_from_stable_store() {
     let (data,): (StableStorage,) = ic::stable_restore().expect("failed");
     ic::store(data.ledger);
     ic::store(data.token);
-    ic::store(data.fleek);
 }
 
 #[init]
 fn init(owner: Principal, symbol: String, name: String, history: Principal) {
-    ic::store(Fleek(vec![ic::caller()]));
     *token_level_metadata() = TokenLevelMetadata::new(Some(owner), symbol, name, Some(history));
     handshake(1_000_000_000_000, Some(history));
 }

@@ -1,5 +1,4 @@
 use crate::ledger::Ledger;
-use crate::management::Fleek;
 use crate::types::*;
 
 use common::account_identifier::{AccountIdentifierStruct, Subaccount};
@@ -23,10 +22,6 @@ pub fn ledger<'a>() -> &'a mut Ledger {
 
 pub fn token_level_metadata<'a>() -> &'a mut TokenLevelMetadata {
     ic_kit::ic::get_mut::<TokenLevelMetadata>()
-}
-
-pub fn fleek_db<'a>() -> &'a mut Fleek {
-    ic_kit::ic::get_mut::<Fleek>()
 }
 
 pub fn expect_caller(input_principal: &Principal) {

@@ -1,5 +1,4 @@
 use crate::ledger::Ledger;
-use crate::management::Fleek;
 use common::account_identifier::AccountIdentifierStruct;
 
 use derive_new::*;
@@ -322,12 +321,10 @@ pub struct TxLog {
 pub struct StableStorageBorrowed<'a> {
     pub ledger: &'a Ledger,
     pub token: &'a TokenLevelMetadata,
-    pub fleek: &'a Fleek,
 }
 
 #[derive(CandidType, Deserialize)]
 pub struct StableStorage {
     pub ledger: Ledger,
     pub token: TokenLevelMetadata,
-    pub fleek: Fleek,
 }
