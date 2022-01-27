@@ -102,7 +102,7 @@ impl Ledger {
             );
     }
 
-    pub fn set_approval_for_all(&self, approves_principal: &Principal, _approved: bool) {
+    pub fn set_approval_for_all(&self, approves_principal: &Principal, approved: bool) {
         let user = User::principal(ic::caller());
 
         if ic::caller() == *approves_principal {
@@ -113,6 +113,14 @@ impl Ledger {
             .operator_approvals
             .entry(user.clone())
             .or_default();
+
+        if ! approved {
+            if let Some(index) = approvals.iter().position(|listed_user| *listed_user == User::principal(*approves_principal)) {
+                approvals.remove(index);
+            }
+
+            return;
+        }
 
         approvals.push(User::from(*approves_principal));
     }
