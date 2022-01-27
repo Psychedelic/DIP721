@@ -85,6 +85,10 @@ mod tests {
         ledger.set_approval_for_all(&bob(), true);
 
         assert_eq!(ledger.is_approved_for_all(&alice(), &bob()), true);
+
+        ledger.set_approval_for_all(&bob(), false);
+
+        assert_eq!(ledger.is_approved_for_all(&alice(), &bob()), false);
     }
 
     // END DIP-721 //
