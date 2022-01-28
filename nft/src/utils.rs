@@ -125,7 +125,7 @@ pub fn has_approval(ledger: &Ledger, enquire_principal: &Principal, token_id: u6
     }
 }
 
-pub fn has_ownership_or_approval(ledger: &Ledger, principal: &Principal, token_id: u64) -> bool {
+pub fn has_ownership_or_approval(ledger: &Ledger, enquire_principal: &Principal, to_principal: &Principal, token_id: u64) -> bool {
     // Check if the token does exist
     if ! ledger.does_token_exist(token_id) {
         return false;
@@ -135,7 +135,9 @@ pub fn has_ownership_or_approval(ledger: &Ledger, principal: &Principal, token_i
 
     // Either has ownership or is approved
     // otherwise, exit immediately
-    if ! has_ownership(ledger, principal, token_id) && ! has_approval(ledger, principal, token_id) {
+    if ! has_ownership(ledger, enquire_principal, token_id)
+    && ! has_approval(ledger, enquire_principal, token_id) 
+    && ! ledger.is_approved_for_all(enquire_principal, to_principal) {
         return false;
     }
 
@@ -159,7 +161,10 @@ mod tests {
     use ic_kit::MockContext;
 
     fn setup_ledger(principal: &Principal) -> Ledger {
-        MockContext::new().inject();
+        MockContext::new()
+            .with_caller(principal.clone())
+            .inject();
+
         let mut ledger = Ledger::default();
         let metadata_desc = vec![MetadataPart {
             purpose: MetadataPurpose::Rendered,
@@ -193,6 +198,7 @@ mod tests {
         // Actors
         let alice = &alice();
         let bob = &bob();
+        let john = &john();
 
         // Business logic
         let ledger = setup_ledger(alice);
@@ -202,5 +208,15 @@ mod tests {
 
         // Should Bob be approved
         assert_eq!(has_approval(&ledger, bob, 0), true);
+
+        ledger.set_approval_for_all(john, true);
+
+        assert_eq!(ledger.is_approved_for_all(alice, john), true);
+
+        assert_eq!(has_ownership_or_approval(&ledger, alice, john, 0), true);
+
+        ledger.set_approval_for_all(john, false);
+
+        assert_eq!(ledger.is_approved_for_all(alice, john), false);
     }
 }
