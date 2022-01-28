@@ -33,7 +33,7 @@ fn owner_of_dip721(token_id: u64) -> Result<Principal, ApiError> {
 async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
     let ledger_instance = ledger();
 
-    if !has_ownership_or_approval(ledger_instance, &ic::caller(), token_id) {
+    if !has_ownership_or_approval(ledger_instance, &ic::caller(), &to, token_id) {
         return Err(ApiError::Unauthorized);
     }
 
@@ -69,7 +69,7 @@ async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u6
 async fn transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
     let ledger_instance = ledger();
 
-    if !has_ownership_or_approval(ledger_instance, &ic::caller(), token_id) {
+    if !has_ownership_or_approval(ledger_instance, &ic::caller(), &to, token_id) {
         return Err(ApiError::Unauthorized);
     }
 
@@ -175,7 +175,13 @@ async fn transfer(transfer_request: TransferRequest) -> TransferResponse {
     let token_id = &transfer_request.token.parse::<u64>().unwrap();
     let ledger_instance = ledger();
 
-    if !has_ownership_or_approval(ledger_instance, &ic::caller(), *token_id) {
+    let to_principal = match &transfer_request.to {
+        User::principal(principal) => principal,
+        // TODO: Should take into consideration the user address
+        _ => panic!("Oops! Unexpected transfer request to"),
+    };
+
+    if !has_ownership_or_approval(ledger_instance, &ic::caller(), &to_principal, *token_id) {
         return Err(TransferError::Unauthorized("Unauthorized".to_string()));
     }
 
