@@ -128,7 +128,7 @@ pub fn has_approval(ledger: &Ledger, enquire_principal: &Principal, token_id: u6
     }
 }
 
-pub fn has_ownership_or_approval(ledger: &Ledger, enquire_principal: &Principal, to_principal: &Principal, token_id: u64) -> bool {
+pub async fn has_ownership_or_approval(ledger: &Ledger, enquire_principal: &Principal, to_principal: &Principal, token_id: u64) -> bool {
     // Check if the token does exist
     if ! ledger.does_token_exist(token_id) {
         return false;
@@ -140,7 +140,8 @@ pub fn has_ownership_or_approval(ledger: &Ledger, enquire_principal: &Principal,
     // otherwise, exit immediately
     if ! has_ownership(ledger, enquire_principal, token_id)
     && ! has_approval(ledger, enquire_principal, token_id) 
-    && ! ledger.is_approved_for_all(enquire_principal, to_principal) {
+    && ! ledger.is_approved_for_all(enquire_principal, to_principal) 
+    && ! is_controller(&enquire_principal).await {
         return false;
     }
 
@@ -178,6 +179,8 @@ mod tests {
     use ic_kit::mock_principals::*;
     use ic_kit::MockContext;
 
+    use ic_kit::async_test;
+
     fn setup_ledger(principal: &Principal) -> Ledger {
         MockContext::new()
             .with_caller(principal.clone())
@@ -211,8 +214,8 @@ mod tests {
         assert_eq!(has_ownership(&ledger, alice, 0), true);
     }
 
-    #[test]
-    fn test_approval() {
+    #[async_test]
+    async fn test_approval() {
         // Actors
         let alice = &alice();
         let bob = &bob();
@@ -222,19 +225,24 @@ mod tests {
         let ledger = setup_ledger(alice);
 
         // Before each, Alice approves Bob
-        ledger.approve(alice, bob, 0);
+        ledger.approve(alice, bob, 0).await;
 
         // Should Bob be approved
         assert_eq!(has_approval(&ledger, bob, 0), true);
 
+        // Should John have approval all
         ledger.set_approval_for_all(john, true);
 
+        // Should John be approved in behalf of Alice
         assert_eq!(ledger.is_approved_for_all(alice, john), true);
 
-        assert_eq!(has_ownership_or_approval(&ledger, alice, john, 0), true);
+        // Should John be approved in behalf of Alice
+        assert_eq!(has_ownership_or_approval(&ledger, alice, john, 0).await, true);
 
+        // Should John NOT have approval all
         ledger.set_approval_for_all(john, false);
 
+        // Should John be NOT approved in behalf of Alice
         assert_eq!(ledger.is_approved_for_all(alice, john), false);
     }
 }

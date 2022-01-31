@@ -32,7 +32,7 @@ async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u6
     let ledger_instance = ledger();
     let caller = ic::caller();
 
-    if !has_ownership_or_approval(ledger_instance, &caller, &to, token_id) {
+    if ! has_ownership_or_approval(ledger_instance, &caller, &to, token_id).await {
         return Err(ApiError::Unauthorized);
     }
 
@@ -69,7 +69,7 @@ async fn transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) ->
     let ledger_instance = ledger();
     let caller = ic::caller();
 
-    if !has_ownership_or_approval(ledger_instance, &caller, &to, token_id) {
+    if ! has_ownership_or_approval(ledger_instance, &caller, &to, token_id).await {
         return Err(ApiError::Unauthorized);
     }
 
@@ -180,7 +180,7 @@ async fn transfer(transfer_request: TransferRequest) -> TransferResponse {
         _ => panic!("Oops! Unexpected transfer request to"),
     };
 
-    if !has_ownership_or_approval(ledger_instance, &caller, &to_principal, *token_id) {
+    if ! has_ownership_or_approval(ledger_instance, &caller, &to_principal, *token_id).await {
         return Err(TransferError::Unauthorized("Unauthorized".to_string()));
     }
 
