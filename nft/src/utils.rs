@@ -134,7 +134,10 @@ pub async fn has_ownership_or_approval(ledger: &Ledger, enquire_principal: &Prin
         return false;
     }
 
-    // TODO: exit immediately if Zero address
+    // On Zero address, exits immediately
+    if enquire_principal.clone() == Principal::from_slice(&[0; 29]) {
+        return false;
+    }
 
     // Either has ownership, is a controller or is approved
     // otherwise, exit immediately
