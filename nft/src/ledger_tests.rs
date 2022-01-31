@@ -23,11 +23,11 @@ mod tests {
             data: vec![],
         }];
 
-        ledger.mintNFT(&alice(), &metadata_desc).unwrap();
+        ledger.mint_nft(&alice(), &metadata_desc).unwrap();
         metadata_desc[0].key_val_data[0].val = MetadataVal::TextContent("mycanister2".to_owned());
-        ledger.mintNFT(&alice(), &metadata_desc).unwrap();
+        ledger.mint_nft(&alice(), &metadata_desc).unwrap();
         metadata_desc[0].key_val_data[0].val = MetadataVal::TextContent("mycanister3".to_owned());
-        ledger.mintNFT(&bob(), &metadata_desc).unwrap();
+        ledger.mint_nft(&bob(), &metadata_desc).unwrap();
         ledger
     }
 

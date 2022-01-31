@@ -19,8 +19,7 @@ pub struct Ledger {
 }
 
 impl Ledger {
-    #[allow(non_snake_case)]
-    pub fn mintNFT(&mut self, to: &Principal, metadata_desc: &MetadataDesc) -> MintReceipt {
+    pub fn mint_nft(&mut self, to: &Principal, metadata_desc: &MetadataDesc) -> MintReceipt {
         let token_index = ledger().tokens.len() as TokenIndex;
         ledger().tokens.insert(
             token_index,
@@ -99,14 +98,14 @@ impl Ledger {
             .token_approvals
             .insert(
                 token_id,
-                User::from(*approves_principal),
+                User::from(approves_principal.clone()),
             );
     }
 
     pub fn set_approval_for_all(&self, approves_principal: &Principal, approved: bool) {
         let user = User::principal(ic::caller());
 
-        if ic::caller() == *approves_principal {
+        if ic::caller() == approves_principal.clone() {
             return;
         }
 
@@ -123,18 +122,18 @@ impl Ledger {
             return;
         }
 
-        approvals.push(User::from(*approves_principal));
+        approvals.push(User::from(approves_principal.clone()));
     }
 
     pub fn is_approved_for_all(&self, owner: &Principal, operator: &Principal) -> bool {        
         let approvals = ledger()
             .operator_approvals
-            .get(&User::principal(*owner));
+            .get(&User::principal(owner.clone()));
 
         approvals.map_or(
             false,
             |list| list.contains(
-                &User::principal(*operator)
+                &User::principal(operator.clone())
             ),
         )
     }

@@ -193,7 +193,7 @@ mod tests {
             data: vec![],
         }];
 
-        match ledger.mintNFT(principal, &metadata_desc) {
+        match ledger.mint_nft(principal, &metadata_desc) {
             Ok(_mint_receipt) => ledger,
             _ => panic!("Oops! Failed to mint nft"),
         }

@@ -15,7 +15,6 @@ fn name() -> String {
     String::from("NFT Canister")
 }
 
-/// BEGIN DIP-721 ///
 #[query(name = "balanceOfDip721")]
 fn balance_of_dip721(user: Principal) -> u64 {
     ledger().balance_of(&user.into())
@@ -143,15 +142,15 @@ fn get_token_ids_for_user_dip721(user: Principal) -> Vec<u64> {
     ledger().get_token_ids_for_user(&user)
 }
 
+// Implementations are encouraged to only allow minting by the owner of the smart contract
 #[update(name = "mintDip721")]
 async fn mint_dip721(to: Principal, metadata_desc: MetadataDesc) -> MintReceipt {        
-    // TODO: Implementations are encouraged to only allow minting by the owner of the smart contract
     let caller = ic::caller();
     if ! is_controller(&caller).await {
         return Err(ApiError::Unauthorized);
     }
 
-    let response = ledger().mintNFT(&to, &metadata_desc).unwrap();
+    let response = ledger().mint_nft(&to, &metadata_desc).unwrap();
     let event = IndefiniteEventBuilder::new()
         .caller(caller)
         .operation("mint")
@@ -169,8 +168,6 @@ async fn mint_dip721(to: Principal, metadata_desc: MetadataDesc) -> MintReceipt 
         id: tx_id.into(),
     })
 }
-
-/// END DIP-721 ///
 
 #[update]
 async fn transfer(transfer_request: TransferRequest) -> TransferResponse {

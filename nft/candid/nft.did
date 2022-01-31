@@ -293,7 +293,6 @@ type AccountIdentifier = text;
    // END DIP-721 //
 
    transfer: (TransferRequest) -> (TransferResponse);
-   mintNFT: (MintRequest) -> (TokenIdentifier);
    bearer: (TokenIdentifier) -> (AccountIdentifierReturn) query;
    getAllMetadataForUser: (User) -> (vec TokenMetadata) query;
    supply: (TokenIdentifier) -> (BalanceReturn) query;
