@@ -23,6 +23,20 @@ deploy() {
 
   dfx deploy --no-wallet nft --argument "(principal \"$DFX_IDENTITY_PRINCIPAL\", \"tkn\", \"token\", principal \"$CANISTER_CAP_ID\")"
 
+  dfx canister --no-wallet \
+  call aaaaa-aa \
+  update_settings "(
+    record { 
+      canister_id=principal \"$(dfx canister id nft)\";
+      settings=record {
+        controllers=opt vec{
+          principal\"$(dfx identity get-principal)\";
+          principal\"$(dfx canister id nft)\";
+        }
+      }
+    }
+  )"
+  
   printf "\n\n"
 }
 

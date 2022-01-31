@@ -2,7 +2,6 @@ use crate::types::*;
 use crate::utils::*;
 
 use ic_kit::ic;
-use ic_kit::ic::caller;
 use ic_kit::ic::trap;
 use ic_kit::macros::*;
 
@@ -32,8 +31,9 @@ fn owner_of_dip721(token_id: u64) -> Result<Principal, ApiError> {
 #[update(name = "safeTransferFromDip721")]
 async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
     let ledger_instance = ledger();
+    let caller = ic::caller();
 
-    if !has_ownership_or_approval(ledger_instance, &ic::caller(), &to, token_id) {
+    if !has_ownership_or_approval(ledger_instance, &caller, &to, token_id) {
         return Err(ApiError::Unauthorized);
     }
 
@@ -44,16 +44,16 @@ async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u6
     );
 
     ledger().transfer(
-        &User::principal(caller()),
+        &User::principal(caller),
         &User::principal(to),
         &token_id.to_string(),
     );
 
     let event = IndefiniteEventBuilder::new()
-        .caller(caller())
+        .caller(caller)
         .operation("transfer")
         .details(vec![
-            ("from".into(), DetailValue::Principal(caller())),
+            ("from".into(), DetailValue::Principal(caller)),
             ("to".into(), DetailValue::Principal(to)),
             ("token_id".into(), DetailValue::U64(token_id)),
         ])
@@ -68,22 +68,23 @@ async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u6
 #[update(name = "transferFromDip721")]
 async fn transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
     let ledger_instance = ledger();
+    let caller = ic::caller();
 
-    if !has_ownership_or_approval(ledger_instance, &ic::caller(), &to, token_id) {
+    if !has_ownership_or_approval(ledger_instance, &caller, &to, token_id) {
         return Err(ApiError::Unauthorized);
     }
 
     ledger().transfer(
-        &User::principal(caller()),
+        &User::principal(caller),
         &User::principal(to),
         &token_id.to_string(),
     );
 
     let event = IndefiniteEventBuilder::new()
-        .caller(caller())
+        .caller(caller)
         .operation("transfer")
         .details(vec![
-            ("from".into(), DetailValue::Principal(caller())),
+            ("from".into(), DetailValue::Principal(caller)),
             ("to".into(), DetailValue::Principal(to)),
             ("token_id".into(), DetailValue::U64(token_id)),
         ])
@@ -143,15 +144,16 @@ fn get_token_ids_for_user_dip721(user: Principal) -> Vec<u64> {
 }
 
 #[update(name = "mintDip721")]
-async fn mint_dip721(to: Principal, metadata_desc: MetadataDesc) -> MintReceipt {
+async fn mint_dip721(to: Principal, metadata_desc: MetadataDesc) -> MintReceipt {        
     // TODO: Implementations are encouraged to only allow minting by the owner of the smart contract
-    if !is_controller(&ic::caller()) {
+    let caller = ic::caller();
+    if ! is_controller(&caller).await {
         return Err(ApiError::Unauthorized);
     }
 
     let response = ledger().mintNFT(&to, &metadata_desc).unwrap();
     let event = IndefiniteEventBuilder::new()
-        .caller(caller())
+        .caller(caller)
         .operation("mint")
         .details(vec![
             ("to".into(), DetailValue::Principal(to)),
@@ -174,14 +176,14 @@ async fn mint_dip721(to: Principal, metadata_desc: MetadataDesc) -> MintReceipt 
 async fn transfer(transfer_request: TransferRequest) -> TransferResponse {
     let token_id = &transfer_request.token.parse::<u64>().unwrap();
     let ledger_instance = ledger();
-
+    let caller = ic::caller();
     let to_principal = match &transfer_request.to {
         User::principal(principal) => principal,
         // TODO: Should take into consideration the user address
         _ => panic!("Oops! Unexpected transfer request to"),
     };
 
-    if !has_ownership_or_approval(ledger_instance, &ic::caller(), &to_principal, *token_id) {
+    if !has_ownership_or_approval(ledger_instance, &caller, &to_principal, *token_id) {
         return Err(TransferError::Unauthorized("Unauthorized".to_string()));
     }
 
@@ -195,19 +197,19 @@ async fn transfer(transfer_request: TransferRequest) -> TransferResponse {
     expect_caller_general(&transfer_request.from, transfer_request.subaccount);
 
     ledger_instance.transfer(
-        &User::principal(caller()),
+        &User::principal(caller),
         &transfer_request.to,
         &transfer_request.token,
     );
 
 
     let event = IndefiniteEventBuilder::new()
-        .caller(caller())
+        .caller(caller)
         .operation("transfer")
         .details(vec![
             (
                 "from".into(),
-                user_to_detail_value(User::principal(caller())),
+                user_to_detail_value(User::principal(caller)),
             ),
             ("to".into(), user_to_detail_value(transfer_request.to)),
             ("token_id".into(), DetailValue::U64(*token_id)),
@@ -218,31 +220,6 @@ async fn transfer(transfer_request: TransferRequest) -> TransferResponse {
     let tx_id = insert_into_cap(event).await.unwrap();
 
     Ok(Nat::from(tx_id))
-}
-
-// TODO: The mintNFT can be removed, doing nothing here
-#[allow(non_snake_case, unreachable_code, unused_variables)]
-#[update]
-async fn mintNFT(mint_request: MintRequest) -> Option<TokenIdentifier> {
-    trap("Disabled as current EXT metadata doesn't allow multiple assets per token");
-    // if !is_fleek(&ic::caller()) {
-    //     return None;
-    // }
-    expect_principal(&mint_request.to);
-    expect_caller(&token_level_metadata().owner.expect("token owner not set"));
-
-    let event = IndefiniteEventBuilder::new()
-        .caller(caller())
-        .operation("mint")
-        .details(vec![
-            ("to".into(), user_to_detail_value(mint_request.to)),
-            ("token_id".into(), DetailValue::U64(123)),
-        ])
-        .build()
-        .unwrap();
-
-    let tx_id = insert_into_cap(event).await.unwrap();
-    Some(tx_id.to_string())
 }
 
 #[query]
@@ -267,33 +244,6 @@ fn supply(token_identifier: TokenIdentifier) -> BalanceReturn {
 fn metadata(token_identifier: TokenIdentifier) -> MetadataReturn {
     trap("Disabled as current EXT metadata doesn't allow multiple assets per token");
     ledger().metadata(&token_identifier)
-}
-
-// TODO: this can be removed, is doing nothing here
-#[update]
-async fn add(transfer_request: TransferRequest) -> Option<TransactionId> {
-    // if !is_fleek(&ic::caller()) {
-    //     return None;
-    // }
-    expect_principal(&transfer_request.from);
-    expect_principal(&transfer_request.to);
-
-    let token_id = &transfer_request.token.parse::<u64>().unwrap();
-
-    let event = IndefiniteEventBuilder::new()
-        .caller(caller())
-        .operation("transfer_from")
-        .details(vec![
-            ("to".into(), user_to_detail_value(transfer_request.to)),
-            ("from".into(), user_to_detail_value(transfer_request.from)),
-            ("token_id".into(), DetailValue::U64(*token_id)),
-        ])
-        .build()
-        .unwrap();
-
-    let tx_id = insert_into_cap(event).await.unwrap();
-
-    Some(Nat::from(tx_id))
 }
 
 fn store_data_in_stable_store() {

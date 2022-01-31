@@ -12,6 +12,9 @@ use cap_sdk::DetailValue;
 use cap_sdk::IndefiniteEvent;
 use std::convert::TryInto;
 
+use ic_kit::interfaces::management::{CanisterStatus, CanisterStatusResponse, WithCanisterId};
+use ic_kit::interfaces::{Method};
+
 pub fn caller() -> Principal {
     ic_kit::ic::caller()
 }
@@ -148,8 +151,23 @@ pub fn has_ownership_or_approval(ledger: &Ledger, enquire_principal: &Principal,
 // is required that the canister has the correct controllers
 // which should include the canister id itself
 // to let the canister call the `aaaaa-aa` Management API `canister_status`
-pub fn is_controller(_principal: &Principal) -> bool {
-    true
+pub async fn is_controller(principal: &Principal) -> bool {
+    let response = canister_status(ic_cdk::api::id()).await;
+
+    match response {
+        Ok(status) => status.settings.controllers.contains(principal),
+        _ => false,
+    }
+}
+
+async fn canister_status(canister_id: Principal) -> Result<CanisterStatusResponse, String> {
+    CanisterStatus::perform(
+        Principal::management_canister(),
+        (WithCanisterId { canister_id },),
+    )
+    .await
+    .map(|(status,)| Ok(status))
+    .unwrap_or_else(|(code, message)| Err(format!("Code: {:?}, Message: {}", code, message)))
 }
 
 #[cfg(test)]
