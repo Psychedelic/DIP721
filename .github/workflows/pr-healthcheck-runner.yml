@@ -30,3 +30,9 @@ jobs:
         run: dfx start --background && yarn cap:start && yarn dip721:healthcheck
         env:
           NODE_ENV: ci
+
+      - name: Test
+        run: yarn test
+        env:
+          CI: 1
+          NODE_ENV: ci

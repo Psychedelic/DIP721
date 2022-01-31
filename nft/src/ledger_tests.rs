@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod tests {
-
     use crate::ledger::*;
     use crate::types::*;
 
@@ -8,7 +7,12 @@ mod tests {
     use ic_kit::MockContext;
 
     fn setup_ledger() -> Ledger {
-        MockContext::new().inject();
+        let id = alice();
+
+        MockContext::new()
+            .with_caller(id.clone())
+            .inject();
+
         let mut ledger = Ledger::default();
         let mut metadata_desc = vec![MetadataPart {
             purpose: MetadataPurpose::Rendered,
@@ -18,11 +22,12 @@ mod tests {
             }],
             data: vec![],
         }];
-        ledger.mintNFT(&alice(), &metadata_desc).unwrap();
+
+        ledger.mint_nft(&alice(), &metadata_desc).unwrap();
         metadata_desc[0].key_val_data[0].val = MetadataVal::TextContent("mycanister2".to_owned());
-        ledger.mintNFT(&alice(), &metadata_desc).unwrap();
+        ledger.mint_nft(&alice(), &metadata_desc).unwrap();
         metadata_desc[0].key_val_data[0].val = MetadataVal::TextContent("mycanister3".to_owned());
-        ledger.mintNFT(&bob(), &metadata_desc).unwrap();
+        ledger.mint_nft(&bob(), &metadata_desc).unwrap();
         ledger
     }
 
@@ -70,6 +75,19 @@ mod tests {
             &User::principal(bob()),
             &"0".to_owned(),
         );
+    }
+
+    #[test]
+    fn approval() {
+        let ledger = setup_ledger();
+
+        ledger.set_approval_for_all(&bob(), true);
+
+        assert_eq!(ledger.is_approved_for_all(&alice(), &bob()), true);
+
+        ledger.set_approval_for_all(&bob(), false);
+
+        assert_eq!(ledger.is_approved_for_all(&alice(), &bob()), false);
     }
 
     // END DIP-721 //

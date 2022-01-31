@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source "${BASH_SOURCE%/*}/.scripts/required.sh"
+source "${BASH_SOURCE%/*}/.scripts/dfx-identity.sh"
 
 dfxDir="$HOME/.config/dfx"
 NftCandidFile="./nft/candid/nft.did"
@@ -14,11 +15,6 @@ BobPem=""
 
 AlicePrincipalId=""
 BobPrincipalId=""
-CharliePrincipalId=""
-
-AliceAccountId=""
-BobAccountId=""
-CharlieAccountId=""
 
 IcxPrologueNft="--candid=${NftCandidFile}"
 
@@ -27,6 +23,20 @@ deploy() {
 
   dfx deploy --no-wallet nft --argument "(principal \"$DFX_IDENTITY_PRINCIPAL\", \"tkn\", \"token\", principal \"$CANISTER_CAP_ID\")"
 
+  dfx canister --no-wallet \
+  call aaaaa-aa \
+  update_settings "(
+    record { 
+      canister_id=principal \"$(dfx canister id nft)\";
+      settings=record {
+        controllers=opt vec{
+          principal\"$(dfx identity get-principal)\";
+          principal\"$(dfx canister id nft)\";
+        }
+      }
+    }
+  )"
+  
   printf "\n\n"
 }
 
@@ -35,24 +45,15 @@ deploy() {
 init() {
   printf "🤖 Initialisation of environment process variables\n"
 
-  DefaultPem="${dfxDir}/identity/default/identity.pem"
+  DefaultPem="$HOME/.config/dfx/identity/default/identity.pem"
 
   NftID=$(dfx canister id nft)
 
-  # ⚠️ Warning: This changes the identity state, set back to initial state afterwards
-  AlicePrincipalId=$(dfx identity use Alice 2>/dev/null;dfx identity get-principal)
-  BobPrincipalId=$(dfx identity use Bob 2>/dev/null;dfx identity get-principal)
-  CharliePrincipalId=$(dfx identity use Charlie 2>/dev/null;dfx identity get-principal)
+  AlicePrincipalId=$ALICE_PRINCIPAL_ID
+  BobPrincipalId=$BOB_PRINCIPAL_ID
 
-  AlicePem="${dfxDir}/identity/Alice/identity.pem"
-  BobPem="${dfxDir}/identity/Bob/identity.pem"
-
-  AliceAccountId=$(dfx identity use Alice 2>/dev/null;dfx ledger account-id)
-  BobAccountId=$(dfx identity use Bob 2>/dev/null;dfx ledger account-id)
-  CharlieAccountId=$(dfx identity use Charlie 2>/dev/null;dfx ledger account-id)
-
-  # ⚠️ Warning: Resets the identity state
-  dfx identity use default
+  AlicePem=$ALICE_PEM
+  BobPem=$BOB_PEM
 
   printf "\n"
 }
@@ -63,14 +64,6 @@ info() {
   printf "🙋‍♀️ Principal ids\n"
   printf "Alice: %s\n" "$AlicePrincipalId"
   printf "Bob: %s \n" "$BobPrincipalId"
-  printf "Charlie %s\n" "$CharliePrincipalId"
-
-  printf "\n"
-
-  printf "🙋‍♀️ Account ids\n"
-  printf "Alice: %s\n" "$AliceAccountId"
-  printf "Bob: %s\n" "$BobAccountId"
-  printf "Charlie: %s\n" "$CharlieAccountId"
 
   printf "\n"
 }
@@ -128,21 +121,21 @@ ownerOfDip721() {
 safeTransferFromDip721() {
   printf "🤖 Call the safeTransferFromDip721\n"
 
-  from_principal="${BobPrincipalId}"
-  to_principal="${AlicePrincipalId}"
+  from_principal="${AlicePrincipalId}"
+  to_principal="${BobPrincipalId}"
   token_id="0"
 
-  icx --pem="$DefaultPem" update "$NftID" safeTransferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
+  icx --pem="$AlicePem" update "$NftID" safeTransferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
 }
 
 transferFromDip721() {
   printf "🤖 Call the transferFromDip721\n"
   
-  from_principal="${AlicePrincipalId}"
-  to_principal="${BobPrincipalId}"
+  from_principal="${BobPrincipalId}"
+  to_principal="${AlicePrincipalId}"
   token_id="0"
 
-  icx --pem="$DefaultPem" update "$NftID" transferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
+  icx --pem="$BobPem" update "$NftID" transferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
 }
 
 logoDip721() {
@@ -239,13 +232,9 @@ tests() {
   totalSupplyDip721
   balanceOfDip721
   ownerOfDip721
-
-  # TODO: [Canister rkp4c-7iaaa-aaaaa-aaaca-cai] Panicked at 'unable to find previous owner', nft/src/ledger.rs:121:14
-  # transferFromDip721
-  # safeTransferFromDip721
-
-  # TODO: throws not admin
-  # transfer
+  safeTransferFromDip721
+  transferFromDip721
+  transfer
 
   ### not testable
   # printf "Running mintNFT"

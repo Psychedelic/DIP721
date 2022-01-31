@@ -170,13 +170,12 @@ approveDip721: (user: principal, nat64: token_id) -> (TxReceipt) query;
 #### setApprovalForAllDip721
 
 Enable or disable an `operator` to manage all of the tokens for the caller of
-this function. Multiple operators can be given permission at the same time.
+this function. The contract allows multiple operators per owner.
 Approvals granted by the `approveDip721` function are independent from the approvals granted
-by `setApprovalForAll` function. The zero address indicates
-there are no approved operators.
+by `setApprovalForAll` function.
 
 ```
-setApprovalForAllDip721: (operator: principal, isApproved: bool) -> (TxReceipt);
+setApprovalForAllDip721: (operator: principal, isApproved: bool) -> ();
 ```
 
 #### getApprovedDip721
