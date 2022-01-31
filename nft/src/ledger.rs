@@ -149,6 +149,8 @@ impl Ledger {
         }
     }
 
+    // TODO: Seems best to return the first controller in the list
+    // as the owner, as such the owner field should be removed from the contructor
     pub fn owner_of(&self, token_identifier: &TokenIdentifier) -> OwnerResult {
         let token_result = ledger()
             .tokens

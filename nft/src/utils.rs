@@ -136,7 +136,7 @@ pub async fn has_ownership_or_approval(ledger: &Ledger, enquire_principal: &Prin
 
     // TODO: exit immediately if Zero address
 
-    // Either has ownership or is approved
+    // Either has ownership, is a controller or is approved
     // otherwise, exit immediately
     if ! has_ownership(ledger, enquire_principal, token_id)
     && ! has_approval(ledger, enquire_principal, token_id) 
