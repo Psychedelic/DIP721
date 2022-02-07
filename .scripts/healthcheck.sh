@@ -1,6 +1,8 @@
 #!/bin/bash
 
 
+printf "💎 DIP-721 Healthcheck\n\n"
+
 CANISTER_NAME="nft"
 ALICE_HOME="./temp/alice-home"
 BOB_HOME="./temp/bob-home"
