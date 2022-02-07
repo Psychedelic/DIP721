@@ -2,12 +2,13 @@
   "version": 1,
   "dfx": "0.8.4",
   "canisters": {
-    "nft": {
-      "build": "cargo build --target wasm32-unknown-unknown --release --package nft",
-      "candid": "nft/candid/nft.did",
-      "wasm": "target/wasm32-unknown-unknown/release/nft.wasm",
-      "type": "custom"
-    }
+    "canisters": {
+      "nft": {
+    	"package": "nft",
+    	"candid": "nft/candid/nft.did",
+    	"type": "rust"
+      }
+    },
   },
   "defaults": {
     "build": {

@@ -1,69 +1,28 @@
 #!/bin/bash
 
-source "${BASH_SOURCE%/*}/.scripts/required.sh"
-source "${BASH_SOURCE%/*}/.scripts/dfx-identity.sh"
 
-dfxDir="$HOME/.config/dfx"
-NftCandidFile="./nft/candid/nft.did"
-
-NftID=""
-
-# PEM files
-DefaultPem=""
-AlicePem=""
-BobPem=""
-
-AlicePrincipalId=""
-BobPrincipalId=""
-
-IcxPrologueNft="--candid=${NftCandidFile}"
+CANISTER_NAME="nft"
+ALICE_HOME="./temp/alice-home"
+BOB_HOME="./temp/bob-home"
+mkdir $ALICE_HOME &>/dev/null
+mkdir $BOB_HOME &>/dev/null
+ALICE_PRINCIPAL_ID=$(HOME=$ALICE_HOME dfx identity get-principal)
+BOB_PRINCIPAL_ID=$(HOME=$BOB_HOME dfx identity get-principal)
 
 deploy() {
-  printf "🤖 Deploying the NFT Canister\n"
+  printf "🤖 Deploying the Dip721 canister\n\n"
 
-  dfx deploy --no-wallet nft --argument "(principal \"$DFX_IDENTITY_PRINCIPAL\", \"tkn\", \"token\", principal \"$CANISTER_CAP_ID\")"
-
-  dfx canister --no-wallet \
-  call aaaaa-aa \
-  update_settings "(
-    record { 
-      canister_id=principal \"$(dfx canister id nft)\";
-      settings=record {
-        controllers=opt vec{
-          principal\"$(dfx identity get-principal)\";
-          principal\"$(dfx canister id nft)\";
-        }
-      }
-    }
-  )"
+  ./deploy.sh local
   
   printf "\n\n"
-}
-
-# deploy
-
-init() {
-  printf "🤖 Initialisation of environment process variables\n"
-
-  DefaultPem="$HOME/.config/dfx/identity/default/identity.pem"
-
-  NftID=$(dfx canister id nft)
-
-  AlicePrincipalId=$ALICE_PRINCIPAL_ID
-  BobPrincipalId=$BOB_PRINCIPAL_ID
-
-  AlicePem=$ALICE_PEM
-  BobPem=$BOB_PEM
-
-  printf "\n"
 }
 
 info() {
   printf "🤖 Process Principal info\n"
 
   printf "🙋‍♀️ Principal ids\n"
-  printf "Alice: %s\n" "$AlicePrincipalId"
-  printf "Bob: %s \n" "$BobPrincipalId"
+  printf "Alice: %s\n" "$ALICE_PRINCIPAL_ID"
+  printf "Bob: %s \n" "$BOB_PRINCIPAL_ID"
 
   printf "\n"
 }
@@ -78,9 +37,9 @@ info() {
 mintDip721() {
   printf "🤖 Call the mintDip721\n"
 
-  mint_for="${AlicePrincipalId}"
+  mint_for="$ALICE_PRINCIPAL_ID"
 
-  icx --pem="$DefaultPem" update "$NftID" mintDip721 "(principal \"$mint_for\", vec{})" "$IcxPrologueNft"
+  dfx canister --no-wallet call $CANISTER_NAME mintDip721 "(principal \"$mint_for\", vec{})"
 
   printf "\n"
 }
@@ -88,66 +47,66 @@ mintDip721() {
 supportedInterfacesDip721() {
   printf "🤖 Call the supportedInterfacesDip721\n"
 
-  icx --pem="$DefaultPem" query "$NftID" supportedInterfacesDip721 "()" $IcxPrologueNft
+  dfx canister --no-wallet call $CANISTER_NAME supportedInterfacesDip721
 }
 
 nameDip721() {
   printf "🤖 Call the nameDip721\n"
   
-  icx --pem="$DefaultPem" query "$NftID" nameDip721 "()" $IcxPrologueNft
+  dfx canister --no-wallet call $CANISTER_NAME nameDip721
 }
 
 symbolDip721() {
   printf "🤖 Call the symbolDip721\n"
   
-  icx --pem="$DefaultPem" query "$NftID" symbolDip721 "()" $IcxPrologueNft
+  dfx canister --no-wallet call $CANISTER_NAME symbolDip721
 }
 
 balanceOfDip721() {
   printf "🤖 Call the balanceOfDip721\n"
 
-  user="${AlicePrincipalId}"
+  user="$ALICE_PRINCIPAL_ID"
 
-  icx --pem="$DefaultPem" query "$NftID" balanceOfDip721 "(principal \"$user\")" $IcxPrologueNft
+  dfx canister --no-wallet call $CANISTER_NAME balanceOfDip721 "(principal \"$user\")"
 }
 
 ownerOfDip721() {
   printf "🤖 Call the ownerOfDip721\n"
 
   token_id="0"
-  icx --pem="$DefaultPem" query "$NftID" ownerOfDip721 "($token_id)" $IcxPrologueNft
+  dfx canister --no-wallet call $CANISTER_NAME ownerOfDip721 "($token_id)"
 }
 
 safeTransferFromDip721() {
   printf "🤖 Call the safeTransferFromDip721\n"
 
-  from_principal="${AlicePrincipalId}"
-  to_principal="${BobPrincipalId}"
+  from_principal="$ALICE_PRINCIPAL_ID"
+  to_principal="$BOB_PRINCIPAL_ID"
   token_id="0"
 
-  icx --pem="$AlicePem" update "$NftID" safeTransferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
+  HOME=$ALICE_HOME dfx canister --no-wallet call $CANISTER_NAME safeTransferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)"
 }
 
 transferFromDip721() {
   printf "🤖 Call the transferFromDip721\n"
   
-  from_principal="${BobPrincipalId}"
-  to_principal="${AlicePrincipalId}"
+  from_principal="$BOB_PRINCIPAL_ID"
+  to_principal="$ALICE_PRINCIPAL_ID"
   token_id="0"
 
-  icx --pem="$BobPem" update "$NftID" transferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
+  HOME=$BOB_HOME dfx canister --no-wallet call $CANISTER_NAME transferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)"
 }
 
 logoDip721() {
   printf "🤖 Call the logoDip721\n"
 
-  icx --pem="$DefaultPem" query "$NftID" logoDip721 "()" "$IcxPrologueNft"
+  dfx canister --no-wallet call $CANISTER_NAME logoDip721
 }
 
 totalSupplyDip721() {
   printf "🤖 Call the totalSupplyDip721\n"
 
-  icx --pem="$DefaultPem" query "$NftID" totalSupplyDip721 "()" "$IcxPrologueNft"
+  dfx canister --no-wallet call $CANISTER_NAME totalSupplyDip721
 }
 
 getMetadataDip721() {
@@ -155,33 +114,25 @@ getMetadataDip721() {
 
   token_id="0"
   
-  icx --pem="$DefaultPem" query "$NftID" getMetadataDip721 "($token_id)" "$IcxPrologueNft"
+  dfx canister --no-wallet call $CANISTER_NAME getMetadataDip721 "($token_id)"
 }
 
 getMetadataForUserDip721() {
   printf "🤖 Call the getMetadataForUserDip721\n"
 
-  user="${AlicePrincipalId}"
+  user="$ALICE_PRINCIPAL_ID"
 
-  icx --pem="$DefaultPem" query "$NftID" getMetadataForUserDip721 "(principal \"$user\")" "$IcxPrologueNft"
+  dfx canister --no-wallet call $CANISTER_NAME getMetadataForUserDip721 "(principal \"$user\")"
 }
 
 ### END OF DIP-721 ###
-
-mintNFT() {
-  printf "🤖 Call the mintNFT\n"
-
-  mint_for="${AlicePrincipalId}"
-
-  icx --pem="$DefaultPem" update "$NftID" mintNFT "(record {metadata= opt variant {\"blob\" = vec{1;2;3}}; to= variant {\"principal\"= principal \"$mint_for\"}})" "$IcxPrologueNft"
-}
 
 metadata() {
   printf "🤖 Call the metadata\n"
 
   token_id="0"
 
-  icx --pem="$DefaultPem" query "$NftID" metadata \"$token_id\" "$IcxPrologueNft"
+  dfx canister --no-wallet call $CANISTER_NAME metadata "(\"$token_id\")"
 }
 
 bearer() {
@@ -189,37 +140,35 @@ bearer() {
 
   token_id="0"
 
-  icx --pem="$DefaultPem" query "$NftID" bearer \"$token_id\" $IcxPrologueNft
+  dfx canister --no-wallet call $CANISTER_NAME bearer "(\"$token_id\")"
 }
 
 supply() {
   printf "🤖 Call the supply\n"
 
   token_id="0"
-  icx --pem="$DefaultPem" query "$NftID" supply \"$token_id\" "$IcxPrologueNft"
+  dfx canister --no-wallet call $CANISTER_NAME supply "(\"$token_id\")"
 }
 
 getAllMetadataForUser() {
   printf "🤖 Call the getAllMetadataForUser\n"
 
-  user="${AlicePrincipalId}"
-  icx --pem="$DefaultPem" query "$NftID" getAllMetadataForUser "(variant {\"principal\" = principal \"$user\"})" "$IcxPrologueNft"
+  user="$ALICE_PRINCIPAL_ID"
+  dfx canister --no-wallet call $CANISTER_NAME getAllMetadataForUser "(variant {\"principal\" = principal \"$user\"})"
 }
 
 transfer() {
   printf "🤖 Call the transfer\n"
 
-  from_principal="${AlicePrincipalId}"
-  from_pem="${AlicePem}"
-  to_principal="${BobPrincipalId}"
+  from_principal="$ALICE_PRINCIPAL_ID"
+  to_principal="$BOB_PRINCIPAL_ID"
   token_id="0"
 
-  icx --pem="$from_pem" update "$NftID" transfer "(record {amount = 1; from = variant {\"principal\" = principal \"$from_principal\"}; memo = vec{}; notify = true; SubAccount = null; to = variant {\"principal\" = principal \"$to_principal\"}; token = \"$token_id\"})" "$IcxPrologueNft"
+  HOME=$ALICE_HOME dfx canister --no-wallet call $CANISTER_NAME transfer "(record {amount = 1; from = variant {\"principal\" = principal \"$from_principal\"}; memo = vec{}; notify = true; SubAccount = null; to = variant {\"principal\" = principal \"$to_principal\"}; token = \"$token_id\"})"
 }
 
 tests() {
   deploy
-  init
   info
   mintDip721
   supportedInterfacesDip721
@@ -235,16 +184,6 @@ tests() {
   safeTransferFromDip721
   transferFromDip721
   transfer
-
-  ### not testable
-  # printf "Running mintNFT"
-  # mintNFT
-  # printf "Running logoDip721..."
-  # logoDip721
-  # printf "Running metadata...."
-  # metadata
-  # printf "Running getAllMetadataForUser..."
-  # getAllMetadataForUser
 }
 
 tests
