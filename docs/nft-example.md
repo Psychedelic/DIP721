@@ -8,9 +8,9 @@ TLDR; We're providing implementation examples and related test or use-cases for 
 
 The requirements listed here are for running the [DIP-721](spec.md) example implementations that are available in this repository. If you are just interested in the specification for [DIP-721](spec.md) followed the link [here](spec.md).
 
-- Nodejs
-- Yarn or NPM
-- The [DFX SDK](https://smartcontracts.org/) to run the CLI
+-   Nodejs
+-   Yarn or NPM
+-   The [DFX SDK](https://smartcontracts.org/) to run the CLI
 
 💡 During the guide we'll be using `yarn`, but this can be easily replaced by `npm`, if that's your preference.
 
@@ -26,11 +26,13 @@ You have to pull the `CAP` submodule content as follows:
 
 ```sh
 yarn cap:init
+
+npm run cap:init
 ```
 
 You only need to do it once, for example, after you cloned the `CAP Explorer` repository.
 
->Note: Make sure you have the [DFX SDK](https://smartcontracts.org/) installed to run the DFX cli, otherwise visit the [Dfinity](https://dfinity.org/) for instructions
+> Note: Make sure you have the [DFX SDK](https://smartcontracts.org/) installed to run the DFX cli, otherwise visit the [Dfinity](https://dfinity.org/) for instructions
 
 Launch the local replica in the foreground (you're advised to do it, to monitor the service, otherwise feel free to add the --background flag). You can open a new shell session afterwards while monitoring the local replica network.
 
@@ -42,6 +44,8 @@ Once ready, launch the healtcheck for our Nft implementation example by running 
 
 ```sh
 yarn healthcheck
+
+npm run healthcheck
 ```
 
 💡 Optionally, skip some prompts, such as the reset request, by prefixing the command with `SKIP_PROMPTS=1`
@@ -50,9 +54,25 @@ Through the process the [Cap Service](https://github.com/Psychedelic/cap) is dep
 
 ```sh
 yarn cap:start
+
+npm run cap:start
 ```
 
 ✨ If everything goes well, you should see the output for a generalist flow, where a user mints a DIP-721 token, gets metadata, get balance, transfers, etc.
+
+### 🌈 Deploying the NFT canister
+
+You can manually deploy the NFT canister by running:
+
+```sh
+yarn deploy <local|ic> [reinstall]
+
+npm run deploy <local|ic> [reinstall]
+```
+
+💡 On creation of a new canister, the controllers have to be set to the principalid of the owner and the canister id. this script automatically sets that up, and redeploys or reinstalls if the canister already exists
+
+💡 Only use the reinstall if you want the state of the canister completely reset
 
 ### 👨🏾‍💻 Development
 
@@ -60,6 +80,8 @@ A develop watcher is available, that builds and runs the healthcheck for any NFT
 
 ```sh
 yarn dev:watch
+
+npm start dev:watch
 ```
 
 This is useful if you are interested in providing features or changes to the code base.
