@@ -14,7 +14,7 @@ BOB_PRINCIPAL_ID=$(HOME=$BOB_HOME dfx identity get-principal)
 deploy() {
   printf "🤖 Deploying the Dip721 canister\n\n"
 
-  ./deploy.sh local
+  npm run dip721:deploy local
   
   printf "\n\n"
 }
