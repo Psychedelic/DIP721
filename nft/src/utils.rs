@@ -228,7 +228,7 @@ mod tests {
         let ledger = setup_ledger(alice);
 
         // Before each, Alice approves Bob
-        ledger.approve(alice, bob, 0).await;
+        ledger.approve(bob, 0).await;
 
         // Should Bob be approved
         assert_eq!(has_approval(&ledger, bob, 0), true);

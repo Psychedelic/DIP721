@@ -219,7 +219,7 @@ async fn transfer(transfer_request: TransferRequest) -> TransferResponse {
 
 
 #[update(name = "approveDip721")]
-async fn approveDip721(spender: Principal, token_id: u64) {
+async fn approve_dip721(spender: Principal, token_id: u64) {
     let enquire_principal = &ic::caller();
     let ledger_instance = ledger();
 
@@ -227,7 +227,7 @@ async fn approveDip721(spender: Principal, token_id: u64) {
         return;
     }
 
-    ledger_instance.approve(&enquire_principal, &spender, token_id).await;
+    ledger_instance.approve(&spender, token_id).await;
 }
 
 #[query]

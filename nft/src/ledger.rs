@@ -87,18 +87,13 @@ impl Ledger {
             .collect()
     }
 
-    pub async fn approve(&self, enquire_principal: &Principal, approves_principal: &Principal, token_id: u64) {
-        // TODO: moved to the service side
-        // if ! has_ownership_or_approval(ledger_instance, enquire_principal, approves_principal, token_id).await {
-        //     return;
-        // }
-
+    pub async fn approve(&self, approves_principal: &Principal, token_id: u64) -> Option<User> {
         ledger()
             .token_approvals
             .insert(
                 token_id,
                 User::from(approves_principal.clone()),
-            );
+            )
     }
 
     pub fn set_approval_for_all(&self, approves_principal: &Principal, approved: bool) {
