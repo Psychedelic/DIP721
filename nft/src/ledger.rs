@@ -14,7 +14,7 @@ type Approvals = Vec<User>;
 pub struct Ledger {
     tokens: HashMap<TokenIndex, TokenMetadata>,
     user_tokens: HashMap<User, Vec<TokenIndex>>,
-    pub token_approvals: HashMap<TokenIndex, User>,
+    token_approvals: HashMap<TokenIndex, User>,
     operator_approvals: HashMap<User, Approvals>,
 }
 
