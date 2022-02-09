@@ -14,7 +14,7 @@ type Approvals = Vec<User>;
 pub struct Ledger {
     tokens: HashMap<TokenIndex, TokenMetadata>,
     user_tokens: HashMap<User, Vec<TokenIndex>>,
-    token_approvals: HashMap<TokenIndex, User>,
+    pub token_approvals: HashMap<TokenIndex, User>,
     operator_approvals: HashMap<User, Approvals>,
 }
 
@@ -87,13 +87,14 @@ impl Ledger {
             .collect()
     }
 
-    pub async fn approve(&self, approves_principal: &Principal, token_id: u64) -> Option<User> {
+    pub async fn approve(&self, approves_principal: &Principal, token_id: u64) -> Result<User, ApiError> {
         ledger()
             .token_approvals
             .insert(
                 token_id,
                 User::from(approves_principal.clone()),
             )
+            .ok_or(ApiError::Other)
     }
 
     pub fn set_approval_for_all(&self, approves_principal: &Principal, approved: bool) {

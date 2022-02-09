@@ -219,15 +219,15 @@ async fn transfer(transfer_request: TransferRequest) -> TransferResponse {
 
 
 #[update(name = "approveDip721")]
-async fn approve_dip721(spender: Principal, token_id: u64) {
+async fn approve_dip721(spender: Principal, token_id: u64) -> Result<User, ApiError> {
     let enquire_principal = &ic::caller();
     let ledger_instance = ledger();
 
     if ! has_ownership_or_approval(&ledger_instance, &enquire_principal, &spender, token_id).await {
-        return;
+        return Err(ApiError::Unauthorized);
     }
 
-    ledger_instance.approve(&spender, token_id).await;
+    ledger_instance.approve(&spender, token_id).await
 }
 
 #[query]
