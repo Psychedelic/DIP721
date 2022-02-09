@@ -26,11 +26,15 @@ fn owner_of_dip721(token_id: u64) -> Result<Principal, ApiError> {
 }
 
 #[update(name = "safeTransferFromDip721")]
-async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
+async fn safe_transfer_from_dip721(from: Principal, to: Principal, token_id: u64) -> TxReceipt {
     let ledger_instance = ledger();
     let caller = ic::caller();
 
-    if ! has_ownership_or_approval(ledger_instance, &caller, &to, token_id).await {
+    // We're interesting in knowing if the `caller` has permissions
+    // but also, verify that it is approved to work in behalf of `from`
+    // otherwise not authorised
+    if ! has_ownership_or_approval(ledger_instance, &caller, &to, token_id).await
+     || ! has_ownership_or_approval(ledger_instance, &from, &to, token_id).await {
         return Err(ApiError::Unauthorized);
     }
 
@@ -41,7 +45,7 @@ async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u6
     );
 
     ledger().transfer(
-        &User::principal(caller),
+        &User::principal(from),
         &User::principal(to),
         &token_id.to_string(),
     );
@@ -63,16 +67,20 @@ async fn safe_transfer_from_dip721(_from: Principal, to: Principal, token_id: u6
 }
 
 #[update(name = "transferFromDip721")]
-async fn transfer_from_dip721(_from: Principal, to: Principal, token_id: u64) -> TxReceipt {
+async fn transfer_from_dip721(from: Principal, to: Principal, token_id: u64) -> TxReceipt {
     let ledger_instance = ledger();
     let caller = ic::caller();
 
-    if ! has_ownership_or_approval(ledger_instance, &caller, &to, token_id).await {
+    // We're interesting in knowing if the `caller` has permissions
+    // but also, verify that it is approved to work in behalf of `from`
+    // otherwise not authorised
+    if ! has_ownership_or_approval(ledger_instance, &caller, &to, token_id).await
+     || ! has_ownership_or_approval(ledger_instance, &from, &to, token_id).await {
         return Err(ApiError::Unauthorized);
     }
 
     ledger().transfer(
-        &User::principal(caller),
+        &User::principal(from),
         &User::principal(to),
         &token_id.to_string(),
     );
