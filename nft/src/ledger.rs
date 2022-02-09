@@ -88,11 +88,10 @@ impl Ledger {
     }
 
     pub async fn approve(&self, enquire_principal: &Principal, approves_principal: &Principal, token_id: u64) {
-        let ledger_instance = ledger();
-
-        if ! has_ownership_or_approval(ledger_instance, enquire_principal, approves_principal, token_id).await {
-            return;
-        }
+        // TODO: moved to the service side
+        // if ! has_ownership_or_approval(ledger_instance, enquire_principal, approves_principal, token_id).await {
+        //     return;
+        // }
 
         ledger()
             .token_approvals

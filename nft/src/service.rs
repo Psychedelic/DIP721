@@ -217,6 +217,19 @@ async fn transfer(transfer_request: TransferRequest) -> TransferResponse {
     Ok(Nat::from(tx_id))
 }
 
+
+#[update(name = "approveDip721")]
+async fn approveDip721(spender: Principal, token_id: u64) {
+    let enquire_principal = &ic::caller();
+    let ledger_instance = ledger();
+
+    if ! has_ownership_or_approval(&ledger_instance, &enquire_principal, &spender, token_id).await {
+        return;
+    }
+
+    ledger_instance.approve(&enquire_principal, &spender, token_id).await;
+}
+
 #[query]
 fn bearer(token_identifier: TokenIdentifier) -> AccountIdentifierReturn {
     ledger().bearer(&token_identifier)
