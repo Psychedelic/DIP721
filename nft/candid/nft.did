@@ -1,4 +1,9 @@
 // BEGIN DIP-721 //
+ type ApproveResult =
+ variant {
+   Err: ApiError;
+   Ok: principal;
+ };
 
  type ApiError =
  variant {
@@ -276,6 +281,7 @@ type AccountIdentifier = text;
    name: () -> (text) query;
    
    // BEGIN DIP-721 //
+   approveDip721: (spender: principal, token_id: nat64) -> (ApproveResult);
    balanceOfDip721: (user: principal) -> (nat64) query;
    ownerOfDip721: (token_id: nat64) -> (OwnerResult) query;
    safeTransferFromDip721: (from: principal, to: principal, token_id: nat64) -> (TxReceipt);
