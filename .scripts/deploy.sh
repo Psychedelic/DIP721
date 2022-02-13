@@ -72,7 +72,7 @@ CANISTER_NFT_ID=$(dfx canister --network $NETWORK id $NFT)
 if [[ ! $? -eq 0 ]]; then
     printf "🤖 Deploying new canister!\n\n"
     dfx deploy --network $NETWORK $NFT --argument "(principal \"$PRINCIPALID\", \"$TOKENSTRING\", \"$TOKENNAME\", principal \"$CANISTER_CAP_ID\")"
-    dfx canister --network $NETWORK update-settings $NFT --controller $PRINCIPALID --controller $CANISTER_NFT_ID
+    dfx canister --network $NETWORK update-settings $NFT --controller $PRINCIPALID --controller $(dfx canister --network $NETWORK id $NFT)
     exit 0
 fi
     
