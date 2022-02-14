@@ -227,7 +227,7 @@ async fn transfer(transfer_request: TransferRequest) -> TransferResponse {
 
 
 #[update(name = "approveDip721")]
-async fn approve_dip721(spender: Principal, token_id: u64) -> Result<User, ApiError> {
+async fn approve_dip721(spender: Principal, token_id: u64) -> Result<Principal, ApiError> {
     let enquire_principal = &ic::caller();
     let ledger_instance = ledger();
 
@@ -235,7 +235,15 @@ async fn approve_dip721(spender: Principal, token_id: u64) -> Result<User, ApiEr
         return Err(ApiError::Unauthorized);
     }
 
-    ledger_instance.approve(&spender, token_id).await
+    match ledger_instance.approve(&spender, token_id).await {
+        Ok(user) => {
+            match user {
+                User::principal(principal) => Ok(principal),
+                _ => Err(ApiError::Other),
+            }
+        },
+        _ => Err(ApiError::Other),
+    }
 }
 
 #[query]
