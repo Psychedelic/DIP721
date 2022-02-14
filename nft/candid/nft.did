@@ -2,7 +2,7 @@
  type ApproveResult =
  variant {
    Err: ApiError;
-   Ok: principal;
+   Ok: User;
  };
 
  type ApiError =
