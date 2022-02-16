@@ -6,6 +6,7 @@ source "${BASH_SOURCE%/*}/.scripts/required/healthcheck-run-verification.sh"
 source "${BASH_SOURCE%/*}/.scripts/required/cap-verification.sh"
 source "${BASH_SOURCE%/*}/.scripts/required/identity-verification.sh"
 source "${BASH_SOURCE%/*}/.scripts/dfx-identity.sh"
+source "${BASH_SOURCE%/*}/.scripts/token-defaults.sh"
 
 NftCandidFile="./nft/candid/nft.did"
 IcxPrologueNft="--candid=${NftCandidFile}"
@@ -307,7 +308,7 @@ transfer() {
 }
 
 tests() {
-  deployDip721 "$HOME" "$DEFAULT_PRINCIPAL_ID" "¥" "Yuppi"
+  deployDip721 "$HOME" "$DEFAULT_PRINCIPAL_ID" "$DEFAULT_TOKEN_SYMBOL" "$DEFAULT_TOKEN_NAME"
 
   updateControllers "$HOME" "$DEFAULT_PRINCIPAL_ID" "$nonFungibleContractAddress"
 

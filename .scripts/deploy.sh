@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source "./.scripts/dfx-identity.sh"
+source "./.scripts/token-defaults.sh"
 
 if [[ -z $1 ]];
 then
@@ -14,8 +15,8 @@ NETWORK=$1
 MODE=$2
 
 # Defaults
-TOKENSTRING="TKN"
-TOKENNAME="Non Fungible Token"
+TOKENSTRING="$DEFAULT_TOKEN_SYMBOL"
+TOKENNAME="$DEFAULT_TOKEN_NAME"
 
 OWNER_PRINCIPAL_ID="$DEFAULT_PRINCIPAL_ID"
 CAP_HISTORY_ROUTER_ID=lj532-6iaaa-aaaah-qcc7a-cai

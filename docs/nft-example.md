@@ -62,9 +62,17 @@ You can manually deploy the NFT canister by running:
 yarn dip721:deploy <local|ic> [reinstall]
 ```
 
+It'll deploy a DIP-721 Token "¥" named "Yuppi".
+
 💡 On the creation of a new canister, the controllers have to be set to the owners principal and the canister id, as required by the ownership and approvals handling - the script automatically sets that up; And can also redeploy or reinstalls, if the canister already exists.
 
 💡 Only use the reinstall if you want the state of the canister completely reset
+
+Feel free to deploy other custom tokens by executing:
+
+```sh
+yarn dip721:deploy-nft <local|ic> <Owner Principal Id> <Token Symbol> <Token Name> <Cap History Router Id> [reinstall]
+```
 
 ### 👨🏾‍💻 Development
 
