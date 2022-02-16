@@ -14,8 +14,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      CI: 1
+      DEBUG: 0
       DFX_VERSION: 0.8.4
-          
+      DFX_WARNING: -version_check 
+      NODE_ENV: ci
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -80,20 +84,10 @@ jobs:
           npm install -g json
           json -I -f dfx.json -e "this.dfx=\"$DFX_VERSION\""
           yarn cap:start
-        env:
-          NODE_ENV: ci
-          DFX_WARNING: -version_check 
 
       - name: Test
         run: yarn test
-        env:
-          CI: 1
-          NODE_ENV: ci
 
       - name: DIP-721 Healthcheck
         run: |
           yarn dip721:healthcheck
-        env:
-          NODE_ENV: ci
-          DFX_WARNING: -version_check 
-          DEBUG: 1
