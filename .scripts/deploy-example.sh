@@ -5,7 +5,7 @@ source "./.scripts/token-defaults.sh"
 
 if [[ -z $1 ]];
 then
-    printf "💎 DIP-721 Deploy Script:\n\n   usage: npm run dip721:deploy <local|ic|other> [reinstall]\n\n"
+    printf "💎 DIP-721 Deploy example script:\n\n   usage: npm run dip721:deploy-example <local|ic|other> [reinstall]\n\n"
 
     exit 1;
 fi
