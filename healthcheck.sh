@@ -21,7 +21,8 @@ deployDip721() {
 
   printf "🤖 Deploying DIP721 NFT with %s %s %s\n" "$ownerPrincipalId" "$tokenSymbol" "$tokenName"
 
-  HOME=$callerHome && yarn dip721:deploy-nft "$ownerPrincipalId" "$tokenSymbol" "$tokenName"
+  HOME=$callerHome &&
+  yarn dip721:deploy-nft "$ownerPrincipalId" "$tokenSymbol" "$tokenName"
 
   nonFungibleContractAddress=$(dfx canister id nft)
 
@@ -37,7 +38,8 @@ updateControllers() {
 
   printf "🤖 Set contract (%s) controller as (%s)\n" "$nonFungibleContractAddress" "$ownerPrincipalId"
 
-  HOME=$callerHome && yarn dip721:set-controllers "$ownerPrincipalId" "$nonFungibleContractAddress"
+  HOME=$callerHome &&
+  yarn dip721:set-controllers "$ownerPrincipalId" "$nonFungibleContractAddress"
 }
 
 mintDip721() {
