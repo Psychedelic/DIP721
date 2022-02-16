@@ -1,86 +1,83 @@
 #!/bin/bash
 
+[ "$DEBUG" == 1 ] && set -x
+
 source "${BASH_SOURCE%/*}/.scripts/required.sh"
 source "${BASH_SOURCE%/*}/.scripts/dfx-identity.sh"
 
-dfxDir="$HOME/.config/dfx"
 NftCandidFile="./nft/candid/nft.did"
-
-NftID=""
-
-# PEM files
-DefaultPem=""
-AlicePem=""
-BobPem=""
-
-AlicePrincipalId=""
-BobPrincipalId=""
-
 IcxPrologueNft="--candid=${NftCandidFile}"
 
-deploy() {
-  printf "🤖 Deploying the NFT Canister\n"
+nonFungibleContractAddress=""
+nft_token_id_for_alice=""
 
-  dfx deploy --no-wallet nft --argument "(principal \"$DFX_IDENTITY_PRINCIPAL\", \"tkn\", \"token\", principal \"$CANISTER_CAP_ID\")"
+deployDip721() {
+  printf "🤖 Call deployDip721\n"
 
-  dfx canister --no-wallet \
-  call aaaaa-aa \
-  update_settings "(
-    record { 
-      canister_id=principal \"$(dfx canister id nft)\";
-      settings=record {
-        controllers=opt vec{
-          principal\"$(dfx identity get-principal)\";
-          principal\"$(dfx canister id nft)\";
-        }
-      }
-    }
-  )"
-  
-  printf "\n\n"
+  ownerPrincipalId=$1
+  tokenSymbol=$2
+  tokenName=$3
+
+  printf "🤖 Deploying DIP721 NFT with %s %s %s\n" "$ownerPrincipalId" "$tokenSymbol" "$tokenName"
+
+  yarn dip721:deploy-nft "$ownerPrincipalId" "$tokenSymbol" "$tokenName"
+
+  nonFungibleContractAddress=$(dfx canister id nft)
+
+  printf "NFT Contract address has nonFungibleContractAddress (%s)\n" "$nonFungibleContractAddress"
 }
 
-# deploy
+updateControllers() {
+  printf "🤖 Call updateControllers\n"
 
-init() {
-  printf "🤖 Initialisation of environment process variables\n"
+  ownerPrincipalId=$1
+  nonFungibleContractAddress=$2
 
-  DefaultPem="$HOME/.config/dfx/identity/default/identity.pem"
+  printf "🤖 Set contract (%s) controller as (%s)\n" "$nonFungibleContractAddress" "$ownerPrincipalId"
 
-  NftID=$(dfx canister id nft)
-
-  AlicePrincipalId=$ALICE_PRINCIPAL_ID
-  BobPrincipalId=$BOB_PRINCIPAL_ID
-
-  AlicePem=$ALICE_PEM
-  BobPem=$BOB_PEM
-
-  printf "\n"
+  yarn dip721:set-controllers "$ownerPrincipalId" "$nonFungibleContractAddress"
 }
-
-info() {
-  printf "🤖 Process Principal info\n"
-
-  printf "🙋‍♀️ Principal ids\n"
-  printf "Alice: %s\n" "$AlicePrincipalId"
-  printf "Bob: %s \n" "$BobPrincipalId"
-
-  printf "\n"
-}
-
-####################################
-#
-# BEGIN OF DIP-721
-# Find the specification in https://github.com/Psychedelic/DIP721/main/docs/spec.md
-#
-####################################
 
 mintDip721() {
   printf "🤖 Call the mintDip721\n"
 
-  mint_for="${AlicePrincipalId}"
+  # Args
+  name="$1"
+  mint_for="$2"
 
-  icx --pem="$DefaultPem" update "$NftID" mintDip721 "(principal \"$mint_for\", vec{})" "$IcxPrologueNft"
+  printf "🤖 The mintDip721 has nonFungibleContractAddress (%s), mint_for user (%s) (%s)\n" "$nonFungibleContractAddress" "$name" "$mint_for"
+
+  result=$(
+    icx --pem="$DEFAULT_PEM" \
+      update "$nonFungibleContractAddress" \
+      mintDip721 "(
+        principal \"$mint_for\",
+        vec{}
+      )" \
+    "$IcxPrologueNft"
+  )
+
+  nft_token_id_for_alice=$(echo "$result" | pcregrep -o1  'token_id = ([0-9]*)')
+
+  printf "🤖 Minted Dip721 for user %s, has token ID (%s)\n" "$name" "$nft_token_id_for_alice"
+
+  printf "🤖 The Balance for user %s of id (%s)\n" "$name" "$mint_for"
+
+  icx --pem="$DEFAULT_PEM" \
+    query "$nonFungibleContractAddress" \
+    balanceOfDip721 "(
+      principal \"$mint_for\"
+    )" \
+  "$IcxPrologueNft"
+
+  printf "🤖 User %s getMetadataForUserDip721 is\n" "$name"
+
+  icx --pem="$DEFAULT_PEM" \
+    query "$nonFungibleContractAddress" \
+    getMetadataForUserDip721 "(
+      principal \"$mint_for\"
+    )" \
+  "$IcxPrologueNft"
 
   printf "\n"
 }
@@ -88,161 +85,260 @@ mintDip721() {
 supportedInterfacesDip721() {
   printf "🤖 Call the supportedInterfacesDip721\n"
 
-  icx --pem="$DefaultPem" query "$NftID" supportedInterfacesDip721 "()" $IcxPrologueNft
+  pem=$1
+  nonFungibleContractAddress=$2
+
+  icx --pem="$pem" \
+    query "$nonFungibleContractAddress" \
+    supportedInterfacesDip721 "()" \
+  $IcxPrologueNft
 }
 
 nameDip721() {
   printf "🤖 Call the nameDip721\n"
   
-  icx --pem="$DefaultPem" query "$NftID" nameDip721 "()" $IcxPrologueNft
+  pem=$1
+  nonFungibleContractAddress=$2
+
+  icx --pem="$pem" \
+    query "$nonFungibleContractAddress" \
+    nameDip721 "()" \
+  $IcxPrologueNft
 }
 
 symbolDip721() {
   printf "🤖 Call the symbolDip721\n"
   
-  icx --pem="$DefaultPem" query "$NftID" symbolDip721 "()" $IcxPrologueNft
+  pem=$1
+
+  icx --pem="$pem" \
+    query "$nonFungibleContractAddress" \
+    symbolDip721 "()" \
+  $IcxPrologueNft
 }
 
 balanceOfDip721() {
   printf "🤖 Call the balanceOfDip721\n"
 
-  user="${AlicePrincipalId}"
+  pem=$1
+  user=$2
 
-  icx --pem="$DefaultPem" query "$NftID" balanceOfDip721 "(principal \"$user\")" $IcxPrologueNft
+  icx --pem="$pem" \
+    query "$nonFungibleContractAddress" \
+    balanceOfDip721 "(
+      principal \"$user\"
+    )" \
+  $IcxPrologueNft
 }
 
 ownerOfDip721() {
   printf "🤖 Call the ownerOfDip721\n"
 
-  token_id="0"
-  icx --pem="$DefaultPem" query "$NftID" ownerOfDip721 "($token_id)" $IcxPrologueNft
+  pem=$1
+  nonFungibleContractAddress=$2
+  token_id=$3
+
+  icx --pem="$pem" \
+    query "$nonFungibleContractAddress" \
+    ownerOfDip721 "($token_id)" \
+  $IcxPrologueNft
 }
 
 safeTransferFromDip721() {
   printf "🤖 Call the safeTransferFromDip721\n"
 
-  from_principal="${AlicePrincipalId}"
-  to_principal="${BobPrincipalId}"
-  token_id="0"
+  pem=$1
+  from_principal=$2
+  to_principal=$3
+  token_id=$4
 
-  icx --pem="$AlicePem" update "$NftID" safeTransferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
+  icx --pem="$pem" \
+    update "$nonFungibleContractAddress" \
+    safeTransferFromDip721 "(
+      principal \"$from_principal\",
+      principal \"$to_principal\",
+      $token_id
+    )" \
+  "$IcxPrologueNft"
 }
 
 transferFromDip721() {
   printf "🤖 Call the transferFromDip721\n"
-  
-  from_principal="${BobPrincipalId}"
-  to_principal="${AlicePrincipalId}"
-  token_id="0"
 
-  icx --pem="$BobPem" update "$NftID" transferFromDip721 "(principal \"$from_principal\", principal \"$to_principal\", $token_id)" "$IcxPrologueNft"
+  pem=$1
+  from_principal=$2
+  to_principal=$3
+  token_id=$4
+
+  icx --pem="$pem" \
+    update "$nonFungibleContractAddress" \
+    transferFromDip721 "(
+      principal \"$from_principal\",
+      principal \"$to_principal\",
+      $token_id
+    )" \
+  "$IcxPrologueNft"
 }
 
 logoDip721() {
   printf "🤖 Call the logoDip721\n"
 
-  icx --pem="$DefaultPem" query "$NftID" logoDip721 "()" "$IcxPrologueNft"
+  pem=$1
+  nonFungibleContractAddress=$2
+
+  icx --pem="$pem" \
+    query "$nonFungibleContractAddress" \
+    logoDip721 "()" \
+  "$IcxPrologueNft"
 }
 
 totalSupplyDip721() {
   printf "🤖 Call the totalSupplyDip721\n"
 
-  icx --pem="$DefaultPem" query "$NftID" totalSupplyDip721 "()" "$IcxPrologueNft"
+  pem=$1
+  nonFungibleContractAddress=$2
+
+  icx --pem="$pem" \
+    query "$nonFungibleContractAddress" \
+    totalSupplyDip721 "()" \
+  "$IcxPrologueNft"
 }
 
 getMetadataDip721() {
   printf "🤖 Call the getMetadataDip721\n"
 
-  token_id="0"
+  pem=$1
+  nonFungibleContractAddress=$2
+  token_id=$3
   
-  icx --pem="$DefaultPem" query "$NftID" getMetadataDip721 "($token_id)" "$IcxPrologueNft"
+  icx --pem="$pem" \
+    query "$nonFungibleContractAddress" \
+    getMetadataDip721 "($token_id)" \
+  "$IcxPrologueNft"
 }
 
 getMetadataForUserDip721() {
   printf "🤖 Call the getMetadataForUserDip721\n"
 
-  user="${AlicePrincipalId}"
+  pem=$1
+  nonFungibleContractAddress=$2
+  user=$3
 
-  icx --pem="$DefaultPem" query "$NftID" getMetadataForUserDip721 "(principal \"$user\")" "$IcxPrologueNft"
-}
-
-### END OF DIP-721 ###
-
-mintNFT() {
-  printf "🤖 Call the mintNFT\n"
-
-  mint_for="${AlicePrincipalId}"
-
-  icx --pem="$DefaultPem" update "$NftID" mintNFT "(record {metadata= opt variant {\"blob\" = vec{1;2;3}}; to= variant {\"principal\"= principal \"$mint_for\"}})" "$IcxPrologueNft"
+  icx --pem="$pem" \
+    query "$nonFungibleContractAddress" \
+    getMetadataForUserDip721 "(
+      principal \"$user\"
+    )" \
+  "$IcxPrologueNft"
 }
 
 metadata() {
   printf "🤖 Call the metadata\n"
 
-  token_id="0"
+  pem=$1
+  nonFungibleContractAddress=$2
+  token_id=$3
 
-  icx --pem="$DefaultPem" query "$NftID" metadata \"$token_id\" "$IcxPrologueNft"
+  icx --pem="$pem" \
+    query "$nonFungibleContractAddress" \
+    metadata "(\"$token_id\")" \
+  "$IcxPrologueNft"
 }
 
 bearer() {
   printf "🤖 Call the bearer\n"
 
-  token_id="0"
+  pem=$1
+  nonFungibleContractAddress=$2
+  token_id=$3
 
-  icx --pem="$DefaultPem" query "$NftID" bearer \"$token_id\" $IcxPrologueNft
+  icx --pem="$pem" \
+    query "$nonFungibleContractAddress" \
+    bearer "(\"$token_id\")" \
+  $IcxPrologueNft
 }
 
 supply() {
   printf "🤖 Call the supply\n"
 
-  token_id="0"
-  icx --pem="$DefaultPem" query "$NftID" supply \"$token_id\" "$IcxPrologueNft"
-}
+  pem=$1
+  nonFungibleContractAddress=$2
+  token_id=$3
 
-getAllMetadataForUser() {
-  printf "🤖 Call the getAllMetadataForUser\n"
-
-  user="${AlicePrincipalId}"
-  icx --pem="$DefaultPem" query "$NftID" getAllMetadataForUser "(variant {\"principal\" = principal \"$user\"})" "$IcxPrologueNft"
+  icx --pem="$pem" \
+    query "$nonFungibleContractAddress" \
+    supply "(\"$token_id\")" \
+  "$IcxPrologueNft"
 }
 
 transfer() {
   printf "🤖 Call the transfer\n"
 
-  from_principal="${AlicePrincipalId}"
-  from_pem="${AlicePem}"
-  to_principal="${BobPrincipalId}"
-  token_id="0"
+  pem=$1
+  from_principal=$2
+  to_principal=$3
+  token_id=$4
 
-  icx --pem="$from_pem" update "$NftID" transfer "(record {amount = 1; from = variant {\"principal\" = principal \"$from_principal\"}; memo = vec{}; notify = true; SubAccount = null; to = variant {\"principal\" = principal \"$to_principal\"}; token = \"$token_id\"})" "$IcxPrologueNft"
+  icx --pem="$pem" \
+    update "$nonFungibleContractAddress" \
+    transfer "(
+      record {
+        amount = 1;
+        from = variant {
+          \"principal\" = principal \"$from_principal\"
+        };
+        memo = vec{};
+        notify = true;
+        SubAccount = null;
+        to = variant {
+         \"principal\" = principal \"$to_principal\"
+        };
+        token = \"$token_id\"
+      }
+    )" \
+  "$IcxPrologueNft"
 }
 
 tests() {
-  deploy
-  init
-  info
-  mintDip721
-  supportedInterfacesDip721
-  nameDip721
-  symbolDip721
-  getMetadataDip721
-  getMetadataForUserDip721
-  bearer
-  supply
-  totalSupplyDip721
-  balanceOfDip721
-  ownerOfDip721
-  safeTransferFromDip721
-  transferFromDip721
-  transfer
+  deployDip721 "$DEFAULT_PRINCIPAL_ID" "¥" "Yuppi"
+
+  updateControllers "$DEFAULT_PRINCIPAL_ID" "$nonFungibleContractAddress"
+
+  mintDip721 "Alice" "$ALICE_PRINCIPAL_ID"
+
+  supportedInterfacesDip721 "$DEFAULT_PEM" "$nonFungibleContractAddress"
+
+  nameDip721 "$DEFAULT_PEM" "$nonFungibleContractAddress"
+
+  symbolDip721 "$DEFAULT_PEM"
+
+  getMetadataDip721 "$DEFAULT_PEM" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
+
+  getMetadataForUserDip721 "$DEFAULT_PEM" "$nonFungibleContractAddress" "$ALICE_PRINCIPAL_ID" 
+
+  bearer "$DEFAULT_PEM" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
+
+  supply "$DEFAULT_PEM" "$nonFungibleContractAddress" "$ALICE_PRINCIPAL_ID"
+
+  totalSupplyDip721 "$DEFAULT_PEM" "$nonFungibleContractAddress"
+
+  balanceOfDip721 "$DEFAULT_PEM" "$nonFungibleContractAddress"
+  
+  ownerOfDip721 "$DEFAULT_PEM" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
+
+  safeTransferFromDip721 "$ALICE_PEM" "$ALICE_PRINCIPAL_ID" "$BOB_PRINCIPAL_ID" "$nft_token_id_for_alice"
+
+  transferFromDip721 "$BOB_PEM" "$BOB_PRINCIPAL_ID" "$ALICE_PRINCIPAL_ID" "$nft_token_id_for_alice"
+
+  transfer "$ALICE_PEM" "$ALICE_PRINCIPAL_ID" "$BOB_PRINCIPAL_ID" "$nft_token_id_for_alice"
 
   ### not testable
   # printf "Running mintNFT"
   # mintNFT
   # printf "Running logoDip721..."
-  # logoDip721
+  # logoDip721 "$DEFAULT_PEM" "$nonFungibleContractAddress"
   # printf "Running metadata...."
-  # metadata
+  # metadata "$DEFAULT_PEM" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
   # printf "Running getAllMetadataForUser..."
   # getAllMetadataForUser
 }
