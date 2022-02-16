@@ -77,7 +77,8 @@ jobs:
 
       - name: Cap Service
         run: |
-          sed -ie "s/0.8.1/$DFX_VERSION/" dfx.json
+          npm install -g json
+          json -I -f dfx.json -e "this.dfx=\"$DFX_VERSION\""
           yarn cap:start
         env:
           NODE_ENV: ci
