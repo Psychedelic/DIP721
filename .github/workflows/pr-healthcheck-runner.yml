@@ -79,6 +79,7 @@ jobs:
         run: yarn cap:start
         env:
           NODE_ENV: ci
+          DFX_WARNING: -version_check 
 
       - name: Test
         run: yarn test
