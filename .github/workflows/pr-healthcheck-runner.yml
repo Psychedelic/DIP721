@@ -13,25 +13,70 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/psychedelic/ci-dip-721
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.PAT }}
 
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
 
-      - name: Path setup
-        run: mkdir -p /github/home/.cargo && ln -s "/root/.cargo/bin" /github/home/.cargo
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
 
-      - name: Rust toolchain
-        run: rustup install stable && rustup default stable && rustup target add wasm32-unknown-unknown
+      - name: Adds ic-cdk-optimizer
+        run: |
+          cd ./.bin/stable-x86_64-unknown-linux-gnu
+          gzip -d ic-cdk-optimizer.gz
+          cp ic-cdk-optimizer /usr/local/bin
+
+      - name: Adds agent-rs
+        run: |
+          cd ./.bin/stable-x86_64-unknown-linux-gnu
+          gzip -d icx.gz
+          cp icx /usr/local/bin
+
+      - name: Cache Dfx
+        id: cache-dfx
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/local/bin/dfx
+          key: cache-dfx-${{ hashFiles('dfx.json') }}
+
+      - name: Install DFX
+        if: steps.cache-dfx.outputs.cache-hit != 'true'
+        env:
+          DFX_VERSION: 0.8.4
+        run: |
+          yes Y | DFX_VERSION="$DFX_VERSION" sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+
+      - name: Adds pcregrep
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install pcregrep
+
+      - name: Cache build artifacts
+        id: cache-rust-target
+        uses: actions/cache@v2
+        with:
+          path: |
+            **/target
+          key: cache-rust-target-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Dfx local network replica
+        run: |
+          dfx start --background
+
+      - name: Dfx identity
+        run: |
+          dfx identity use default
 
       - name: Cap Service
-        run: dfx start --background && yarn cap:start && yarn dip721:healthcheck
+        run: yarn cap:start
         env:
           NODE_ENV: ci
 
@@ -40,3 +85,11 @@ jobs:
         env:
           CI: 1
           NODE_ENV: ci
+
+      - name: DIP-721 Healthcheck
+        run: |
+          yarn dip721:healthcheck
+        env:
+          NODE_ENV: ci
+          DFX_WARNING: -version_check 
+          DEBUG: 1
