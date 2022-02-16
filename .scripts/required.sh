@@ -8,7 +8,7 @@ then
   read -r -p "🤖 Would you like me to reset it now (the local-replica will be stopped) [Y/n]? " CONT
 
   if [ "$CONT" = "Y" ]; then
-    yarn reset
+    yarn dip721:reset
 
     printf "🙏 Remember to re-start the local-replica, before starting this process\n\n"  
 
