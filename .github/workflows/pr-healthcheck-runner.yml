@@ -13,7 +13,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    env:
+      DFX_VERSION: 0.8.4
+          
     steps:
       - uses: actions/checkout@v2
         with:
@@ -49,8 +51,6 @@ jobs:
 
       - name: Install DFX
         if: steps.cache-dfx.outputs.cache-hit != 'true'
-        env:
-          DFX_VERSION: 0.8.4
         run: |
           yes Y | DFX_VERSION="$DFX_VERSION" sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
 
@@ -76,7 +76,9 @@ jobs:
           dfx identity use default
 
       - name: Cap Service
-        run: yarn cap:start
+        run: |
+          sed -ie "s/0.8.1/$DFX_VERSION/" dfx.json
+          yarn cap:start
         env:
           NODE_ENV: ci
           DFX_WARNING: -version_check 
