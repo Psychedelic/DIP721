@@ -39,12 +39,6 @@ jobs:
           gzip -d ic-cdk-optimizer.gz
           cp ic-cdk-optimizer /usr/local/bin
 
-      - name: Adds agent-rs
-        run: |
-          cd ./.bin/stable-x86_64-unknown-linux-gnu
-          gzip -d icx.gz
-          cp icx /usr/local/bin
-
       - name: Cache Dfx
         id: cache-dfx
         uses: actions/cache@v2
