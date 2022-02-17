@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd $(dirname $BASH_SOURCE) || exit 1
+cd "$(dirname $BASH_SOURCE)" || exit 1
 
 cd ../../ || exit 1
 

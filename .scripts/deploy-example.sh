@@ -1,7 +1,9 @@
 #!/bin/bash
 
-source "./.scripts/dfx-identity.sh"
-source "./.scripts/token-defaults.sh"
+cd "$(dirname $BASH_SOURCE)" || exit 1
+
+. "./dfx-identity.sh"
+. "./token-defaults.sh"
 
 if [[ -z $1 ]];
 then
@@ -26,7 +28,10 @@ printf "💡 Deploy to network (%s), the token (%s) with name (%s) of owner prin
 
 # Overrides default Canister Cap Id
 if [[ $NETWORK == "local" ]]; then
-    source "./.scripts/required/cap-verification.sh"
+    (
+        cd ..
+        . "./.scripts/required/cap-verification.sh"
+    )
 fi
 
 if [[ "$MODE" == "reinstall" ]]; then
@@ -39,7 +44,7 @@ fi
 
 npm run dip721:deploy-nft "$NETWORK" "$OWNER_PRINCIPAL_ID" "$TOKENSTRING" "$TOKENNAME" "$CAP_HISTORY_ROUTER_ID"
 
-NFT_CANISTER_ID=$(dfx canister --network "$NETWORK" id nft)
+NFT_CANISTER_ID=$(cd .. && dfx canister --network "$NETWORK" id nft)
 
 printf "💡 The Non fungible token canister id is (%s)" "$NFT_CANISTER_ID"
 

@@ -1,12 +1,14 @@
 #!/bin/bash
 
+(cd "$(dirname $BASH_SOURCE)" && cd ..) || exit 1
+
 [ "$DEBUG" == 1 ] && set -x
 
-source "${BASH_SOURCE%/*}/.scripts/required/healthcheck-run-verification.sh"
-source "${BASH_SOURCE%/*}/.scripts/required/cap-verification.sh"
-source "${BASH_SOURCE%/*}/.scripts/required/identity-verification.sh"
-source "${BASH_SOURCE%/*}/.scripts/dfx-identity.sh"
-source "${BASH_SOURCE%/*}/.scripts/token-defaults.sh"
+. ".scripts/required/healthcheck-run-verification.sh"
+. ".scripts/required/cap-verification.sh"
+. ".scripts/required/identity-verification.sh"
+. ".scripts/dfx-identity.sh"
+. ".scripts/token-defaults.sh"
 
 NftCandidFile="./nft/candid/nft.did"
 IcxPrologueNft="--candid=${NftCandidFile}"
