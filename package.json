@@ -12,7 +12,6 @@
     "dip721:healthcheck": "./.scripts/healthcheck.sh",
     "dip721:deploy-nft": "./.scripts/dip721/deploy-nft.sh",
     "dip721:deploy-example": "./.scripts/deploy-example.sh",
-    "dip721:set-controllers": "./.scripts/dip721/set-controllers.sh",
     "dip721:reset": "dfx stop && rm -rf .dfx && rm -rf ./cap/.dfx && rm -rf ./.temp",
     "dev:watch": "cargo watch -w ./nft/src -s 'yarn reset && dfx start --background && yes Y | SKIP_PROMPTS=1 yarn dip721:healthcheck'",
     "test": "cargo test -- --show-output"
