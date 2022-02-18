@@ -33,16 +33,20 @@ deployDip721() {
   printf "NFT Contract address has nonFungibleContractAddress (%s)\n" "$nonFungibleContractAddress"
 }
 
-showControllers() {
-  printf "🤖 Call showControllers\n"
+verifiyControllers() {
+  printf "🤖 Call verifiyControllers\n"
 
   callerHome=$1
   ownerPrincipalId=$2
   nonFungibleContractAddress=$3
 
-  dfx canister --no-wallet status "$nonFungibleContractAddress"
+  result=$(dfx canister --no-wallet status "$nonFungibleContractAddress" 2>&1)
 
-  # TODO: check if has correct controller(s)
+  if [[ ! $result =~ $ownerPrincipalId ]]; then
+    printf "👹 Oops! Missing controllers..."
+
+    exit 1
+  fi
 }
 
 mintDip721() {
@@ -310,7 +314,7 @@ transfer() {
 tests() {
   deployDip721 "$DEFAULT_HOME" "$DEFAULT_PRINCIPAL_ID" "$DEFAULT_TOKEN_SYMBOL" "$DEFAULT_TOKEN_NAME"
 
-  showControllers "$DEFAULT_HOME" "$DEFAULT_PRINCIPAL_ID" "$nonFungibleContractAddress"
+  verifiyControllers "$DEFAULT_HOME" "$DEFAULT_PRINCIPAL_ID" "$nonFungibleContractAddress"
 
   mintDip721 "$DEFAULT_HOME" "Alice" "$ALICE_PRINCIPAL_ID"
 
