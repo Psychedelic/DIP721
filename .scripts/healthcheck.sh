@@ -42,7 +42,7 @@ verifiyControllers() {
 
   result=$(dfx canister --no-wallet status "$nonFungibleContractAddress" 2>&1)
 
-  if [[ ! $result =~ $ownerPrincipalId ]]; then
+  if [[ ! $result =~ $ownerPrincipalId ]] || [[ ! $result =~ $nonFungibleContractAddress ]]; then
     printf "👹 Oops! Missing controllers..."
 
     exit 1
