@@ -26,7 +26,6 @@ deployDip721() {
 
   printf "🤖 Deploying DIP721 NFT with %s %s %s\n" "$ownerPrincipalId" "$tokenSymbol" "$tokenName"
 
-  HOME=$callerHome \
   npm run dip721:deploy-nft "local" "$ownerPrincipalId" "$tokenSymbol" "$tokenName" "$CAP_HISTORY_ROUTER_ID"
 
   nonFungibleContractAddress=$(dfx canister id nft)
@@ -43,7 +42,6 @@ updateControllers() {
 
   printf "🤖 Set contract (%s) controller as (%s)\n" "$nonFungibleContractAddress" "$ownerPrincipalId"
 
-  HOME=$callerHome \
   npm run dip721:set-controllers "local" "$ownerPrincipalId" "$nonFungibleContractAddress"
 }
 
@@ -316,31 +314,31 @@ tests() {
 
   mintDip721 "$DEFAULT_HOME" "Alice" "$ALICE_PRINCIPAL_ID"
 
-  # supportedInterfacesDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress"
+  supportedInterfacesDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress"
 
-  # nameDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress"
+  nameDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress"
 
-  # symbolDip721 "$DEFAULT_HOME"
+  symbolDip721 "$DEFAULT_HOME"
 
-  # getMetadataDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
+  getMetadataDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
 
-  # getMetadataForUserDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress" "$ALICE_PRINCIPAL_ID" 
+  getMetadataForUserDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress" "$ALICE_PRINCIPAL_ID" 
 
-  # bearer "$DEFAULT_HOME" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
+  bearer "$DEFAULT_HOME" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
 
-  # supply "$DEFAULT_HOME" "$nonFungibleContractAddress" "$ALICE_PRINCIPAL_ID"
+  supply "$DEFAULT_HOME" "$nonFungibleContractAddress" "$ALICE_PRINCIPAL_ID"
 
-  # totalSupplyDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress"
+  totalSupplyDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress"
 
-  # balanceOfDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress"
+  balanceOfDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress"
   
-  # ownerOfDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
+  ownerOfDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
 
-  # safeTransferFromDip721 "$ALICE_HOME" "$ALICE_PRINCIPAL_ID" "$BOB_PRINCIPAL_ID" "$nft_token_id_for_alice"
+  safeTransferFromDip721 "$ALICE_HOME" "$ALICE_PRINCIPAL_ID" "$BOB_PRINCIPAL_ID" "$nft_token_id_for_alice"
 
-  # transferFromDip721 "$BOB_HOME" "$BOB_PRINCIPAL_ID" "$ALICE_PRINCIPAL_ID" "$nft_token_id_for_alice"
+  transferFromDip721 "$BOB_HOME" "$BOB_PRINCIPAL_ID" "$ALICE_PRINCIPAL_ID" "$nft_token_id_for_alice"
 
-  # transfer "$ALICE_HOME" "$ALICE_PRINCIPAL_ID" "$BOB_PRINCIPAL_ID" "$nft_token_id_for_alice" 1
+  transfer "$ALICE_HOME" "$ALICE_PRINCIPAL_ID" "$BOB_PRINCIPAL_ID" "$nft_token_id_for_alice" 1
 
   ### not testable
   # printf "Running mintNFT"
