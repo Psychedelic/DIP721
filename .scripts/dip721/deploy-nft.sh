@@ -27,8 +27,11 @@ printf "🤖 The created NFT Canster id is %s" "$CREATED_NFT_CANISTER_ID"
 # Note that the controller settings is important
 # you should have at least an identity you control
 # and the canister itself as controllers
-./.scripts/dip721/set-controllers.sh "$NETWORK" \
-  "$OWNER_PRINCIPAL_ID" \
+dfx canister --no-wallet \
+  --network "$NETWORK" \
+  update-settings \
+    --controller "$OWNER_PRINCIPAL_ID" \
+    --controller "$CREATED_NFT_CANISTER_ID" \
   "$CREATED_NFT_CANISTER_ID"
 
 dfx canister --no-wallet \
