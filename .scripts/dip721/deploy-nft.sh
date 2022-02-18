@@ -24,8 +24,6 @@ CREATED_NFT_CANISTER_ID=$(dfx canister id nft)
 
 printf "🤖 The created NFT Canster id is %s" "$CREATED_NFT_CANISTER_ID"
 
-# dfx build --network "$NETWORK" nft
-
 # Note that the controller settings is important
 # you should have at least an identity you control
 # and the canister itself as controllers
@@ -35,16 +33,6 @@ dfx canister --no-wallet \
     --controller "$OWNER_PRINCIPAL_ID" \
     --controller "$CREATED_NFT_CANISTER_ID" \
   "$CREATED_NFT_CANISTER_ID"
-
-# dfx canister --no-wallet \
-#   --network "$NETWORK" \
-#   install nft --argument "(
-#   principal \"$OWNER_PRINCIPAL_ID\",
-#   \"$DIP721_TOKEN_SHORT\",
-#   \"$DIP721_TOKEN_NAME\",
-#   principal \"$IC_HISTORY_ROUTER_ID\"
-# )" \
-# "${OPTIONAL[@]}"
 
 dfx deploy --no-wallet \
   --network "$NETWORK" \
