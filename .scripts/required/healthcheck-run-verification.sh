@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -d ./.dfx/local/canisters/nft ] && [[ ! SKIP_PROMPTS -eq 1 ]];
+if [ -d ./.dfx/local/canisters/nft ] && [[ ! SKIP_PROMPTS -eq 1 ]] && [[ ! CI -eq 1 ]];
 then
   printf "🚩 The process seem to have run before, it's probably best to reset the state and only after run the healthcheck, please!\n\n"  
 
