@@ -8,9 +8,9 @@ TLDR; We're providing implementation examples and related test or use-cases for 
 
 The requirements listed here are for running the [DIP-721](spec.md) example implementations that are available in this repository. If you are just interested in the specification for [DIP-721](spec.md) followed the link [here](spec.md).
 
-- Nodejs
-- Yarn or NPM
-- The [DFX SDK](https://smartcontracts.org/) to run the CLI
+-   Nodejs
+-   Yarn or NPM
+-   The [DFX SDK](https://smartcontracts.org/) to run the CLI
 
 💡 During the guide we'll be using `yarn`, but this can be easily replaced by `npm`, if that's your preference.
 
@@ -30,7 +30,7 @@ yarn cap:init
 
 You only need to do it once, for example, after you cloned the `CAP Explorer` repository.
 
->Note: Make sure you have the [DFX SDK](https://smartcontracts.org/) installed to run the DFX cli, otherwise visit the [Dfinity](https://dfinity.org/) for instructions
+> Note: Make sure you have the [DFX SDK](https://smartcontracts.org/) installed to run the DFX cli, otherwise visit the [Dfinity](https://dfinity.org/) for instructions
 
 Launch the local replica in the foreground (you're advised to do it, to monitor the service, otherwise feel free to add the --background flag). You can open a new shell session afterwards while monitoring the local replica network.
 
@@ -41,7 +41,7 @@ dfx start --clean
 Once ready, launch the healtcheck for our Nft implementation example by running the command:
 
 ```sh
-yarn healthcheck
+yarn dip721:healthcheck
 ```
 
 💡 Optionally, skip some prompts, such as the reset request, by prefixing the command with `SKIP_PROMPTS=1`
@@ -53,6 +53,26 @@ yarn cap:start
 ```
 
 ✨ If everything goes well, you should see the output for a generalist flow, where a user mints a DIP-721 token, gets metadata, get balance, transfers, etc.
+
+### 🌈 Deploying the NFT canister
+
+You can manually deploy the NFT canister by running:
+
+```sh
+yarn dip721:deploy-example <local|ic> [reinstall]
+```
+
+The command will deploy (and optionally `reinstall`) an hypothetical example DIP-721 Token "¥" of name "Yuppi".
+
+💡 On the creation of a new canister, the controllers have to be set to the owners principal and the canister id, as required by the ownership and approvals handling - the script automatically sets that up; And can also redeploy or reinstalls, if the canister already exists.
+
+💡 Only use the reinstall if you want the state of the canister completely reset
+
+Custom tokens can be deployed by executing the following command, with the required arguments (optional `reinstall`):
+
+```sh
+yarn dip721:deploy-nft <local|ic> <Owner Principal Id> <Token Symbol> <Token Name> <Cap History Router Id> [reinstall]
+```
 
 ### 👨🏾‍💻 Development
 

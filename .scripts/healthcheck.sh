@@ -1,9 +1,14 @@
 #!/bin/bash
 
+(cd "$(dirname $BASH_SOURCE)" && cd ..) || exit 1
+
 [ "$DEBUG" == 1 ] && set -x
 
-source "${BASH_SOURCE%/*}/.scripts/required.sh"
-source "${BASH_SOURCE%/*}/.scripts/dfx-identity.sh"
+. ".scripts/required/healthcheck-run-verification.sh"
+. ".scripts/required/cap-verification.sh"
+. ".scripts/required/identity-verification.sh"
+. ".scripts/dfx-identity.sh"
+. ".scripts/token-defaults.sh"
 
 NftCandidFile="./nft/candid/nft.did"
 IcxPrologueNft="--candid=${NftCandidFile}"
@@ -22,7 +27,7 @@ deployDip721() {
   printf "🤖 Deploying DIP721 NFT with %s %s %s\n" "$ownerPrincipalId" "$tokenSymbol" "$tokenName"
 
   HOME=$callerHome &&
-  yarn dip721:deploy-nft "$ownerPrincipalId" "$tokenSymbol" "$tokenName"
+  npm run dip721:deploy-nft "local" "$ownerPrincipalId" "$tokenSymbol" "$tokenName" "$CAP_HISTORY_ROUTER_ID"
 
   nonFungibleContractAddress=$(dfx canister id nft)
 
@@ -39,7 +44,7 @@ updateControllers() {
   printf "🤖 Set contract (%s) controller as (%s)\n" "$nonFungibleContractAddress" "$ownerPrincipalId"
 
   HOME=$callerHome &&
-  yarn dip721:set-controllers "$ownerPrincipalId" "$nonFungibleContractAddress"
+  npm run dip721:set-controllers "local" "$ownerPrincipalId" "$nonFungibleContractAddress"
 }
 
 mintDip721() {
@@ -305,7 +310,7 @@ transfer() {
 }
 
 tests() {
-  deployDip721 "$HOME" "$DEFAULT_PRINCIPAL_ID" "¥" "Yuppi"
+  deployDip721 "$HOME" "$DEFAULT_PRINCIPAL_ID" "$DEFAULT_TOKEN_SYMBOL" "$DEFAULT_TOKEN_NAME"
 
   updateControllers "$HOME" "$DEFAULT_PRINCIPAL_ID" "$nonFungibleContractAddress"
 
