@@ -26,7 +26,7 @@ deployDip721() {
 
   printf "🤖 Deploying DIP721 NFT with %s %s %s\n" "$ownerPrincipalId" "$tokenSymbol" "$tokenName"
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   npm run dip721:deploy-nft "local" "$ownerPrincipalId" "$tokenSymbol" "$tokenName" "$CAP_HISTORY_ROUTER_ID"
 
   nonFungibleContractAddress=$(dfx canister id nft)
@@ -43,7 +43,7 @@ updateControllers() {
 
   printf "🤖 Set contract (%s) controller as (%s)\n" "$nonFungibleContractAddress" "$ownerPrincipalId"
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   npm run dip721:set-controllers "local" "$ownerPrincipalId" "$nonFungibleContractAddress"
 }
 
@@ -57,7 +57,7 @@ mintDip721() {
   printf "🤖 The mintDip721 has nonFungibleContractAddress (%s), mint_for user (%s) (%s)\n" "$nonFungibleContractAddress" "$name" "$mint_for"
 
   result=$(
-    HOME=$callerHome &&
+    HOME=$callerHome \
     dfx canister --no-wallet \
       call "$nonFungibleContractAddress" \
       mintDip721 "(
@@ -72,7 +72,7 @@ mintDip721() {
 
   printf "🤖 The Balance for user %s of id (%s)\n" "$name" "$mint_for"
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     balanceOfDip721 "(
@@ -81,7 +81,7 @@ mintDip721() {
 
   printf "🤖 User %s getMetadataForUserDip721 is\n" "$name"
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     getMetadataForUserDip721 "(
@@ -97,7 +97,7 @@ supportedInterfacesDip721() {
   callerHome=$1
   nonFungibleContractAddress=$2
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     supportedInterfacesDip721 "()"
@@ -109,7 +109,7 @@ nameDip721() {
   callerHome=$1
   nonFungibleContractAddress=$2
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     nameDip721 "()"
@@ -120,7 +120,7 @@ symbolDip721() {
   
   callerHome=$1
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     symbolDip721 "()"
@@ -132,7 +132,7 @@ balanceOfDip721() {
   callerHome=$1
   user=$2
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     balanceOfDip721 "(
@@ -147,7 +147,7 @@ ownerOfDip721() {
   nonFungibleContractAddress=$2
   token_id=$3
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     ownerOfDip721 "($token_id)" 
@@ -161,7 +161,7 @@ safeTransferFromDip721() {
   to_principal=$3
   token_id=$4
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     safeTransferFromDip721 "(
@@ -179,7 +179,7 @@ transferFromDip721() {
   to_principal=$3
   token_id=$4
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     transferFromDip721 "(
@@ -208,7 +208,7 @@ getMetadataDip721() {
   nonFungibleContractAddress=$2
   token_id=$3
   
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     getMetadataDip721 "($token_id)"
@@ -221,7 +221,7 @@ getMetadataForUserDip721() {
   nonFungibleContractAddress=$2
   user=$3
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     getMetadataForUserDip721 "(
@@ -249,7 +249,7 @@ bearer() {
   nonFungibleContractAddress=$2
   token_id=$3
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     bearer "(\"$token_id\")"
@@ -262,7 +262,7 @@ supply() {
   nonFungibleContractAddress=$2
   token_id=$3
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     supply "(\"$token_id\")"
@@ -274,7 +274,7 @@ totalSupplyDip721() {
   callerHome=$1
   nonFungibleContractAddress=$2
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     totalSupplyDip721 "()" 
@@ -289,7 +289,7 @@ transfer() {
   token_id=$4
   amount=$5
 
-  HOME=$callerHome &&
+  HOME=$callerHome \
   dfx canister --no-wallet \
     call "$nonFungibleContractAddress" \
     transfer "(
@@ -310,37 +310,37 @@ transfer() {
 }
 
 tests() {
-  deployDip721 "$HOME" "$DEFAULT_PRINCIPAL_ID" "$DEFAULT_TOKEN_SYMBOL" "$DEFAULT_TOKEN_NAME"
+  deployDip721 "$DEFAULT_HOME" "$DEFAULT_PRINCIPAL_ID" "$DEFAULT_TOKEN_SYMBOL" "$DEFAULT_TOKEN_NAME"
 
-  updateControllers "$HOME" "$DEFAULT_PRINCIPAL_ID" "$nonFungibleContractAddress"
+  updateControllers "$DEFAULT_HOME" "$DEFAULT_PRINCIPAL_ID" "$nonFungibleContractAddress"
 
-  mintDip721 "$HOME" "Alice" "$ALICE_PRINCIPAL_ID"
+  mintDip721 "$DEFAULT_HOME" "Alice" "$ALICE_PRINCIPAL_ID"
 
-  supportedInterfacesDip721 "$HOME" "$nonFungibleContractAddress"
+  # supportedInterfacesDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress"
 
-  nameDip721 "$HOME" "$nonFungibleContractAddress"
+  # nameDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress"
 
-  symbolDip721 "$HOME"
+  # symbolDip721 "$DEFAULT_HOME"
 
-  getMetadataDip721 "$HOME" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
+  # getMetadataDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
 
-  getMetadataForUserDip721 "$HOME" "$nonFungibleContractAddress" "$ALICE_PRINCIPAL_ID" 
+  # getMetadataForUserDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress" "$ALICE_PRINCIPAL_ID" 
 
-  bearer "$HOME" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
+  # bearer "$DEFAULT_HOME" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
 
-  supply "$HOME" "$nonFungibleContractAddress" "$ALICE_PRINCIPAL_ID"
+  # supply "$DEFAULT_HOME" "$nonFungibleContractAddress" "$ALICE_PRINCIPAL_ID"
 
-  totalSupplyDip721 "$HOME" "$nonFungibleContractAddress"
+  # totalSupplyDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress"
 
-  balanceOfDip721 "$HOME" "$nonFungibleContractAddress"
+  # balanceOfDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress"
   
-  ownerOfDip721 "$HOME" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
+  # ownerOfDip721 "$DEFAULT_HOME" "$nonFungibleContractAddress" "$nft_token_id_for_alice"
 
-  safeTransferFromDip721 "$ALICE_HOME" "$ALICE_PRINCIPAL_ID" "$BOB_PRINCIPAL_ID" "$nft_token_id_for_alice"
+  # safeTransferFromDip721 "$ALICE_HOME" "$ALICE_PRINCIPAL_ID" "$BOB_PRINCIPAL_ID" "$nft_token_id_for_alice"
 
-  transferFromDip721 "$BOB_HOME" "$BOB_PRINCIPAL_ID" "$ALICE_PRINCIPAL_ID" "$nft_token_id_for_alice"
+  # transferFromDip721 "$BOB_HOME" "$BOB_PRINCIPAL_ID" "$ALICE_PRINCIPAL_ID" "$nft_token_id_for_alice"
 
-  transfer "$ALICE_HOME" "$ALICE_PRINCIPAL_ID" "$BOB_PRINCIPAL_ID" "$nft_token_id_for_alice" 1
+  # transfer "$ALICE_HOME" "$ALICE_PRINCIPAL_ID" "$BOB_PRINCIPAL_ID" "$nft_token_id_for_alice" 1
 
   ### not testable
   # printf "Running mintNFT"
