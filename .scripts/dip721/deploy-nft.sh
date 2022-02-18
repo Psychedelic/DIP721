@@ -17,9 +17,10 @@ if [[ "$MODE" == "reinstall" ]]; then
   OPTIONAL+=(--mode reinstall)
 fi
 
-dfx deploy --no-wallet \
-  --network "$NETWORK" \
-  nft --argument "(
+dfx canister create nft --controller "$OWNER_PRINCIPAL_ID" 
+
+dfx canister --network "$NETWORK" \
+  install nft --argument "(
   principal \"$OWNER_PRINCIPAL_ID\",
   \"$DIP721_TOKEN_SHORT\",
   \"$DIP721_TOKEN_NAME\",
