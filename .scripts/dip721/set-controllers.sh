@@ -9,6 +9,9 @@ NETWORK=$1
 CONTROLLER_MAIN=$2
 DIP721_TOKEN_CONTRACT_ID=$3
 
+printf "🤖 Set controllers of main (%s) and 
+DIP-721 Contract id (%s)" "$CONTROLLER_MAIN" "$DIP721_TOKEN_CONTRACT_ID"
+
 dfx canister --no-wallet \
 --network "$NETWORK" \
 call aaaaa-aa \
