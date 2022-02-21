@@ -13,26 +13,31 @@ DIP721_TOKEN_NAME=$4
 IC_HISTORY_ROUTER_ID=$5
 MODE=$6
 
-if [[ "$MODE" == "reinstall" ]]; then
+NFT_CANISTER_ID=$(dfx canister --network "$NETWORK" id nft)
+NFT_CANISTER_ID_EXIST_STATUS=$?
+
+# If a NFT Canister has not yet been deployed
+# create canister with required controllers
+if [[ "$NFT_CANISTER_ID_EXIST_STATUS" -eq 0 ]];
+then
+  dfx canister --no-wallet \
+    create nft --controller "$OWNER_PRINCIPAL_ID"
+
+  # Note that the controller settings is important
+  # you should have at least an identity you control
+  # and the canister itself as controllers
+  dfx canister --no-wallet \
+    --network "$NETWORK" \
+    update-settings \
+      --controller "$OWNER_PRINCIPAL_ID" \
+      --controller "$NFT_CANISTER_ID" \
+    "$NFT_CANISTER_ID"
+
+elif [[ "$MODE" == "reinstall" ]]; then
   OPTIONAL+=(--mode reinstall)
 fi
 
-dfx canister --no-wallet \
-  create nft --controller "$OWNER_PRINCIPAL_ID"
-
-CREATED_NFT_CANISTER_ID=$(dfx canister  --network "$NETWORK" id nft)
-
-printf "🤖 The created NFT Canster id is %s" "$CREATED_NFT_CANISTER_ID"
-
-# Note that the controller settings is important
-# you should have at least an identity you control
-# and the canister itself as controllers
-dfx canister --no-wallet \
-  --network "$NETWORK" \
-  update-settings \
-    --controller "$OWNER_PRINCIPAL_ID" \
-    --controller "$CREATED_NFT_CANISTER_ID" \
-  "$CREATED_NFT_CANISTER_ID"
+printf "🤖 The created NFT Canster id is %s" "$NFT_CANISTER_ID"
 
 dfx deploy --no-wallet \
   --network "$NETWORK" \
@@ -44,4 +49,4 @@ dfx deploy --no-wallet \
 )" \
 "${OPTIONAL[@]}"
 
-printf "🌈 Deployed NFT Canister ID (%s)\n" "$(dfx canister id nft)"
+printf "🌈 Deployed NFT Canister ID (%s)\n" "$NFT_CANISTER_ID"
