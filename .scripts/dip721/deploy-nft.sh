@@ -18,7 +18,7 @@ NFT_CANISTER_ID_EXIST_STATUS=$?
 
 # If a NFT Canister has not yet been deployed
 # create canister with required controllers
-if [[ "$NFT_CANISTER_ID_EXIST_STATUS" -eq 0 ]];
+if [[ "$NFT_CANISTER_ID_EXIST_STATUS" -ne 0 ]];
 then
   dfx canister --no-wallet \
     create nft --controller "$OWNER_PRINCIPAL_ID"
