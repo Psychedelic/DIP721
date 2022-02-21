@@ -1,17 +1,8 @@
-use ic_cdk::export::candid::{Nat, candid_method, CandidType, Deserialize};
+use ic_cdk::export::candid::{Nat, candid_method, CandidType, Deserialize, export_service};
 use ic_cdk::export::{Principal};
 use ic_cdk_macros::{init, query, update};
 use std::cell::RefCell;
 use ic_cdk::api::time;
-
-#[cfg(any(target_arch = "wasm32", test))]
-fn main() {}
-
-#[cfg(not(any(target_arch = "wasm32", test)))]
-fn main() {
-    ic_cdk::export::candid::export_service!();
-    std::print!("{}", __export_service());
-}
 
 #[derive(CandidType, Deserialize)]
 struct InitArgs {
@@ -110,4 +101,13 @@ struct NftMetadata {}
 #[candid_method(query, rename = "approve")]
 fn approve(spender: Principal, token_id: u64) -> Result<(), NftError> {
     Ok(())
+}
+
+#[cfg(any(target_arch = "wasm32", test))]
+fn main() {}
+
+#[cfg(not(any(target_arch = "wasm32", test)))]
+fn main() {
+    export_service!();
+    std::print!("{}", __export_service());
 }

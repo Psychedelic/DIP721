@@ -1,0 +1,30 @@
+type ApproveError = variant {};
+type CommonError = variant { InvalidToken };
+type InitArgs = record {
+  owner : opt principal;
+  logo : opt text;
+  name : opt text;
+  symbol : opt text;
+};
+type Metadata = record {
+  owner : opt principal;
+  logo : opt text;
+  name : opt text;
+  created_at : nat64;
+  tx_size : nat;
+  symbol : opt text;
+};
+type NftError = variant {
+  Approve : ApproveError;
+  Other : text;
+  Common : CommonError;
+};
+type Result = variant { Ok; Err : NftError };
+service : (opt InitArgs) -> {
+  approve : (principal, nat64) -> (Result) query;
+  getMetadata : () -> (Metadata) query;
+  logo : () -> (opt text) query;
+  name : () -> (opt text) query;
+  symbol : () -> (opt text) query;
+  totalSupply : () -> (nat) query;
+}
