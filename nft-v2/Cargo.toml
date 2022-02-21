@@ -1,0 +1,15 @@
+[package]
+name = "nft-v2"
+version = "0.1.0"
+authors = ["Psychedelic team <support@fleek.co>"]
+edition = "2018"
+
+[dependencies]
+ic-cdk-macros = "0.3.2"
+ic-cdk = "0.3.2"
+serde = "1.0.132"
+cap-sdk= { git = "https://github.com/Psychedelic/cap", branch = "cap-sdk", package="cap-sdk" }
+cap-std= { git = "https://github.com/Psychedelic/cap", branch = "cap-sdk", package="cap-standards", features = ["alpha-dip721"] }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+async-std = { version="1.10.0", features = ["attributes"] }

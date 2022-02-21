@@ -991,6 +991,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "nft-v2"
+version = "0.1.0"
+dependencies = [
+ "async-std",
+ "cap-sdk",
+ "cap-standards",
+ "ic-cdk",
+ "ic-cdk-macros",
+ "serde",
+]
+
+[[package]]
 name = "num-bigint"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

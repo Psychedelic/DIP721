@@ -9,7 +9,7 @@
 /build
 **/dist
 **/.dfx/**
-/target/**/**
+**/target/**/**
 .temp
 
 # misc
@@ -27,3 +27,4 @@ yarn-error.log*
 **/coverage
 
 *.log
+.idea
