@@ -20,7 +20,7 @@ fi
 dfx canister --no-wallet \
   create nft --controller "$OWNER_PRINCIPAL_ID"
 
-CREATED_NFT_CANISTER_ID=$(dfx canister id nft)
+CREATED_NFT_CANISTER_ID=$(dfx canister  --network "$NETWORK" id nft)
 
 printf "🤖 The created NFT Canster id is %s" "$CREATED_NFT_CANISTER_ID"
 
