@@ -64,7 +64,7 @@ yarn dip721:deploy-example <local|ic> [reinstall]
 
 The command will deploy (and optionally `reinstall`) an hypothetical example DIP-721 Token "¥" of name "Yuppi".
 
-💡 On the creation of a new canister, the controllers have to be set to the owners principal and the canister id, as required by the ownership and approvals handling - the script automatically sets that up; And can also redeploy or reinstalls, if the canister already exists.
+💡 On the creation of a new canister, the controllers have to be set to the owners principal and the canister id, as required by the ownership and approvals handling - the script automatically sets that up; And can also redeploy or reinstalls, if the canister already exists. Check the [/.scripts/dip721/deploy-nft.sh](/.scripts/dip721/deploy-nft.sh) to learn about it!
 
 💡 Only use the reinstall if you want the state of the canister completely reset
 

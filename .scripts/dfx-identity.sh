@@ -2,6 +2,7 @@
 
 ALICE_HOME=$(mktemp -d 2>/dev/null || mktemp -d -t alice-temp)
 BOB_HOME=$(mktemp -d 2>/dev/null || mktemp -d -t bob-temp)
+DEFAULT_HOME="$HOME"
 
 ALICE_PRINCIPAL_ID=$(HOME=$ALICE_HOME dfx identity get-principal)
 BOB_PRINCIPAL_ID=$(HOME=$BOB_HOME dfx identity get-principal)
@@ -11,7 +12,15 @@ ALICE_PEM="$ALICE_HOME/.config/dfx/identity/default/identity.pem"
 BOB_PEM="$BOB_HOME/.config/dfx/identity/default/identity.pem"
 DEFAULT_PEM="$HOME/.config/dfx/identity/default/identity.pem"
 
-echo "🙋‍♀️ Identities"
-echo "ALICE_PRINCIPAL_ID $ALICE_PRINCIPAL_ID"
-echo "BOB_PRINCIPAL_ID $BOB_PRINCIPAL_ID"
-echo "DEFAULT_PRINCIPAL_ID $DEFAULT_PRINCIPAL_ID"
+printf "🙋‍♀️ Identities\n\n"
+
+printf "👩🏽‍🦰 ALICE_PRINCIPAL_ID (%s)\n" "$ALICE_PRINCIPAL_ID"
+printf "👩🏽‍🦰 ALICE_HOME (%s)\n" "$ALICE_HOME"
+
+printf "👨🏽‍🦰 BOB_PRINCIPAL_ID (%s)\n" "$BOB_PRINCIPAL_ID"
+printf "👨🏽‍🦰 BOB_HOME (%s)\n" "$BOB_HOME"
+
+printf "👨🏾‍💻 DEFAULT_PRINCIPAL_ID (%s)\n" "$DEFAULT_PRINCIPAL_ID"
+printf "👨🏾‍💻 DEFAULT_HOME (%s)\n" "$DEFAULT_HOME"
+
+printf "\n\n"
