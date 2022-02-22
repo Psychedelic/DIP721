@@ -1,5 +1,10 @@
 #!/bin/bash
 
+printf "DIP721 Copyright (C) 2022 Fleek LLC
+    This program comes with ABSOLUTELY NO WARRANTY
+    This is free software, and you are welcome to redistribute it
+    under certain conditions;\n\n"
+
 (cd "$(dirname $BASH_SOURCE)" && cd ..) || exit 1
 
 [ "$DEBUG" == 1 ] && set -x
