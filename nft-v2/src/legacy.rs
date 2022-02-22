@@ -44,6 +44,12 @@ fn total_supply_dip721() -> Nat {
 
 #[query(name = "supportedInterfacesDip721")]
 #[candid_method(query, rename = "supportedInterfacesDip721")]
-fn supportedInterfacesDip721() -> Vec<SupportedInterface> {
-    supportedInterfaces()
+fn supported_interfaces_dip721() -> Vec<SupportedInterface> {
+    supported_interfaces()
+}
+
+#[query(name = "balanceOfDip721")]
+#[candid_method(query, rename = "balanceOfDip721")]
+fn balance_of_dip721(owner: Principal) -> Result<Nat, NftError> {
+    balance_of(owner)
 }

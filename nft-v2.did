@@ -21,7 +21,7 @@ type NftError = variant {
   Common : CommonError;
 };
 type Result = variant { Ok; Err : NftError };
-type SupportedInterface = variant { Burn; Mint; Approval };
+type SupportedInterface = variant { Burn; Mint; Approval; TransactionHistory };
 service : (opt InitArgs) -> {
   approve : (principal, nat64) -> (Result) query;
   logo : () -> (opt text) query;

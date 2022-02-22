@@ -28,7 +28,7 @@ struct Metadata {
 
 thread_local!(
     static METADATA: RefCell<Metadata> = RefCell::new(Metadata::default());
-    static LEDGER: RefCell<Ledger> = RefCell::new(Ledger::default());
+    static LEDGER: RefCell<Ledger<'static>> = RefCell::new(Ledger::default());
 );
 
 #[init]
@@ -102,10 +102,19 @@ enum TokenMetadataPropertyValue {
     Nat32Content(u32),
     Nat64Content(u64),
 }
+struct TokenMetadata {
+    token_identifier: TokenIdentifier,
+    owner: Principal,
+    properties: Vec<(TokenMetadataPropertyKey, TokenMetadataPropertyValue)>,
+    minted_at: u64,
+    minted_by: Principal,
+    transferred_at: u64,
+    transferred_by: Principal,
+}
 #[derive(Default)]
-struct Ledger {
-    tokens: HashMap<TokenIdentifier, Vec<(TokenMetadataPropertyKey, TokenMetadataPropertyValue)>>,
-    users: HashMap<Principal, TokenIdentifier>
+struct Ledger<'a> {
+    tokens: HashMap<TokenIdentifier, TokenMetadata>,
+    owners: HashMap<Principal, Vec<&'a TokenMetadata>>,
 }
 
 #[query(name = "totalSupply")]
@@ -124,7 +133,7 @@ enum SupportedInterface {
 
 #[query(name = "supportedInterfaces")]
 #[candid_method(query, rename = "supportedInterfaces")]
-fn supportedInterfaces() -> Vec<SupportedInterface> {
+fn supported_interfaces() -> Vec<SupportedInterface> {
     vec![
         SupportedInterface::Approval,
         SupportedInterface::Mint,
@@ -143,7 +152,21 @@ enum NftError {
 enum ApproveError {}
 #[derive(CandidType)]
 enum CommonError {
+    OwnerNotFound,
     InvalidToken,
+}
+
+#[query(name = "balanceOf")]
+#[candid_method(query, rename = "balanceOf")]
+fn balance_of(owner: Principal) -> Result<Nat, NftError> {
+    LEDGER.with(|ledger| {
+        ledger
+            .borrow()
+            .owners
+            .get(&owner)
+            .map(|token_metadata| token_metadata.len().into())
+            .ok_or(NftError::Common(CommonError::OwnerNotFound))
+    })
 }
 
 #[query(name = "approve")]
