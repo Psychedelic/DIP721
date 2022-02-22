@@ -6,12 +6,12 @@
 
 . ".scripts/required/healthcheck-run-verification.sh"
 . ".scripts/required/cap-verification.sh"
-. ".scripts/required/identity-verification.sh"
 . ".scripts/dfx-identity.sh"
 . ".scripts/token-defaults.sh"
 
 NftCandidFile="./nft/candid/nft.did"
 IcxPrologueNft="--candid=${NftCandidFile}"
+DEFAULT_PRINCIPAL_ID=$(dfx identity get-principal)
 
 nonFungibleContractAddress=""
 nft_token_id_for_alice=""
