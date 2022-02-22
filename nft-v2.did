@@ -7,6 +7,7 @@ type InitArgs = record {
   symbol : opt text;
 };
 type Metadata = record {
+  updated_at : nat64;
   owner : opt principal;
   logo : opt text;
   name : opt text;
@@ -20,11 +21,24 @@ type NftError = variant {
   Common : CommonError;
 };
 type Result = variant { Ok; Err : NftError };
+type SupportedInterface = variant { Burn; Mint; Approval };
 service : (opt InitArgs) -> {
   approve : (principal, nat64) -> (Result) query;
-  getMetadata : () -> (Metadata) query;
   logo : () -> (opt text) query;
+  logoDip721 : () -> (opt text) query;
+  metadata : () -> (Metadata) query;
   name : () -> (opt text) query;
+  nameDip721 : () -> (opt text) query;
+  setLogo : (text) -> ();
+  setLogoDip721 : (text) -> ();
+  setName : (text) -> ();
+  setNameDip721 : (text) -> ();
+  setSymbol : (text) -> ();
+  setSymbolDip721 : (text) -> ();
+  supportedInterfaces : () -> (vec SupportedInterface) query;
+  supportedInterfacesDip721 : () -> (vec SupportedInterface) query;
   symbol : () -> (opt text) query;
+  symbolDip721 : () -> (opt text) query;
   totalSupply : () -> (nat) query;
+  totalSupplyDip721 : () -> (nat) query;
 }

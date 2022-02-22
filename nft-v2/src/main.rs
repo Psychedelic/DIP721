@@ -1,8 +1,11 @@
-use ic_cdk::export::candid::{Nat, candid_method, CandidType, Deserialize, export_service};
-use ic_cdk::export::{Principal};
+mod legacy;
+
+use ic_cdk::api::time;
+use ic_cdk::export::candid::{candid_method, export_service, CandidType, Deserialize, Nat};
+use ic_cdk::export::Principal;
 use ic_cdk_macros::{init, query, update};
 use std::cell::RefCell;
-use ic_cdk::api::time;
+use std::collections::HashMap;
 
 #[derive(CandidType, Deserialize)]
 struct InitArgs {
@@ -19,11 +22,13 @@ struct Metadata {
     symbol: Option<String>,
     owner: Option<Principal>,
     tx_size: Nat,
-    created_at: u64
+    created_at: u64,
+    updated_at: u64,
 }
 
 thread_local!(
     static METADATA: RefCell<Metadata> = RefCell::new(Metadata::default());
+    static LEDGER: RefCell<Ledger> = RefCell::new(Ledger::default());
 );
 
 #[init]
@@ -37,10 +42,95 @@ fn init(args: Option<InitArgs>) {
                 symbol: args.symbol,
                 owner: args.owner,
                 tx_size: Nat::from(0),
-                created_at: time()
+                created_at: time(),
+                updated_at: time(),
             }
         }
     });
+}
+
+#[query(name = "metadata")]
+#[candid_method(query, rename = "metadata")]
+fn metadata() -> Metadata {
+    METADATA.with(|metadata| metadata.borrow().clone())
+}
+
+#[query(name = "name")]
+#[candid_method(query, rename = "name")]
+fn name() -> Option<String> {
+    METADATA.with(|metadata| metadata.borrow().name.clone())
+}
+
+#[update(name = "setName")]
+#[candid_method(update, rename = "setName")]
+fn set_name(name: String) {
+    METADATA.with(|metadata| metadata.borrow_mut().name = Some(name));
+}
+
+#[query(name = "logo")]
+#[candid_method(query, rename = "logo")]
+fn logo() -> Option<String> {
+    METADATA.with(|metadata| metadata.borrow().logo.clone())
+}
+
+#[update(name = "setLogo")]
+#[candid_method(update, rename = "setLogo")]
+fn set_logo(logo: String) {
+    METADATA.with(|metadata| metadata.borrow_mut().logo = Some(logo));
+}
+
+#[query(name = "symbol")]
+#[candid_method(query, rename = "symbol")]
+fn symbol() -> Option<String> {
+    METADATA.with(|metadata| metadata.borrow().symbol.clone())
+}
+
+#[update(name = "setSymbol")]
+#[candid_method(update, rename = "setSymbol")]
+fn set_symbol(symbol: String) {
+    METADATA.with(|metadata| metadata.borrow_mut().symbol = Some(symbol))
+}
+
+type TokenIdentifier = String;
+type TokenMetadataPropertyKey = String;
+enum TokenMetadataPropertyValue {
+    TextContent(String),
+    BlobContent(Vec<u8>),
+    NatContent(Nat),
+    Nat8Content(u8),
+    Nat16Content(u16),
+    Nat32Content(u32),
+    Nat64Content(u64),
+}
+#[derive(Default)]
+struct Ledger {
+    tokens: HashMap<TokenIdentifier, Vec<(TokenMetadataPropertyKey, TokenMetadataPropertyValue)>>,
+    users: HashMap<Principal, TokenIdentifier>
+}
+
+#[query(name = "totalSupply")]
+#[candid_method(query, rename = "totalSupply")]
+fn total_supply() -> Nat {
+    LEDGER.with(|ledger| ledger.borrow().tokens.len().into())
+}
+
+#[derive(CandidType)]
+enum SupportedInterface {
+    Approval,
+    Mint,
+    Burn,
+    TransactionHistory,
+}
+
+#[query(name = "supportedInterfaces")]
+#[candid_method(query, rename = "supportedInterfaces")]
+fn supportedInterfaces() -> Vec<SupportedInterface> {
+    vec![
+        SupportedInterface::Approval,
+        SupportedInterface::Mint,
+        SupportedInterface::Burn,
+        SupportedInterface::TransactionHistory,
+    ]
 }
 
 #[derive(CandidType)]
@@ -55,47 +145,6 @@ enum ApproveError {}
 enum CommonError {
     InvalidToken,
 }
-
-#[query(name = "name")]
-#[candid_method(query, rename = "name")]
-fn name() -> Option<String> {
-    METADATA.with(|metadata| {
-        metadata.borrow().name.clone()
-    })
-}
-
-#[query(name = "logo")]
-#[candid_method(query, rename = "logo")]
-fn logo() -> Option<String> {
-    METADATA.with(|metadata| {
-        metadata.borrow().logo.clone()
-    })
-}
-
-#[query(name = "symbol")]
-#[candid_method(query, rename = "symbol")]
-fn symbol() -> Option<String> {
-    METADATA.with(|metadata| {
-        metadata.borrow().symbol.clone()
-    })
-}
-
-#[query(name = "totalSupply")]
-#[candid_method(query, rename = "totalSupply")]
-fn total_supply() -> Nat {
-    Nat::from(0)
-}
-
-#[query(name = "getMetadata")]
-#[candid_method(query, rename = "getMetadata")]
-fn get_metadata() -> Metadata {
-    METADATA.with(|metadata| {
-        metadata.borrow().clone()
-    })
-}
-
-#[derive(CandidType)]
-struct NftMetadata {}
 
 #[query(name = "approve")]
 #[candid_method(query, rename = "approve")]
