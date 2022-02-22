@@ -68,7 +68,7 @@ fn name() -> Option<String> {
 #[candid_method(query, rename = "logo")]
 fn logo() -> Option<String> {
     METADATA.with(|metadata| {
-        metadata.borrow().name.clone()
+        metadata.borrow().logo.clone()
     })
 }
 
@@ -76,7 +76,7 @@ fn logo() -> Option<String> {
 #[candid_method(query, rename = "symbol")]
 fn symbol() -> Option<String> {
     METADATA.with(|metadata| {
-        metadata.borrow().name.clone()
+        metadata.borrow().symbol.clone()
     })
 }
 
