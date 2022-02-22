@@ -23,6 +23,9 @@ then
   dfx canister --no-wallet \
     create nft --controller "$OWNER_PRINCIPAL_ID"
 
+  # Assign the Canister Id
+  NFT_CANISTER_ID=$(dfx canister --network "$NETWORK" id nft)
+
   # Note that the controller settings is important
   # you should have at least an identity you control
   # and the canister itself as controllers
