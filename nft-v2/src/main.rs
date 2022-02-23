@@ -1,6 +1,6 @@
 mod legacy;
 
-use ic_cdk::api::time;
+use ic_cdk::api::{caller, time};
 use ic_cdk::export::candid::{candid_method, export_service, CandidType, Deserialize, Nat};
 use ic_cdk::export::Principal;
 use ic_cdk_macros::{init, query, update};
@@ -23,7 +23,35 @@ struct Metadata {
     owner: Option<Principal>,
     tx_size: Nat,
     created_at: u64,
-    updated_at: u64,
+    upgrade: u64,
+}
+
+type TokenIdentifier = String;
+type TokenMetadataPropertyKey = String;
+#[derive(CandidType, Clone)]
+enum TokenMetadataPropertyValue {
+    TextContent(String),
+    BlobContent(Vec<u8>),
+    NatContent(Nat),
+    Nat8Content(u8),
+    Nat16Content(u16),
+    Nat32Content(u32),
+    Nat64Content(u64),
+}
+#[derive(CandidType, Clone)]
+struct TokenMetadata {
+    token_identifier: TokenIdentifier,
+    owner: Principal,
+    properties: Vec<(TokenMetadataPropertyKey, TokenMetadataPropertyValue)>,
+    minted_at: u64,
+    minted_by: Principal,
+    transferred_at: u64,
+    transferred_by: Principal,
+}
+#[derive(Default)]
+struct Ledger<'a> {
+    tokens: HashMap<TokenIdentifier, TokenMetadata>,
+    owners: HashMap<Principal, Vec<&'a TokenMetadata>>,
 }
 
 thread_local!(
@@ -40,11 +68,13 @@ fn init(args: Option<InitArgs>) {
                 name: args.name,
                 logo: args.logo,
                 symbol: args.symbol,
-                owner: args.owner,
+                owner: args.owner.or(Some(caller())), // Default owner as caller
                 tx_size: Nat::from(0),
                 created_at: time(),
-                updated_at: time(),
+                upgrade: time(),
             }
+        } else {
+            metadata.borrow_mut().owner = Some(caller()) // Default owner as caller
         }
     });
 }
@@ -91,32 +121,6 @@ fn set_symbol(symbol: String) {
     METADATA.with(|metadata| metadata.borrow_mut().symbol = Some(symbol))
 }
 
-type TokenIdentifier = String;
-type TokenMetadataPropertyKey = String;
-enum TokenMetadataPropertyValue {
-    TextContent(String),
-    BlobContent(Vec<u8>),
-    NatContent(Nat),
-    Nat8Content(u8),
-    Nat16Content(u16),
-    Nat32Content(u32),
-    Nat64Content(u64),
-}
-struct TokenMetadata {
-    token_identifier: TokenIdentifier,
-    owner: Principal,
-    properties: Vec<(TokenMetadataPropertyKey, TokenMetadataPropertyValue)>,
-    minted_at: u64,
-    minted_by: Principal,
-    transferred_at: u64,
-    transferred_by: Principal,
-}
-#[derive(Default)]
-struct Ledger<'a> {
-    tokens: HashMap<TokenIdentifier, TokenMetadata>,
-    owners: HashMap<Principal, Vec<&'a TokenMetadata>>,
-}
-
 #[query(name = "totalSupply")]
 #[candid_method(query, rename = "totalSupply")]
 fn total_supply() -> Nat {
@@ -149,11 +153,13 @@ enum NftError {
     Other(String),
 }
 #[derive(CandidType)]
-enum ApproveError {}
+enum ApproveError {
+    Test,
+}
 #[derive(CandidType)]
 enum CommonError {
     OwnerNotFound,
-    InvalidToken,
+    TokenNotFound,
 }
 
 #[query(name = "balanceOf")]
@@ -169,10 +175,72 @@ fn balance_of(owner: Principal) -> Result<Nat, NftError> {
     })
 }
 
+#[query(name = "ownerOf")]
+#[candid_method(query, rename = "ownerOf")]
+fn owner_of(token_identifier: TokenIdentifier) -> Result<Principal, NftError> {
+    LEDGER.with(|ledger| {
+        ledger
+            .borrow()
+            .tokens
+            .get(&token_identifier)
+            .map(|token_metadata| token_metadata.owner)
+            .ok_or(NftError::Common(CommonError::TokenNotFound))
+    })
+}
+
+#[query(name = "tokenMetadata")]
+#[candid_method(query, rename = "tokenMetadata")]
+fn token_metadata(token_identifier: TokenIdentifier) -> Result<TokenMetadata, NftError> {
+    LEDGER.with(|ledger| {
+        ledger
+            .borrow()
+            .tokens
+            .get(&token_identifier)
+            .map(|token_metadata| token_metadata.clone())
+            .ok_or(NftError::Common(CommonError::TokenNotFound))
+    })
+}
+
+#[query(name = "ownerTokenMetadata")]
+#[candid_method(query, rename = "ownerTokenMetadata")]
+fn owner_token_metadata(owner: Principal) -> Result<Vec<TokenMetadata>, NftError> {
+    LEDGER.with(|ledger| {
+        ledger
+            .borrow()
+            .owners
+            .get(&owner)
+            .map(|token_metadata| {
+                token_metadata
+                    .iter()
+                    .map(|&token_metadata| token_metadata.clone())
+                    .collect()
+            })
+            .ok_or(NftError::Common(CommonError::OwnerNotFound))
+    })
+}
+
+#[query(name = "ownerTokenIds")]
+#[candid_method(query, rename = "ownerTokenIds")]
+fn owner_token_ids(owner: Principal) -> Result<Vec<TokenIdentifier>, NftError> {
+    LEDGER.with(|ledger| {
+        ledger
+            .borrow()
+            .owners
+            .get(&owner)
+            .map(|token_metadata| {
+                token_metadata
+                    .iter()
+                    .map(|&token_metadata| token_metadata.token_identifier.clone())
+                    .collect()
+            })
+            .ok_or(NftError::Common(CommonError::OwnerNotFound))
+    })
+}
+
 #[query(name = "approve")]
 #[candid_method(query, rename = "approve")]
-fn approve(spender: Principal, token_id: u64) -> Result<(), NftError> {
-    Ok(())
+fn approve(spender: Principal, token_identifier: TokenIdentifier) -> Result<(), NftError> {
+    Err(NftError::Approve(ApproveError::Test))
 }
 
 #[cfg(any(target_arch = "wasm32", test))]
