@@ -1,5 +1,5 @@
 type ApproveError = variant { Test };
-type CommonError = variant { TokenNotFound; OwnerNotFound };
+type CommonError = variant { TokenNotFound; Unauthorized; OwnerNotFound };
 type InitArgs = record {
   owner : opt principal;
   logo : opt text;

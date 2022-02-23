@@ -7,7 +7,7 @@ fn name_dip721() -> Option<String> {
     name()
 }
 
-#[update(name = "setNameDip721")]
+#[update(name = "setNameDip721", guard = "is_canister_owner")]
 #[candid_method(update, rename = "setNameDip721")]
 #[deprecated(note = "please use method: `set_name` instead")]
 fn set_name_dip721(name: String) {
@@ -21,7 +21,7 @@ fn logo_dip721() -> Option<String> {
     logo()
 }
 
-#[update(name = "setLogoDip721")]
+#[update(name = "setLogoDip721", guard = "is_canister_owner")]
 #[candid_method(update, rename = "setLogoDip721")]
 #[deprecated(note = "please use method: `set_logo` instead")]
 fn set_logo_dip721(logo: String) {
@@ -35,7 +35,7 @@ fn symbol_dip721() -> Option<String> {
     symbol()
 }
 
-#[update(name = "setSymbolDip721")]
+#[update(name = "setSymbolDip721", guard = "is_canister_owner")]
 #[candid_method(update, rename = "setSymbolDip721")]
 #[deprecated(note = "please use method: `set_symbol` instead")]
 fn set_symbol_dip721(symbol: String) {

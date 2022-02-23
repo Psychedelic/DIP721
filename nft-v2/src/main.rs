@@ -28,6 +28,7 @@ struct Metadata {
 
 type TokenIdentifier = String;
 type TokenMetadataPropertyKey = String;
+
 #[derive(CandidType, Clone)]
 enum TokenMetadataPropertyValue {
     TextContent(String),
@@ -38,6 +39,7 @@ enum TokenMetadataPropertyValue {
     Nat32Content(u32),
     Nat64Content(u64),
 }
+
 #[derive(CandidType, Clone)]
 struct TokenMetadata {
     token_identifier: TokenIdentifier,
@@ -48,6 +50,7 @@ struct TokenMetadata {
     transferred_at: u64,
     transferred_by: Principal,
 }
+
 #[derive(Default)]
 struct Ledger<'a> {
     tokens: HashMap<TokenIdentifier, TokenMetadata>,
@@ -79,6 +82,17 @@ fn init(args: Option<InitArgs>) {
     });
 }
 
+fn is_canister_owner() -> Result<(), String> {
+    METADATA.with(|metadata| {
+        metadata
+            .borrow()
+            .owner
+            .eq(&Some(caller()))
+            .then(|| ())
+            .ok_or_else(|| "Caller is not an owner of canister".into())
+    })
+}
+
 #[query(name = "metadata")]
 #[candid_method(query, rename = "metadata")]
 fn metadata() -> Metadata {
@@ -91,7 +105,7 @@ fn name() -> Option<String> {
     METADATA.with(|metadata| metadata.borrow().name.clone())
 }
 
-#[update(name = "setName")]
+#[update(name = "setName", guard = "is_canister_owner")]
 #[candid_method(update, rename = "setName")]
 fn set_name(name: String) {
     METADATA.with(|metadata| metadata.borrow_mut().name = Some(name));
@@ -103,7 +117,7 @@ fn logo() -> Option<String> {
     METADATA.with(|metadata| metadata.borrow().logo.clone())
 }
 
-#[update(name = "setLogo")]
+#[update(name = "setLogo", guard = "is_canister_owner")]
 #[candid_method(update, rename = "setLogo")]
 fn set_logo(logo: String) {
     METADATA.with(|metadata| metadata.borrow_mut().logo = Some(logo));
@@ -115,7 +129,7 @@ fn symbol() -> Option<String> {
     METADATA.with(|metadata| metadata.borrow().symbol.clone())
 }
 
-#[update(name = "setSymbol")]
+#[update(name = "setSymbol", guard = "is_canister_owner")]
 #[candid_method(update, rename = "setSymbol")]
 fn set_symbol(symbol: String) {
     METADATA.with(|metadata| metadata.borrow_mut().symbol = Some(symbol))
@@ -152,14 +166,17 @@ enum NftError {
     Approve(ApproveError),
     Other(String),
 }
+
 #[derive(CandidType)]
 enum ApproveError {
     Test,
 }
+
 #[derive(CandidType)]
 enum CommonError {
     OwnerNotFound,
     TokenNotFound,
+    Unauthorized,
 }
 
 #[query(name = "balanceOf")]
