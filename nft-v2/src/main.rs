@@ -21,7 +21,6 @@ struct Metadata {
     logo: Option<String>,
     symbol: Option<String>,
     owner: HashSet<Principal>,
-    tx_size: Nat,
     created_at: u64,
     upgraded_at: u64,
 }
@@ -68,8 +67,26 @@ struct Ledger {
 struct TxEvent {
     time: u64,
     caller: Principal,
-    operation: String,
-    details: Vec<(String, GenericValue)>,
+    operation: &'static str,
+    details: Vec<(&'static str, GenericValue)>,
+}
+
+impl Ledger {
+    fn add_tx(
+        &mut self,
+        caller: Principal,
+        operation: &'static str,
+        details: Vec<(&'static str, GenericValue)>,
+    ) -> Nat {
+        // NOTE: integrate with cap dip721 standard?
+        self.tx_records.push(TxEvent {
+            time: time(),
+            operation,
+            caller,
+            details,
+        });
+        Nat::from(self.tx_records.len())
+    }
 }
 
 thread_local!(
@@ -90,7 +107,6 @@ fn init(args: Option<InitArgs>) {
             if let Some(owner) = args.owner {
                 metadata.owner.insert(owner);
             }
-            metadata.tx_size = Nat::from(0);
             metadata.created_at = time();
             metadata.upgraded_at = time();
         }
@@ -294,8 +310,18 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
             .operator_approvals
             .entry(operator)
             .or_insert(HashSet::new());
-        tokens.insert(token_identifier);
-        Ok(Nat::from(0))
+        tokens.insert(token_identifier.clone());
+        Ok(ledger.add_tx(
+            caller(),
+            "approve",
+            vec![
+                ("operator", GenericValue::Principal(operator)),
+                (
+                    "token_identifier",
+                    GenericValue::TextContent(token_identifier),
+                ),
+            ],
+        ))
     })
 }
 
