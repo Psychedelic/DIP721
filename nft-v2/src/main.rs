@@ -48,6 +48,7 @@ enum GenericValue {
 struct TokenMetadata {
     token_identifier: TokenIdentifier,
     owner: Principal,
+    operator: Option<Principal>,
     properties: Vec<(String, GenericValue)>,
     minted_at: u64,
     minted_by: Principal,
@@ -58,9 +59,8 @@ struct TokenMetadata {
 #[derive(Default)]
 struct Ledger {
     tokens: HashMap<TokenIdentifier, TokenMetadata>,
-    owners: HashMap<Principal, HashSet<TokenIdentifier>>,
-    token_approvals: HashMap<TokenIdentifier, Principal>,
-    operator_approvals: HashMap<Principal, HashSet<TokenIdentifier>>,
+    owners: HashMap<Principal, HashSet<TokenIdentifier>>, // quick lookup
+    operators: HashMap<Principal, HashSet<TokenIdentifier>>, // quick lookup
     tx_records: Vec<TxEvent>,
 }
 
@@ -78,7 +78,7 @@ impl Ledger {
         operation: &'static str,
         details: Vec<(&'static str, GenericValue)>,
     ) -> Nat {
-        // NOTE: integrate with cap dip721 standard?
+        // NOTE: integrate with cap dip721 standard, or skip it for now ?????
         self.tx_records.push(TxEvent {
             time: time(),
             operation,
@@ -193,21 +193,10 @@ fn supported_interfaces() -> Vec<SupportedInterface> {
 
 #[derive(CandidType)]
 enum NftError {
-    Common(CommonError),
-    Approve(ApproveError),
-    Other(String),
-}
-
-#[derive(CandidType)]
-enum ApproveError {
-    Test,
-}
-
-#[derive(CandidType)]
-enum CommonError {
+    Unauthorized,
     OwnerNotFound,
     TokenNotFound,
-    CallerUnauthorized,
+    Other(String),
 }
 
 #[query(name = "balanceOf")]
@@ -219,7 +208,7 @@ fn balance_of(owner: Principal) -> Result<Nat, NftError> {
             .owners
             .get(&owner)
             .map(|token_identifiers| token_identifiers.len().into())
-            .ok_or(NftError::Common(CommonError::OwnerNotFound))
+            .ok_or(NftError::OwnerNotFound)
     })
 }
 
@@ -232,7 +221,7 @@ fn owner_of(token_identifier: TokenIdentifier) -> Result<Principal, NftError> {
             .tokens
             .get(&token_identifier)
             .map(|token_metadata| token_metadata.owner)
-            .ok_or(NftError::Common(CommonError::TokenNotFound))
+            .ok_or(NftError::TokenNotFound)
     })
 }
 
@@ -245,7 +234,7 @@ fn token_metadata(token_identifier: TokenIdentifier) -> Result<TokenMetadata, Nf
             .tokens
             .get(&token_identifier)
             .map(|token_metadata| token_metadata.clone())
-            .ok_or(NftError::Common(CommonError::TokenNotFound))
+            .ok_or(NftError::TokenNotFound)
     })
 }
 
@@ -270,7 +259,7 @@ fn owner_token_metadata(owner: Principal) -> Result<Vec<TokenMetadata>, NftError
                     })
                     .collect()
             })
-            .ok_or(NftError::Common(CommonError::OwnerNotFound))
+            .ok_or(NftError::OwnerNotFound)
     })
 }
 
@@ -288,7 +277,7 @@ fn owner_token_ids(owner: Principal) -> Result<Vec<TokenIdentifier>, NftError> {
                     .map(|token_identifier| token_identifier.clone())
                     .collect()
             })
-            .ok_or(NftError::Common(CommonError::OwnerNotFound))
+            .ok_or(NftError::OwnerNotFound)
     })
 }
 
@@ -296,26 +285,98 @@ fn owner_token_ids(owner: Principal) -> Result<Vec<TokenIdentifier>, NftError> {
 #[candid_method(update, rename = "approve")]
 fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
     let token_metadata = token_metadata(token_identifier.clone())?;
+
+    // check valid owner
     token_metadata
         .owner
         .eq(&caller())
         .then(|| ())
-        .ok_or(NftError::Common(CommonError::CallerUnauthorized))?;
+        .ok_or(NftError::Unauthorized)?;
+
+    let old_operator = token_metadata.operator;
+
     LEDGER.with(|ledger| {
         let mut ledger = ledger.borrow_mut();
-        ledger
-            .token_approvals
-            .insert(token_identifier.clone(), operator);
+
+        // remove cache
+        if let Some(old_operator) = old_operator {
+            if let Some(tokens) = ledger.operators.get_mut(&old_operator) {
+                tokens.remove(&token_identifier);
+            }
+        }
+
+        // set new operator
+        ledger.tokens.get_mut(&token_identifier).unwrap().operator = Some(operator);
+
+        // update cache
         let tokens = ledger
-            .operator_approvals
+            .operators
             .entry(operator)
             .or_insert(HashSet::new());
         tokens.insert(token_identifier.clone());
+
+        // history
         Ok(ledger.add_tx(
             caller(),
             "approve",
             vec![
                 ("operator", GenericValue::Principal(operator)),
+                (
+                    "token_identifier",
+                    GenericValue::TextContent(token_identifier),
+                ),
+            ],
+        ))
+    })
+}
+
+#[update(name = "transferFrom")]
+#[candid_method(update, rename = "transferFrom")]
+fn transfer_from(
+    owner: Principal,
+    to: Principal,
+    token_identifier: TokenIdentifier,
+) -> Result<Nat, NftError> {
+    let token_metadata = token_metadata(token_identifier.clone())?;
+
+    // check valid owner
+    token_metadata
+        .owner
+        .eq(&owner)
+        .then(|| ())
+        .ok_or(NftError::Unauthorized)?;
+
+    // check valid operator
+    token_metadata
+        .operator
+        .eq(&Some(caller()))
+        .then(|| ())
+        .ok_or(NftError::Unauthorized)?;
+
+    let old_owner = token_metadata.owner;
+
+    LEDGER.with(|ledger| {
+        let mut ledger = ledger.borrow_mut();
+
+        // remove cache
+        if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
+            tokens.remove(&token_identifier);
+        }
+
+        // update owner
+        ledger.tokens.get_mut(&token_identifier).unwrap().owner = to;
+
+        // update cache
+        let tokens = ledger.owners.entry(to).or_insert(HashSet::new());
+        tokens.insert(token_identifier.clone());
+
+        // history
+        Ok(ledger.add_tx(
+            caller(),
+            "transfer_from",
+            vec![
+                ("owner", GenericValue::Principal(owner)),
+                ("to", GenericValue::Principal(to)),
                 (
                     "token_identifier",
                     GenericValue::TextContent(token_identifier),

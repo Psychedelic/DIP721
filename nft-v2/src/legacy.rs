@@ -90,3 +90,21 @@ fn get_metadata_for_user_dip721(owner: Principal) -> Result<Vec<TokenMetadata>, 
 fn get_token_ids_for_user_dip721(owner: Principal) -> Result<Vec<TokenIdentifier>, NftError> {
     owner_token_ids(owner)
 }
+
+#[update(name = "approveDip721")]
+#[candid_method(update, rename = "approveDip721")]
+#[deprecated(note = "please use method: `approve` instead")]
+fn approve_dip721(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
+    approve(operator, token_identifier)
+}
+
+#[update(name = "transferFromDip721")]
+#[candid_method(update, rename = "transferFromDip721")]
+#[deprecated(note = "please use method: `transfer_from` instead")]
+fn transfer_from_dip721(
+    owner: Principal,
+    to: Principal,
+    token_identifier: TokenIdentifier,
+) -> Result<Nat, NftError> {
+    transfer_from(owner, to, token_identifier)
+}

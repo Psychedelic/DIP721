@@ -1,5 +1,3 @@
-type ApproveError = variant { Test };
-type CommonError = variant { TokenNotFound; OwnerNotFound; CallerUnauthorized };
 type GenericValue = variant {
   Nat64Content : nat64;
   Nat32Content : nat32;
@@ -30,9 +28,10 @@ type Metadata = record {
   symbol : opt text;
 };
 type NftError = variant {
-  Approve : ApproveError;
+  TokenNotFound;
+  Unauthorized;
+  OwnerNotFound;
   Other : text;
-  Common : CommonError;
 };
 type Result = variant { Ok : nat; Err : NftError };
 type Result_1 = variant { Ok : TokenMetadata; Err : NftError };
@@ -44,6 +43,7 @@ type TokenMetadata = record {
   transferred_at : nat64;
   transferred_by : principal;
   owner : principal;
+  operator : opt principal;
   properties : vec record { text; GenericValue };
   token_identifier : text;
   minted_at : nat64;
@@ -51,6 +51,7 @@ type TokenMetadata = record {
 };
 service : (opt InitArgs) -> {
   approve : (principal, text) -> (Result);
+  approveDip721 : (principal, text) -> (Result);
   balanceOf : (principal) -> (Result) query;
   balanceOfDip721 : (principal) -> (Result) query;
   getMetadataDip721 : (text) -> (Result_1) query;
@@ -78,4 +79,6 @@ service : (opt InitArgs) -> {
   tokenMetadata : (text) -> (Result_1) query;
   totalSupply : () -> (nat) query;
   totalSupplyDip721 : () -> (nat) query;
+  transferFrom : (principal, principal, text) -> (Result);
+  transferFromDip721 : (principal, principal, text) -> (Result);
 }
