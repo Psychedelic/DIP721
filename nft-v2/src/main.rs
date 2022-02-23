@@ -27,7 +27,7 @@ struct Metadata {
 
 type TokenIdentifier = String;
 
-#[derive(CandidType, Clone)]
+#[derive(CandidType, Clone, Deserialize)]
 enum GenericValue {
     TextContent(String),
     BlobContent(Vec<u8>),
@@ -52,8 +52,8 @@ struct TokenMetadata {
     properties: Vec<(String, GenericValue)>,
     minted_at: u64,
     minted_by: Principal,
-    transferred_at: u64,
-    transferred_by: Principal,
+    transferred_at: Option<u64>,
+    transferred_by: Option<Principal>,
 }
 
 #[derive(Default)]
@@ -64,6 +64,7 @@ struct Ledger {
     tx_records: Vec<TxEvent>,
 }
 
+#[derive(CandidType)]
 struct TxEvent {
     time: u64,
     caller: Principal,
@@ -196,7 +197,9 @@ enum NftError {
     Unauthorized,
     OwnerNotFound,
     TokenNotFound,
-    Other(String),
+    ExistedNFT,
+    // TxNotFound,
+    // Other(String),
 }
 
 #[query(name = "balanceOf")]
@@ -309,11 +312,11 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
         ledger.tokens.get_mut(&token_identifier).unwrap().operator = Some(operator);
 
         // update cache
-        let tokens = ledger
+        ledger
             .operators
             .entry(operator)
-            .or_insert(HashSet::new());
-        tokens.insert(token_identifier.clone());
+            .or_insert(HashSet::new())
+            .insert(token_identifier.clone());
 
         // history
         Ok(ledger.add_tx(
@@ -364,11 +367,17 @@ fn transfer_from(
         }
 
         // update owner
-        ledger.tokens.get_mut(&token_identifier).unwrap().owner = to;
+        let token = ledger.tokens.get_mut(&token_identifier).unwrap();
+        token.owner = to;
+        token.transferred_at = Some(time());
+        token.transferred_by = Some(caller());
 
         // update cache
-        let tokens = ledger.owners.entry(to).or_insert(HashSet::new());
-        tokens.insert(token_identifier.clone());
+        ledger
+            .owners
+            .entry(to)
+            .or_insert(HashSet::new())
+            .insert(token_identifier.clone());
 
         // history
         Ok(ledger.add_tx(
@@ -376,6 +385,50 @@ fn transfer_from(
             "transfer_from",
             vec![
                 ("owner", GenericValue::Principal(owner)),
+                ("to", GenericValue::Principal(to)),
+                (
+                    "token_identifier",
+                    GenericValue::TextContent(token_identifier),
+                ),
+            ],
+        ))
+    })
+}
+
+#[update(name = "mint", guard = "is_canister_owner")]
+#[candid_method(update, rename = "mint")]
+fn mint(
+    to: Principal,
+    token_identifier: TokenIdentifier,
+    properties: Vec<(String, GenericValue)>,
+) -> Result<Nat, NftError> {
+    LEDGER.with(|ledger| {
+        let mut ledger = ledger.borrow_mut();
+        if ledger
+            .tokens
+            .insert(
+                token_identifier.clone(),
+                TokenMetadata {
+                    token_identifier: token_identifier.clone(),
+                    owner: to,
+                    operator: None,
+                    properties,
+                    minted_at: time(),
+                    minted_by: caller(),
+                    transferred_at: None,
+                    transferred_by: None,
+                },
+            )
+            .is_some()
+        {
+            return Err(NftError::ExistedNFT);
+        }
+
+        // history
+        Ok(ledger.add_tx(
+            caller(),
+            "mint",
+            vec![
                 ("to", GenericValue::Principal(to)),
                 (
                     "token_identifier",

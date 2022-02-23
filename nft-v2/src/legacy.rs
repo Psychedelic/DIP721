@@ -108,3 +108,14 @@ fn transfer_from_dip721(
 ) -> Result<Nat, NftError> {
     transfer_from(owner, to, token_identifier)
 }
+
+#[update(name = "mintDip721")]
+#[candid_method(update, rename = "mintDip721")]
+#[deprecated(note = "please use method: `mint` instead")]
+fn mint_dip721(
+    to: Principal,
+    token_identifier: TokenIdentifier,
+    properties: Vec<(String, GenericValue)>,
+) -> Result<Nat, NftError> {
+    mint(to, token_identifier, properties)
+}
