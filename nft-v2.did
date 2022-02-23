@@ -10,8 +10,8 @@ type Metadata = record {
   owner : opt principal;
   logo : opt text;
   name : opt text;
-  upgrade : nat64;
   created_at : nat64;
+  upgraded_at : nat64;
   tx_size : nat;
   symbol : opt text;
 };

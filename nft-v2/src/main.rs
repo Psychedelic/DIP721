@@ -23,7 +23,7 @@ struct Metadata {
     owner: Option<Principal>,
     tx_size: Nat,
     created_at: u64,
-    upgrade: u64,
+    upgraded_at: u64,
 }
 
 type TokenIdentifier = String;
@@ -68,13 +68,13 @@ fn init(args: Option<InitArgs>) {
                 name: args.name,
                 logo: args.logo,
                 symbol: args.symbol,
-                owner: args.owner.or(Some(caller())), // Default owner as caller
+                owner: args.owner.or(Some(caller())), // Default as caller when owner is None
                 tx_size: Nat::from(0),
                 created_at: time(),
-                upgrade: time(),
+                upgraded_at: time(),
             }
         } else {
-            metadata.borrow_mut().owner = Some(caller()) // Default owner as caller
+            metadata.borrow_mut().owner = Some(caller()) // Default as caller when args is None
         }
     });
 }
