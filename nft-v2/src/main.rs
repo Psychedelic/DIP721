@@ -1,11 +1,11 @@
 mod legacy;
 
 use ic_cdk::api::{caller, time};
-use ic_cdk::export::candid::{candid_method, export_service, CandidType, Deserialize, Nat};
+use ic_cdk::export::candid::{candid_method, export_service, CandidType, Deserialize, Int, Nat};
 use ic_cdk::export::Principal;
 use ic_cdk_macros::{init, query, update};
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(CandidType, Deserialize)]
 struct InitArgs {
@@ -20,31 +20,36 @@ struct Metadata {
     name: Option<String>,
     logo: Option<String>,
     symbol: Option<String>,
-    owner: Option<Principal>,
+    owner: HashSet<Principal>,
     tx_size: Nat,
     created_at: u64,
     upgraded_at: u64,
 }
 
 type TokenIdentifier = String;
-type TokenMetadataPropertyKey = String;
 
 #[derive(CandidType, Clone)]
-enum TokenMetadataPropertyValue {
+enum GenericValue {
     TextContent(String),
     BlobContent(Vec<u8>),
+    Principal(Principal),
     NatContent(Nat),
     Nat8Content(u8),
     Nat16Content(u16),
     Nat32Content(u32),
     Nat64Content(u64),
+    IntContent(Int),
+    Int8Content(i8),
+    Int16Content(i16),
+    Int32Content(i32),
+    Int64Content(i64),
 }
 
 #[derive(CandidType, Clone)]
 struct TokenMetadata {
     token_identifier: TokenIdentifier,
     owner: Principal,
-    properties: Vec<(TokenMetadataPropertyKey, TokenMetadataPropertyValue)>,
+    properties: Vec<(String, GenericValue)>,
     minted_at: u64,
     minted_by: Principal,
     transferred_at: u64,
@@ -52,32 +57,42 @@ struct TokenMetadata {
 }
 
 #[derive(Default)]
-struct Ledger<'a> {
+struct Ledger {
     tokens: HashMap<TokenIdentifier, TokenMetadata>,
-    owners: HashMap<Principal, Vec<&'a TokenMetadata>>,
+    owners: HashMap<Principal, HashSet<TokenIdentifier>>,
+    token_approvals: HashMap<TokenIdentifier, Principal>,
+    operator_approvals: HashMap<Principal, HashSet<TokenIdentifier>>,
+    tx_records: Vec<TxEvent>,
+}
+
+struct TxEvent {
+    time: u64,
+    caller: Principal,
+    operation: String,
+    details: Vec<(String, GenericValue)>,
 }
 
 thread_local!(
     static METADATA: RefCell<Metadata> = RefCell::new(Metadata::default());
-    static LEDGER: RefCell<Ledger<'static>> = RefCell::new(Ledger::default());
+    static LEDGER: RefCell<Ledger> = RefCell::new(Ledger::default());
 );
 
 #[init]
 #[candid_method(init)]
 fn init(args: Option<InitArgs>) {
     METADATA.with(|metadata| {
+        let mut metadata = metadata.borrow_mut();
+        metadata.owner.insert(caller()); // Default as caller
         if let Some(args) = args {
-            *metadata.borrow_mut() = Metadata {
-                name: args.name,
-                logo: args.logo,
-                symbol: args.symbol,
-                owner: args.owner.or(Some(caller())), // Default as caller when owner is None
-                tx_size: Nat::from(0),
-                created_at: time(),
-                upgraded_at: time(),
+            metadata.name = args.name;
+            metadata.logo = args.logo;
+            metadata.symbol = args.symbol;
+            if let Some(owner) = args.owner {
+                metadata.owner.insert(owner);
             }
-        } else {
-            metadata.borrow_mut().owner = Some(caller()) // Default as caller when args is None
+            metadata.tx_size = Nat::from(0);
+            metadata.created_at = time();
+            metadata.upgraded_at = time();
         }
     });
 }
@@ -87,7 +102,7 @@ fn is_canister_owner() -> Result<(), String> {
         metadata
             .borrow()
             .owner
-            .eq(&Some(caller()))
+            .contains(&caller())
             .then(|| ())
             .ok_or_else(|| "Caller is not an owner of canister".into())
     })
@@ -176,7 +191,7 @@ enum ApproveError {
 enum CommonError {
     OwnerNotFound,
     TokenNotFound,
-    Unauthorized,
+    CallerUnauthorized,
 }
 
 #[query(name = "balanceOf")]
@@ -187,7 +202,7 @@ fn balance_of(owner: Principal) -> Result<Nat, NftError> {
             .borrow()
             .owners
             .get(&owner)
-            .map(|token_metadata| token_metadata.len().into())
+            .map(|token_identifiers| token_identifiers.len().into())
             .ok_or(NftError::Common(CommonError::OwnerNotFound))
     })
 }
@@ -226,10 +241,17 @@ fn owner_token_metadata(owner: Principal) -> Result<Vec<TokenMetadata>, NftError
             .borrow()
             .owners
             .get(&owner)
-            .map(|token_metadata| {
-                token_metadata
+            .map(|token_identifiers| {
+                token_identifiers
                     .iter()
-                    .map(|&token_metadata| token_metadata.clone())
+                    .map(|token_identifier| {
+                        ledger
+                            .borrow()
+                            .tokens
+                            .get(token_identifier)
+                            .unwrap()
+                            .clone()
+                    })
                     .collect()
             })
             .ok_or(NftError::Common(CommonError::OwnerNotFound))
@@ -244,20 +266,37 @@ fn owner_token_ids(owner: Principal) -> Result<Vec<TokenIdentifier>, NftError> {
             .borrow()
             .owners
             .get(&owner)
-            .map(|token_metadata| {
-                token_metadata
+            .map(|token_identifiers| {
+                token_identifiers
                     .iter()
-                    .map(|&token_metadata| token_metadata.token_identifier.clone())
+                    .map(|token_identifier| token_identifier.clone())
                     .collect()
             })
             .ok_or(NftError::Common(CommonError::OwnerNotFound))
     })
 }
 
-#[query(name = "approve")]
-#[candid_method(query, rename = "approve")]
-fn approve(spender: Principal, token_identifier: TokenIdentifier) -> Result<(), NftError> {
-    Err(NftError::Approve(ApproveError::Test))
+#[update(name = "approve")]
+#[candid_method(update, rename = "approve")]
+fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
+    let token_metadata = token_metadata(token_identifier.clone())?;
+    token_metadata
+        .owner
+        .eq(&caller())
+        .then(|| ())
+        .ok_or(NftError::Common(CommonError::CallerUnauthorized))?;
+    LEDGER.with(|ledger| {
+        let mut ledger = ledger.borrow_mut();
+        ledger
+            .token_approvals
+            .insert(token_identifier.clone(), operator);
+        let tokens = ledger
+            .operator_approvals
+            .entry(operator)
+            .or_insert(HashSet::new());
+        tokens.insert(token_identifier);
+        Ok(Nat::from(0))
+    })
 }
 
 #[cfg(any(target_arch = "wasm32", test))]
