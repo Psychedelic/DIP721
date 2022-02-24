@@ -238,7 +238,7 @@ fn token_metadata(token_identifier: TokenIdentifier) -> Result<TokenMetadata, Nf
             .borrow()
             .tokens
             .get(&token_identifier)
-            .map(|token_metadata| token_metadata.clone())
+            .cloned()
             .ok_or(NftError::TokenNotFound)
     })
 }
@@ -276,12 +276,7 @@ fn owner_token_ids(owner: Principal) -> Result<Vec<TokenIdentifier>, NftError> {
             .borrow()
             .owners
             .get(&owner)
-            .map(|token_identifiers| {
-                token_identifiers
-                    .iter()
-                    .map(|token_identifier| token_identifier.clone())
-                    .collect()
-            })
+            .map(|token_identifiers| token_identifiers.iter().cloned().collect())
             .ok_or(NftError::OwnerNotFound)
     })
 }
@@ -317,7 +312,7 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
         ledger
             .operators
             .entry(operator)
-            .or_insert(HashSet::new())
+            .or_insert_with(HashSet::new)
             .insert(token_identifier.clone());
 
         // history
@@ -378,7 +373,7 @@ fn transfer_from(
         ledger
             .owners
             .entry(to)
-            .or_insert(HashSet::new())
+            .or_insert_with(HashSet::new)
             .insert(token_identifier.clone());
 
         // history
