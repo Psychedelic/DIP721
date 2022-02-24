@@ -1,7 +1,7 @@
 mod legacy;
 
 use ic_cdk::api::{caller, time};
-use ic_cdk::export::candid::{candid_method, export_service, CandidType, Deserialize, Int, Nat};
+use ic_cdk::export::candid::{candid_method, CandidType, Deserialize, Int, Nat};
 use ic_cdk::export::Principal;
 use ic_cdk_macros::{init, query, update};
 use std::cell::RefCell;
@@ -12,7 +12,7 @@ struct InitArgs {
     name: Option<String>,
     logo: Option<String>,
     symbol: Option<String>,
-    owner: Option<Principal>,
+    owners: Option<Vec<Principal>>,
 }
 
 #[derive(CandidType, Default, Clone)]
@@ -20,7 +20,7 @@ struct Metadata {
     name: Option<String>,
     logo: Option<String>,
     symbol: Option<String>,
-    owner: HashSet<Principal>,
+    owners: HashSet<Principal>,
     created_at: u64,
     upgraded_at: u64,
 }
@@ -100,13 +100,15 @@ thread_local!(
 fn init(args: Option<InitArgs>) {
     METADATA.with(|metadata| {
         let mut metadata = metadata.borrow_mut();
-        metadata.owner.insert(caller()); // Default as caller
+        metadata.owners.insert(caller()); // Default as caller
         if let Some(args) = args {
             metadata.name = args.name;
             metadata.logo = args.logo;
             metadata.symbol = args.symbol;
-            if let Some(owner) = args.owner {
-                metadata.owner.insert(owner);
+            if let Some(owners) = args.owners {
+                for owner in owners {
+                    metadata.owners.insert(owner);
+                }
             }
             metadata.created_at = time();
             metadata.upgraded_at = time();
@@ -118,7 +120,7 @@ fn is_canister_owner() -> Result<(), String> {
     METADATA.with(|metadata| {
         metadata
             .borrow()
-            .owner
+            .owners
             .contains(&caller())
             .then(|| ())
             .ok_or_else(|| "Caller is not an owner of canister".into())
@@ -444,6 +446,6 @@ fn main() {}
 
 #[cfg(not(any(target_arch = "wasm32", test)))]
 fn main() {
-    export_service!();
+    ic_cdk::export::candid::export_service!();
     std::print!("{}", __export_service());
 }

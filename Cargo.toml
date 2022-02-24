@@ -1,8 +1,8 @@
 [workspace]
 members = [
-    "nft",
-    "nft-v2",
+    "nft"
 ]
+exclude=["nft-v2"]
 
 [profile.release]
 lto = true

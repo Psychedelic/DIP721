@@ -14,13 +14,13 @@ type GenericValue = variant {
   TextContent : text;
 };
 type InitArgs = record {
-  owner : opt principal;
+  owners : opt vec principal;
   logo : opt text;
   name : opt text;
   symbol : opt text;
 };
 type Metadata = record {
-  owner : vec principal;
+  owners : vec principal;
   logo : opt text;
   name : opt text;
   created_at : nat64;
@@ -30,8 +30,8 @@ type Metadata = record {
 type NftError = variant {
   TokenNotFound;
   Unauthorized;
+  ExistedNFT;
   OwnerNotFound;
-  Other : text;
 };
 type Result = variant { Ok : nat; Err : NftError };
 type Result_1 = variant { Ok : TokenMetadata; Err : NftError };
@@ -40,8 +40,8 @@ type Result_3 = variant { Ok : vec text; Err : NftError };
 type Result_4 = variant { Ok : principal; Err : NftError };
 type SupportedInterface = variant { Burn; Mint; Approval; TransactionHistory };
 type TokenMetadata = record {
-  transferred_at : nat64;
-  transferred_by : principal;
+  transferred_at : opt nat64;
+  transferred_by : opt principal;
   owner : principal;
   operator : opt principal;
   properties : vec record { text; GenericValue };
@@ -60,6 +60,8 @@ service : (opt InitArgs) -> {
   logo : () -> (opt text) query;
   logoDip721 : () -> (opt text) query;
   metadata : () -> (Metadata) query;
+  mint : (principal, text, vec record { text; GenericValue }) -> (Result);
+  mintDip721 : (principal, text, vec record { text; GenericValue }) -> (Result);
   name : () -> (opt text) query;
   nameDip721 : () -> (opt text) query;
   ownerOf : (text) -> (Result_4) query;
