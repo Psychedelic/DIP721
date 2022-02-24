@@ -29,7 +29,9 @@ type Metadata = record {
 };
 type NftError = variant {
   TokenNotFound;
+  TxNotFound;
   Unauthorized;
+  InvalidTxId;
   ExistedNFT;
   OwnerNotFound;
 };
@@ -38,6 +40,7 @@ type Result_1 = variant { Ok : TokenMetadata; Err : NftError };
 type Result_2 = variant { Ok : vec TokenMetadata; Err : NftError };
 type Result_3 = variant { Ok : vec text; Err : NftError };
 type Result_4 = variant { Ok : principal; Err : NftError };
+type Result_5 = variant { Ok : TxEvent; Err : NftError };
 type SupportedInterface = variant { Burn; Mint; Approval; TransactionHistory };
 type TokenMetadata = record {
   transferred_at : opt nat64;
@@ -48,6 +51,12 @@ type TokenMetadata = record {
   token_identifier : text;
   minted_at : nat64;
   minted_by : principal;
+};
+type TxEvent = record {
+  time : nat64;
+  operation : text;
+  details : vec record { text; GenericValue };
+  caller : principal;
 };
 service : (opt InitArgs) -> {
   approve : (principal, text) -> (Result);
@@ -81,6 +90,7 @@ service : (opt InitArgs) -> {
   tokenMetadata : (text) -> (Result_1) query;
   totalSupply : () -> (nat) query;
   totalSupplyDip721 : () -> (nat) query;
+  transaction : (nat) -> (Result_5);
   transferFrom : (principal, principal, text) -> (Result);
   transferFromDip721 : (principal, principal, text) -> (Result);
 }

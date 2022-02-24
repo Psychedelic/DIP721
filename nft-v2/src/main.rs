@@ -4,6 +4,7 @@ use ic_cdk::api::{caller, time};
 use ic_cdk::export::candid::{candid_method, CandidType, Deserialize, Int, Nat};
 use ic_cdk::export::Principal;
 use ic_cdk_macros::{init, query, update};
+use num_traits::cast::ToPrimitive;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 
@@ -64,7 +65,7 @@ struct Ledger {
     tx_records: Vec<TxEvent>,
 }
 
-#[derive(CandidType)]
+#[derive(CandidType, Clone)]
 struct TxEvent {
     time: u64,
     caller: Principal,
@@ -200,7 +201,8 @@ enum NftError {
     OwnerNotFound,
     TokenNotFound,
     ExistedNFT,
-    // TxNotFound,
+    InvalidTxId,
+    TxNotFound,
     // Other(String),
 }
 
@@ -305,7 +307,7 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
             }
         }
 
-        // set new operator
+        // update operator
         ledger.tokens.get_mut(&token_identifier).unwrap().operator = Some(operator);
 
         // update cache
@@ -421,6 +423,13 @@ fn mint(
             return Err(NftError::ExistedNFT);
         }
 
+        // update cache
+        ledger
+            .owners
+            .entry(to)
+            .or_insert_with(HashSet::new)
+            .insert(token_identifier.clone());
+
         // history
         Ok(ledger.add_tx(
             caller(),
@@ -433,6 +442,20 @@ fn mint(
                 ),
             ],
         ))
+    })
+}
+
+#[update(name = "transaction")]
+#[candid_method(update, rename = "transaction")]
+fn transaction(tx_id: Nat) -> Result<TxEvent, NftError> {
+    let index = tx_id.0.to_usize().ok_or(NftError::InvalidTxId)?;
+    LEDGER.with(|ledger| {
+        ledger
+            .borrow()
+            .tx_records
+            .get(index - 1) // zero base
+            .cloned()
+            .ok_or(NftError::TxNotFound)
     })
 }
 

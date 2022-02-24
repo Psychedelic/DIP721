@@ -27,7 +27,9 @@ export interface Metadata {
   'symbol' : [] | [string],
 }
 export type NftError = { 'TokenNotFound' : null } |
+  { 'TxNotFound' : null } |
   { 'Unauthorized' : null } |
+  { 'InvalidTxId' : null } |
   { 'ExistedNFT' : null } |
   { 'OwnerNotFound' : null };
 export type Result = { 'Ok' : bigint } |
@@ -39,6 +41,8 @@ export type Result_2 = { 'Ok' : Array<TokenMetadata> } |
 export type Result_3 = { 'Ok' : Array<string> } |
   { 'Err' : NftError };
 export type Result_4 = { 'Ok' : Principal } |
+  { 'Err' : NftError };
+export type Result_5 = { 'Ok' : TxEvent } |
   { 'Err' : NftError };
 export type SupportedInterface = { 'Burn' : null } |
   { 'Mint' : null } |
@@ -53,6 +57,12 @@ export interface TokenMetadata {
   'token_identifier' : string,
   'minted_at' : bigint,
   'minted_by' : Principal,
+}
+export interface TxEvent {
+  'time' : bigint,
+  'operation' : string,
+  'details' : Array<[string, GenericValue]>,
+  'caller' : Principal,
 }
 export interface _SERVICE {
   'approve' : (arg_0: Principal, arg_1: string) => Promise<Result>,
@@ -94,6 +104,7 @@ export interface _SERVICE {
   'tokenMetadata' : (arg_0: string) => Promise<Result_1>,
   'totalSupply' : () => Promise<bigint>,
   'totalSupplyDip721' : () => Promise<bigint>,
+  'transaction' : (arg_0: bigint) => Promise<Result_5>,
   'transferFrom' : (
       arg_0: Principal,
       arg_1: Principal,

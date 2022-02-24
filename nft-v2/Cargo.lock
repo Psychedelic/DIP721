@@ -941,6 +941,7 @@ dependencies = [
  "cap-standards",
  "ic-cdk",
  "ic-cdk-macros",
+ "num-traits",
  "serde",
 ]
 

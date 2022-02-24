@@ -8,7 +8,9 @@ export const idlFactory = ({ IDL }) => {
   });
   const NftError = IDL.Variant({
     'TokenNotFound' : IDL.Null,
+    'TxNotFound' : IDL.Null,
     'Unauthorized' : IDL.Null,
+    'InvalidTxId' : IDL.Null,
     'ExistedNFT' : IDL.Null,
     'OwnerNotFound' : IDL.Null,
   });
@@ -59,6 +61,13 @@ export const idlFactory = ({ IDL }) => {
     'Approval' : IDL.Null,
     'TransactionHistory' : IDL.Null,
   });
+  const TxEvent = IDL.Record({
+    'time' : IDL.Nat64,
+    'operation' : IDL.Text,
+    'details' : IDL.Vec(IDL.Tuple(IDL.Text, GenericValue)),
+    'caller' : IDL.Principal,
+  });
+  const Result_5 = IDL.Variant({ 'Ok' : TxEvent, 'Err' : NftError });
   return IDL.Service({
     'approve' : IDL.Func([IDL.Principal, IDL.Text], [Result], []),
     'approveDip721' : IDL.Func([IDL.Principal, IDL.Text], [Result], []),
@@ -115,6 +124,7 @@ export const idlFactory = ({ IDL }) => {
     'tokenMetadata' : IDL.Func([IDL.Text], [Result_1], ['query']),
     'totalSupply' : IDL.Func([], [IDL.Nat], ['query']),
     'totalSupplyDip721' : IDL.Func([], [IDL.Nat], ['query']),
+    'transaction' : IDL.Func([IDL.Nat], [Result_5], []),
     'transferFrom' : IDL.Func(
         [IDL.Principal, IDL.Principal, IDL.Text],
         [Result],
