@@ -7,6 +7,8 @@ printf "DIP721 Copyright (C) 2022 Fleek LLC
 
 (cd "$(dirname $BASH_SOURCE)" && cd ..) || exit 1
 
+set -e # exit when a command fails
+
 [ "$DEBUG" == 1 ] && set -x
 
 . ".scripts/required/healthcheck-run-verification.sh"
@@ -361,5 +363,3 @@ tests() {
 }
 
 tests
-
-exit 0
