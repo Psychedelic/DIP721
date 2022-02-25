@@ -210,9 +210,6 @@ test("OK - v3", async t => {
       }
     });
   });
-});
-
-test("OK - v4", async t => {
   // verify token
   (await Promise.all(allActors.map(actor => actor.tokenMetadata("Nft00002")))).forEach(result => {
     t.like(result, {
@@ -253,9 +250,6 @@ test("OK - v4", async t => {
       }
     });
   });
-});
-
-test("OK - v5", async t => {
   // verify balanceOf
   (await Promise.all(allActors.map(actor => actor.balanceOf(aliceIdentity.getPrincipal())))).forEach(result => {
     t.deepEqual(result, {Ok: BigInt(2)});
@@ -290,29 +284,73 @@ test("OK - v5", async t => {
   });
 
   // verify ownerTokenMetadata
-  // (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(aliceIdentity.getPrincipal())))).forEach(
-  // result => {
-  // t.true("Ok" in result);
-  // t.is((result as {Ok: Array<TokenMetadata>}).Ok.length, 1);
-  // t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
-  // transferred_at: [],
-  // transferred_by: [],
-  // owner: aliceIdentity.getPrincipal(),
-  // operator: [],
-  // properties: [["A", {Nat64Content: BigInt(9999)}]],
-  // token_identifier: "Nft00001",
-  // minted_by: canisterOwnerIdentity.getPrincipal()
-  // });
-  // }
-  // );
+  (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(aliceIdentity.getPrincipal())))).forEach(
+    result => {
+      t.true("Ok" in result);
+      t.is((result as {Ok: Array<TokenMetadata>}).Ok.length, 2);
+      t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
+        transferred_at: [],
+        transferred_by: [],
+        owner: aliceIdentity.getPrincipal(),
+        operator: [],
+        properties: [["A", {Nat64Content: BigInt(9999)}]],
+        token_identifier: "Nft00001",
+        minted_by: canisterOwnerIdentity.getPrincipal()
+      });
+      t.like((result as {Ok: Array<TokenMetadata>}).Ok[1], {
+        transferred_at: [],
+        transferred_by: [],
+        owner: aliceIdentity.getPrincipal(),
+        operator: [],
+        properties: [["B", {Int64Content: BigInt(1234)}]],
+        token_identifier: "Nft00002",
+        minted_by: canisterOwnerIdentity.getPrincipal()
+      });
+    }
+  );
+  (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(bobIdentity.getPrincipal())))).forEach(result => {
+    t.true("Ok" in result);
+    t.is((result as {Ok: Array<TokenMetadata>}).Ok.length, 1);
+    t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
+      transferred_at: [],
+      transferred_by: [],
+      owner: bobIdentity.getPrincipal(),
+      operator: [],
+      properties: [["C", {Int32Content: 5678}]],
+      token_identifier: "Nft00003",
+      minted_by: canisterOwnerIdentity.getPrincipal()
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(johnIdentity.getPrincipal())))).forEach(result => {
+    t.true("Ok" in result);
+    t.is((result as {Ok: Array<TokenMetadata>}).Ok.length, 1);
+    t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
+      transferred_at: [],
+      transferred_by: [],
+      owner: johnIdentity.getPrincipal(),
+      operator: [],
+      properties: [["D", {TextContent: "∆≈ç√∫"}]],
+      token_identifier: "Nft00004",
+      minted_by: canisterOwnerIdentity.getPrincipal()
+    });
+  });
 
   // verify operatorOf
-  // (await Promise.all(allActors.map(actor => actor.operatorOf("Nft00001")))).forEach(result => {
-  // t.deepEqual(result, {Ok: []});
-  // });
+  (await Promise.all(allActors.map(actor => actor.operatorOf("Nft00001")))).forEach(result => {
+    t.deepEqual(result, {Ok: []});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf("Nft00002")))).forEach(result => {
+    t.deepEqual(result, {Ok: []});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf("Nft00003")))).forEach(result => {
+    t.deepEqual(result, {Ok: []});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf("Nft00004")))).forEach(result => {
+    t.deepEqual(result, {Ok: []});
+  });
 
   // verify totalSupply
-  // (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
-  // t.deepEqual(result, BigInt(1));
-  // });
+  (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
+    t.deepEqual(result, BigInt(4));
+  });
 });

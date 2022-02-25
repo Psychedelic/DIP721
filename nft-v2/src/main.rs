@@ -467,25 +467,24 @@ fn mint(
 ) -> Result<Nat, NftError> {
     LEDGER.with(|ledger| {
         let mut ledger = ledger.borrow_mut();
-        if ledger
-            .tokens
-            .insert(
-                token_identifier.clone(),
-                TokenMetadata {
-                    token_identifier: token_identifier.clone(),
-                    owner: to,
-                    operator: None,
-                    properties,
-                    minted_at: time(),
-                    minted_by: caller(),
-                    transferred_at: None,
-                    transferred_by: None,
-                },
-            )
-            .is_some()
-        {
+        if ledger.tokens.contains_key(&token_identifier) {
             return Err(NftError::ExistedNFT);
         }
+
+        // init token
+        ledger.tokens.insert(
+            token_identifier.clone(),
+            TokenMetadata {
+                token_identifier: token_identifier.clone(),
+                owner: to,
+                operator: None,
+                properties,
+                minted_at: time(),
+                minted_by: caller(),
+                transferred_at: None,
+                transferred_by: None,
+            },
+        );
 
         // update cache
         ledger
