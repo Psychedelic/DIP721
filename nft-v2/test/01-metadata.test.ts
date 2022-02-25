@@ -48,15 +48,19 @@ test("OK", async t => {
 });
 
 test("ERROR", async t => {
+  // setName error when caller is not an owner
   (await Promise.allSettled(normalActors.map(actor => actor.setName("nft")))).forEach(promise =>
     t.is(promise.status, "rejected")
   );
+  // setLogo error when caller is not an owner
   (await Promise.allSettled(normalActors.map(actor => actor.setLogo("nftLogo")))).forEach(promise =>
     t.is(promise.status, "rejected")
   );
+  // setSymbol error when caller is not an owner
   (await Promise.allSettled(normalActors.map(actor => actor.setSymbol("nftSymbol")))).forEach(promise =>
     t.is(promise.status, "rejected")
   );
+  // setOwners error when caller is not an owner
   (await Promise.allSettled(normalActors.map(actor => actor.setOwners([])))).forEach(promise =>
     t.is(promise.status, "rejected")
   );

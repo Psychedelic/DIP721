@@ -70,16 +70,16 @@ struct Ledger {
 struct TxEvent {
     time: u64,
     caller: Principal,
-    operation: &'static str,
-    details: Vec<(&'static str, GenericValue)>,
+    operation: String,
+    details: Vec<(String, GenericValue)>,
 }
 
 impl Ledger {
     fn add_tx(
         &mut self,
         caller: Principal,
-        operation: &'static str,
-        details: Vec<(&'static str, GenericValue)>,
+        operation: String,
+        details: Vec<(String, GenericValue)>,
     ) -> Nat {
         // NOTE: integrate with cap dip721 standard, or skip it for now ?????
         self.tx_records.push(TxEvent {
@@ -215,9 +215,8 @@ enum NftError {
     OperatorNotFound,
     TokenNotFound,
     ExistedNFT,
-    InvalidTxId,
     TxNotFound,
-    // Other(String),
+    Other(String),
 }
 
 #[query(name = "balanceOf")]
@@ -385,11 +384,11 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
         // history
         Ok(ledger.add_tx(
             caller(),
-            "approve",
+            "approve".into(),
             vec![
-                ("operator", GenericValue::Principal(operator)),
+                ("operator".into(), GenericValue::Principal(operator)),
                 (
-                    "token_identifier",
+                    "token_identifier".into(),
                     GenericValue::TextContent(token_identifier),
                 ),
             ],
@@ -446,12 +445,12 @@ fn transfer_from(
         // history
         Ok(ledger.add_tx(
             caller(),
-            "transfer_from",
+            "transfer_from".into(),
             vec![
-                ("owner", GenericValue::Principal(owner)),
-                ("to", GenericValue::Principal(to)),
+                ("owner".into(), GenericValue::Principal(owner)),
+                ("to".into(), GenericValue::Principal(to)),
                 (
-                    "token_identifier",
+                    "token_identifier".into(),
                     GenericValue::TextContent(token_identifier),
                 ),
             ],
@@ -498,11 +497,11 @@ fn mint(
         // history
         Ok(ledger.add_tx(
             caller(),
-            "mint",
+            "mint".into(),
             vec![
-                ("to", GenericValue::Principal(to)),
+                ("to".into(), GenericValue::Principal(to)),
                 (
-                    "token_identifier",
+                    "token_identifier".into(),
                     GenericValue::TextContent(token_identifier),
                 ),
             ],
@@ -513,7 +512,10 @@ fn mint(
 #[update(name = "transaction")]
 #[candid_method(update, rename = "transaction")]
 fn transaction(tx_id: Nat) -> Result<TxEvent, NftError> {
-    let index = tx_id.0.to_usize().ok_or(NftError::InvalidTxId)?;
+    let index = tx_id
+        .0
+        .to_usize()
+        .ok_or(NftError::Other("failed to cast usize from nat".into()))?;
     LEDGER.with(|ledger| {
         ledger
             .borrow()

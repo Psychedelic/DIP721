@@ -30,9 +30,9 @@ export type NftError = { 'TokenNotFound' : null } |
   { 'TxNotFound' : null } |
   { 'OperatorNotFound' : null } |
   { 'Unauthorized' : null } |
-  { 'InvalidTxId' : null } |
   { 'ExistedNFT' : null } |
-  { 'OwnerNotFound' : null };
+  { 'OwnerNotFound' : null } |
+  { 'Other' : string };
 export type Result = { 'Ok' : bigint } |
   { 'Err' : NftError };
 export type Result_1 = { 'Ok' : TokenMetadata } |

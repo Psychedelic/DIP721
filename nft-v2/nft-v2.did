@@ -32,9 +32,9 @@ type NftError = variant {
   TxNotFound;
   OperatorNotFound;
   Unauthorized;
-  InvalidTxId;
   ExistedNFT;
   OwnerNotFound;
+  Other : text;
 };
 type Result = variant { Ok : nat; Err : NftError };
 type Result_1 = variant { Ok : TokenMetadata; Err : NftError };

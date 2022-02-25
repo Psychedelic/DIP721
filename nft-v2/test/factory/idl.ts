@@ -11,9 +11,9 @@ export const idlFactory = ({ IDL }) => {
     'TxNotFound' : IDL.Null,
     'OperatorNotFound' : IDL.Null,
     'Unauthorized' : IDL.Null,
-    'InvalidTxId' : IDL.Null,
     'ExistedNFT' : IDL.Null,
     'OwnerNotFound' : IDL.Null,
+    'Other' : IDL.Text,
   });
   const Result = IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : NftError });
   const GenericValue = IDL.Variant({
