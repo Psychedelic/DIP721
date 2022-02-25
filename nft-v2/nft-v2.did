@@ -30,6 +30,7 @@ type Metadata = record {
 type NftError = variant {
   TokenNotFound;
   TxNotFound;
+  SelfApprove;
   OperatorNotFound;
   Unauthorized;
   ExistedNFT;

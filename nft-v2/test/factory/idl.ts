@@ -9,6 +9,7 @@ export const idlFactory = ({ IDL }) => {
   const NftError = IDL.Variant({
     'TokenNotFound' : IDL.Null,
     'TxNotFound' : IDL.Null,
+    'SelfApprove' : IDL.Null,
     'OperatorNotFound' : IDL.Null,
     'Unauthorized' : IDL.Null,
     'ExistedNFT' : IDL.Null,

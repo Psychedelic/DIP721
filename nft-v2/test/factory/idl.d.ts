@@ -28,6 +28,7 @@ export interface Metadata {
 }
 export type NftError = { 'TokenNotFound' : null } |
   { 'TxNotFound' : null } |
+  { 'SelfApprove' : null } |
   { 'OperatorNotFound' : null } |
   { 'Unauthorized' : null } |
   { 'ExistedNFT' : null } |

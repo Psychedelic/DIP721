@@ -215,6 +215,7 @@ enum NftError {
     OperatorNotFound,
     TokenNotFound,
     ExistedNFT,
+    SelfApprove,
     TxNotFound,
     Other(String),
 }
@@ -350,6 +351,10 @@ fn operator_token_ids(operator: Principal) -> Result<Vec<TokenIdentifier>, NftEr
 #[update(name = "approve")]
 #[candid_method(update, rename = "approve")]
 fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
+    if operator == caller() {
+        return Err(NftError::SelfApprove);
+    }
+
     let token_metadata = token_metadata(token_identifier.clone())?;
 
     // check valid owner
@@ -368,6 +373,10 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
         if let Some(old_operator) = old_operator {
             if let Some(tokens) = ledger.operators.get_mut(&old_operator) {
                 tokens.remove(&token_identifier);
+                // remove key when empty cache
+                if tokens.len() == 0 {
+                    ledger.operators.remove(&old_operator);
+                }
             }
         }
 
@@ -427,6 +436,10 @@ fn transfer_from(
         // remove cache
         if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
             tokens.remove(&token_identifier);
+            // remove key when empty cache
+            if tokens.len() == 0 {
+                ledger.owners.remove(&old_owner);
+            }
         }
 
         // update owner

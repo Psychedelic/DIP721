@@ -34,7 +34,7 @@ const testOwners = async (t: Assertions) => {
   );
 };
 
-test("OK", async t => {
+test("CRUD - OK", async t => {
   await Promise.all([testName(t), testLogo(t), testSymbol(t), testOwners(t)]);
   (await Promise.all(allActors.map(actor => actor.metadata()))).forEach(result => {
     t.deepEqual(result.name, ["nft"]);
@@ -47,7 +47,7 @@ test("OK", async t => {
   });
 });
 
-test("ERROR", async t => {
+test("CRUD - ERROR", async t => {
   // setName error when caller is not an owner
   (await Promise.allSettled(normalActors.map(actor => actor.setName("nft")))).forEach(promise =>
     t.is(promise.status, "rejected")
