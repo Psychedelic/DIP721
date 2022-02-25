@@ -374,7 +374,7 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
             if let Some(tokens) = ledger.operators.get_mut(&old_operator) {
                 tokens.remove(&token_identifier);
                 // remove key when empty cache
-                if tokens.len() == 0 {
+                if tokens.is_empty() {
                     ledger.operators.remove(&old_operator);
                 }
             }
@@ -437,7 +437,7 @@ fn transfer_from(
         if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
             tokens.remove(&token_identifier);
             // remove key when empty cache
-            if tokens.len() == 0 {
+            if tokens.is_empty() {
                 ledger.owners.remove(&old_owner);
             }
         }
@@ -527,7 +527,7 @@ fn transaction(tx_id: Nat) -> Result<TxEvent, NftError> {
     let index = tx_id
         .0
         .to_usize()
-        .ok_or(NftError::Other("failed to cast usize from nat".into()))?;
+        .ok_or_else(|| NftError::Other("failed to cast usize from nat".into()))?;
     LEDGER.with(|ledger| {
         ledger
             .borrow()

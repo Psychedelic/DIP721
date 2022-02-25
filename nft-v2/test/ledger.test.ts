@@ -251,6 +251,7 @@ test.serial("Mint OK - v3", async t => {
       }
     });
   });
+
   // verify balanceOf
   (await Promise.all(allActors.map(actor => actor.balanceOf(aliceIdentity.getPrincipal())))).forEach(result => {
     t.deepEqual(result, {Ok: BigInt(2)});
