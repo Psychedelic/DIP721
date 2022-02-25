@@ -1,6 +1,10 @@
-.PHONY: candid build local test
+.PHONY: init candid build local test format lint clean
 
 OWNER_CANISTER_PRINCIPAL=$(shell cat canister-owner-test-principal.txt)
+
+init:
+	npm i
+	cargo check
 
 candid:
 	cargo run > nft-v2.did
@@ -21,3 +25,16 @@ test: build
 	dfx canister install nft-v2  --argument '(opt record{owners=opt vec{principal"$(OWNER_CANISTER_PRINCIPAL)"}})'
 	npm t
 	dfx stop
+
+format:
+	npm run prettier
+	cargo fmt --all
+
+lint:
+	npm run prebuild
+	cargo fmt --all -- --check
+	cargo clippy --all-targets --all-features -- -D warnings -D clippy::all
+
+clean:
+	cargo clean
+	npm run clean

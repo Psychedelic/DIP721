@@ -9,6 +9,7 @@ export const idlFactory = ({ IDL }) => {
   const NftError = IDL.Variant({
     'TokenNotFound' : IDL.Null,
     'TxNotFound' : IDL.Null,
+    'OperatorNotFound' : IDL.Null,
     'Unauthorized' : IDL.Null,
     'InvalidTxId' : IDL.Null,
     'ExistedNFT' : IDL.Null,
@@ -54,7 +55,11 @@ export const idlFactory = ({ IDL }) => {
     'upgraded_at' : IDL.Nat64,
     'symbol' : IDL.Opt(IDL.Text),
   });
-  const Result_4 = IDL.Variant({ 'Ok' : IDL.Principal, 'Err' : NftError });
+  const Result_4 = IDL.Variant({
+    'Ok' : IDL.Opt(IDL.Principal),
+    'Err' : NftError,
+  });
+  const Result_5 = IDL.Variant({ 'Ok' : IDL.Principal, 'Err' : NftError });
   const SupportedInterface = IDL.Variant({
     'Burn' : IDL.Null,
     'Mint' : IDL.Null,
@@ -67,7 +72,7 @@ export const idlFactory = ({ IDL }) => {
     'details' : IDL.Vec(IDL.Tuple(IDL.Text, GenericValue)),
     'caller' : IDL.Principal,
   });
-  const Result_5 = IDL.Variant({ 'Ok' : TxEvent, 'Err' : NftError });
+  const Result_6 = IDL.Variant({ 'Ok' : TxEvent, 'Err' : NftError });
   return IDL.Service({
     'approve' : IDL.Func([IDL.Principal, IDL.Text], [Result], []),
     'approveDip721' : IDL.Func([IDL.Principal, IDL.Text], [Result], []),
@@ -99,14 +104,19 @@ export const idlFactory = ({ IDL }) => {
       ),
     'name' : IDL.Func([], [IDL.Opt(IDL.Text)], ['query']),
     'nameDip721' : IDL.Func([], [IDL.Opt(IDL.Text)], ['query']),
-    'ownerOf' : IDL.Func([IDL.Text], [Result_4], ['query']),
-    'ownerOfDip721' : IDL.Func([IDL.Text], [Result_4], ['query']),
+    'operatorOf' : IDL.Func([IDL.Text], [Result_4], ['query']),
+    'operatorTokenIds' : IDL.Func([IDL.Principal], [Result_3], ['query']),
+    'operatorTokenMetadata' : IDL.Func([IDL.Principal], [Result_2], ['query']),
+    'ownerOf' : IDL.Func([IDL.Text], [Result_5], ['query']),
+    'ownerOfDip721' : IDL.Func([IDL.Text], [Result_5], ['query']),
     'ownerTokenIds' : IDL.Func([IDL.Principal], [Result_3], ['query']),
     'ownerTokenMetadata' : IDL.Func([IDL.Principal], [Result_2], ['query']),
+    'owners' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'setLogo' : IDL.Func([IDL.Text], [], []),
     'setLogoDip721' : IDL.Func([IDL.Text], [], []),
     'setName' : IDL.Func([IDL.Text], [], []),
     'setNameDip721' : IDL.Func([IDL.Text], [], []),
+    'setOwners' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
     'setSymbol' : IDL.Func([IDL.Text], [], []),
     'setSymbolDip721' : IDL.Func([IDL.Text], [], []),
     'supportedInterfaces' : IDL.Func(
@@ -124,7 +134,7 @@ export const idlFactory = ({ IDL }) => {
     'tokenMetadata' : IDL.Func([IDL.Text], [Result_1], ['query']),
     'totalSupply' : IDL.Func([], [IDL.Nat], ['query']),
     'totalSupplyDip721' : IDL.Func([], [IDL.Nat], ['query']),
-    'transaction' : IDL.Func([IDL.Nat], [Result_5], []),
+    'transaction' : IDL.Func([IDL.Nat], [Result_6], []),
     'transferFrom' : IDL.Func(
         [IDL.Principal, IDL.Principal, IDL.Text],
         [Result],

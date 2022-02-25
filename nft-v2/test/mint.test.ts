@@ -5,11 +5,7 @@ import test from "ava";
 const normalActors = [aliceActor, bobActor, johnActor];
 const allActors = [...normalActors, canisterOwnerActor];
 
-test("mint", async t => {
-  // error when caller is not an owner
-  for (const actor of normalActors) {
-    await t.throwsAsync(actor.mint(aliceIdentity.getPrincipal(), "Nft00001", [["A", {Nat64Content: BigInt(9999)}]]));
-  }
+test("OK", async t => {
   // mint
   t.deepEqual(
     await canisterOwnerActor.mint(aliceIdentity.getPrincipal(), "Nft00001", [["A", {Nat64Content: BigInt(9999)}]]),
@@ -75,4 +71,14 @@ test("mint", async t => {
     t.deepEqual(result, BigInt(1));
   });
   // fail case
+});
+
+test("ERROR", async t => {
+  (
+    await Promise.allSettled(
+      normalActors.map(actor =>
+        actor.mint(aliceIdentity.getPrincipal(), "Nft00001", [["A", {Nat64Content: BigInt(9999)}]])
+      )
+    )
+  ).forEach(promise => t.is(promise.status, "rejected"));
 });

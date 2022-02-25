@@ -7,6 +7,7 @@ use ic_cdk_macros::{init, query, update};
 use num_traits::cast::ToPrimitive;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
+use std::iter::FromIterator;
 
 #[derive(CandidType, Deserialize)]
 struct InitArgs {
@@ -170,6 +171,18 @@ fn set_symbol(symbol: String) {
     METADATA.with(|metadata| metadata.borrow_mut().symbol = Some(symbol))
 }
 
+#[query(name = "owners")]
+#[candid_method(query, rename = "owners")]
+fn owners() -> Vec<Principal> {
+    METADATA.with(|metadata| metadata.borrow().owners.iter().cloned().collect())
+}
+
+#[update(name = "setOwners", guard = "is_canister_owner")]
+#[candid_method(update, rename = "setOwners")]
+fn set_owners(owners: Vec<Principal>) {
+    METADATA.with(|metadata| metadata.borrow_mut().owners = HashSet::from_iter(owners))
+}
+
 #[query(name = "totalSupply")]
 #[candid_method(query, rename = "totalSupply")]
 fn total_supply() -> Nat {
@@ -199,6 +212,7 @@ fn supported_interfaces() -> Vec<SupportedInterface> {
 enum NftError {
     Unauthorized,
     OwnerNotFound,
+    OperatorNotFound,
     TokenNotFound,
     ExistedNFT,
     InvalidTxId,
@@ -228,6 +242,19 @@ fn owner_of(token_identifier: TokenIdentifier) -> Result<Principal, NftError> {
             .tokens
             .get(&token_identifier)
             .map(|token_metadata| token_metadata.owner)
+            .ok_or(NftError::TokenNotFound)
+    })
+}
+
+#[query(name = "operatorOf")]
+#[candid_method(query, rename = "operatorOf")]
+fn operator_of(token_identifier: TokenIdentifier) -> Result<Option<Principal>, NftError> {
+    LEDGER.with(|ledger| {
+        ledger
+            .borrow()
+            .tokens
+            .get(&token_identifier)
+            .map(|token_metadata| token_metadata.operator)
             .ok_or(NftError::TokenNotFound)
     })
 }
@@ -270,6 +297,31 @@ fn owner_token_metadata(owner: Principal) -> Result<Vec<TokenMetadata>, NftError
     })
 }
 
+#[query(name = "operatorTokenMetadata")]
+#[candid_method(query, rename = "operatorTokenMetadata")]
+fn operator_token_metadata(operator: Principal) -> Result<Vec<TokenMetadata>, NftError> {
+    LEDGER.with(|ledger| {
+        ledger
+            .borrow()
+            .operators
+            .get(&operator)
+            .map(|token_identifiers| {
+                token_identifiers
+                    .iter()
+                    .map(|token_identifier| {
+                        ledger
+                            .borrow()
+                            .tokens
+                            .get(token_identifier)
+                            .unwrap()
+                            .clone()
+                    })
+                    .collect()
+            })
+            .ok_or(NftError::OperatorNotFound)
+    })
+}
+
 #[query(name = "ownerTokenIds")]
 #[candid_method(query, rename = "ownerTokenIds")]
 fn owner_token_ids(owner: Principal) -> Result<Vec<TokenIdentifier>, NftError> {
@@ -280,6 +332,19 @@ fn owner_token_ids(owner: Principal) -> Result<Vec<TokenIdentifier>, NftError> {
             .get(&owner)
             .map(|token_identifiers| token_identifiers.iter().cloned().collect())
             .ok_or(NftError::OwnerNotFound)
+    })
+}
+
+#[query(name = "operatorTokenIds")]
+#[candid_method(query, rename = "operatorTokenIds")]
+fn operator_token_ids(operator: Principal) -> Result<Vec<TokenIdentifier>, NftError> {
+    LEDGER.with(|ledger| {
+        ledger
+            .borrow()
+            .operators
+            .get(&operator)
+            .map(|token_identifiers| token_identifiers.iter().cloned().collect())
+            .ok_or(NftError::OperatorNotFound)
     })
 }
 

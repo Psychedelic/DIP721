@@ -30,6 +30,7 @@ type Metadata = record {
 type NftError = variant {
   TokenNotFound;
   TxNotFound;
+  OperatorNotFound;
   Unauthorized;
   InvalidTxId;
   ExistedNFT;
@@ -39,8 +40,9 @@ type Result = variant { Ok : nat; Err : NftError };
 type Result_1 = variant { Ok : TokenMetadata; Err : NftError };
 type Result_2 = variant { Ok : vec TokenMetadata; Err : NftError };
 type Result_3 = variant { Ok : vec text; Err : NftError };
-type Result_4 = variant { Ok : principal; Err : NftError };
-type Result_5 = variant { Ok : TxEvent; Err : NftError };
+type Result_4 = variant { Ok : opt principal; Err : NftError };
+type Result_5 = variant { Ok : principal; Err : NftError };
+type Result_6 = variant { Ok : TxEvent; Err : NftError };
 type SupportedInterface = variant { Burn; Mint; Approval; TransactionHistory };
 type TokenMetadata = record {
   transferred_at : opt nat64;
@@ -73,14 +75,19 @@ service : (opt InitArgs) -> {
   mintDip721 : (principal, text, vec record { text; GenericValue }) -> (Result);
   name : () -> (opt text) query;
   nameDip721 : () -> (opt text) query;
-  ownerOf : (text) -> (Result_4) query;
-  ownerOfDip721 : (text) -> (Result_4) query;
+  operatorOf : (text) -> (Result_4) query;
+  operatorTokenIds : (principal) -> (Result_3) query;
+  operatorTokenMetadata : (principal) -> (Result_2) query;
+  ownerOf : (text) -> (Result_5) query;
+  ownerOfDip721 : (text) -> (Result_5) query;
   ownerTokenIds : (principal) -> (Result_3) query;
   ownerTokenMetadata : (principal) -> (Result_2) query;
+  owners : () -> (vec principal) query;
   setLogo : (text) -> ();
   setLogoDip721 : (text) -> ();
   setName : (text) -> ();
   setNameDip721 : (text) -> ();
+  setOwners : (vec principal) -> ();
   setSymbol : (text) -> ();
   setSymbolDip721 : (text) -> ();
   supportedInterfaces : () -> (vec SupportedInterface) query;
@@ -90,7 +97,7 @@ service : (opt InitArgs) -> {
   tokenMetadata : (text) -> (Result_1) query;
   totalSupply : () -> (nat) query;
   totalSupplyDip721 : () -> (nat) query;
-  transaction : (nat) -> (Result_5);
+  transaction : (nat) -> (Result_6);
   transferFrom : (principal, principal, text) -> (Result);
   transferFromDip721 : (principal, principal, text) -> (Result);
 }

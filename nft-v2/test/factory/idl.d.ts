@@ -28,6 +28,7 @@ export interface Metadata {
 }
 export type NftError = { 'TokenNotFound' : null } |
   { 'TxNotFound' : null } |
+  { 'OperatorNotFound' : null } |
   { 'Unauthorized' : null } |
   { 'InvalidTxId' : null } |
   { 'ExistedNFT' : null } |
@@ -40,9 +41,11 @@ export type Result_2 = { 'Ok' : Array<TokenMetadata> } |
   { 'Err' : NftError };
 export type Result_3 = { 'Ok' : Array<string> } |
   { 'Err' : NftError };
-export type Result_4 = { 'Ok' : Principal } |
+export type Result_4 = { 'Ok' : [] | [Principal] } |
   { 'Err' : NftError };
-export type Result_5 = { 'Ok' : TxEvent } |
+export type Result_5 = { 'Ok' : Principal } |
+  { 'Err' : NftError };
+export type Result_6 = { 'Ok' : TxEvent } |
   { 'Err' : NftError };
 export type SupportedInterface = { 'Burn' : null } |
   { 'Mint' : null } |
@@ -87,14 +90,19 @@ export interface _SERVICE {
     ) => Promise<Result>,
   'name' : () => Promise<[] | [string]>,
   'nameDip721' : () => Promise<[] | [string]>,
-  'ownerOf' : (arg_0: string) => Promise<Result_4>,
-  'ownerOfDip721' : (arg_0: string) => Promise<Result_4>,
+  'operatorOf' : (arg_0: string) => Promise<Result_4>,
+  'operatorTokenIds' : (arg_0: Principal) => Promise<Result_3>,
+  'operatorTokenMetadata' : (arg_0: Principal) => Promise<Result_2>,
+  'ownerOf' : (arg_0: string) => Promise<Result_5>,
+  'ownerOfDip721' : (arg_0: string) => Promise<Result_5>,
   'ownerTokenIds' : (arg_0: Principal) => Promise<Result_3>,
   'ownerTokenMetadata' : (arg_0: Principal) => Promise<Result_2>,
+  'owners' : () => Promise<Array<Principal>>,
   'setLogo' : (arg_0: string) => Promise<undefined>,
   'setLogoDip721' : (arg_0: string) => Promise<undefined>,
   'setName' : (arg_0: string) => Promise<undefined>,
   'setNameDip721' : (arg_0: string) => Promise<undefined>,
+  'setOwners' : (arg_0: Array<Principal>) => Promise<undefined>,
   'setSymbol' : (arg_0: string) => Promise<undefined>,
   'setSymbolDip721' : (arg_0: string) => Promise<undefined>,
   'supportedInterfaces' : () => Promise<Array<SupportedInterface>>,
@@ -104,7 +112,7 @@ export interface _SERVICE {
   'tokenMetadata' : (arg_0: string) => Promise<Result_1>,
   'totalSupply' : () => Promise<bigint>,
   'totalSupplyDip721' : () => Promise<bigint>,
-  'transaction' : (arg_0: bigint) => Promise<Result_5>,
+  'transaction' : (arg_0: bigint) => Promise<Result_6>,
   'transferFrom' : (
       arg_0: Principal,
       arg_1: Principal,

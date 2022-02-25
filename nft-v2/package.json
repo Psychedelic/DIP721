@@ -12,7 +12,7 @@
     "lint": "eslint . --fix",
     "prebuild": "npm run prettier:check && npm run lint:check",
     "build": "tsc && node fileExtReplacer.js dist",
-    "clean": "rm -rf node_modules build public package-lock.json",
+    "clean": "rm -rf node_modules build public dist package-lock.json",
     "test": "npm run build && ava"
   },
   "engines": {
