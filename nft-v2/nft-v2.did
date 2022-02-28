@@ -1,6 +1,7 @@
 type GenericValue = variant {
   Nat64Content : nat64;
   Nat32Content : nat32;
+  BoolContent : bool;
   Nat8Content : nat8;
   Int64Content : int64;
   IntContent : int;
@@ -42,9 +43,10 @@ type Result = variant { Ok : nat; Err : NftError };
 type Result_1 = variant { Ok : TokenMetadata; Err : NftError };
 type Result_2 = variant { Ok : vec TokenMetadata; Err : NftError };
 type Result_3 = variant { Ok : vec text; Err : NftError };
-type Result_4 = variant { Ok : opt principal; Err : NftError };
-type Result_5 = variant { Ok : principal; Err : NftError };
-type Result_6 = variant { Ok : TxEvent; Err : NftError };
+type Result_4 = variant { Ok : bool; Err : NftError };
+type Result_5 = variant { Ok : opt principal; Err : NftError };
+type Result_6 = variant { Ok : principal; Err : NftError };
+type Result_7 = variant { Ok : TxEvent; Err : NftError };
 type SupportedInterface = variant { Burn; Mint; Approval; TransactionHistory };
 type TokenMetadata = record {
   transferred_at : opt nat64;
@@ -70,6 +72,7 @@ service : (opt InitArgs) -> {
   getMetadataDip721 : (text) -> (Result_1) query;
   getMetadataForUserDip721 : (principal) -> (Result_2) query;
   getTokenIdsForUserDip721 : (principal) -> (Result_3) query;
+  isApprovedForAll : (principal, principal) -> (Result_4) query;
   logo : () -> (opt text) query;
   logoDip721 : () -> (opt text) query;
   metadata : () -> (Metadata) query;
@@ -77,14 +80,15 @@ service : (opt InitArgs) -> {
   mintDip721 : (principal, text, vec record { text; GenericValue }) -> (Result);
   name : () -> (opt text) query;
   nameDip721 : () -> (opt text) query;
-  operatorOf : (text) -> (Result_4) query;
+  operatorOf : (text) -> (Result_5) query;
   operatorTokenIds : (principal) -> (Result_3) query;
   operatorTokenMetadata : (principal) -> (Result_2) query;
-  ownerOf : (text) -> (Result_5) query;
-  ownerOfDip721 : (text) -> (Result_5) query;
+  ownerOf : (text) -> (Result_6) query;
+  ownerOfDip721 : (text) -> (Result_6) query;
   ownerTokenIds : (principal) -> (Result_3) query;
   ownerTokenMetadata : (principal) -> (Result_2) query;
   owners : () -> (vec principal) query;
+  setApprovalForAll : (principal, bool) -> (Result);
   setLogo : (text) -> ();
   setLogoDip721 : (text) -> ();
   setName : (text) -> ();
@@ -99,7 +103,7 @@ service : (opt InitArgs) -> {
   tokenMetadata : (text) -> (Result_1) query;
   totalSupply : () -> (nat) query;
   totalSupplyDip721 : () -> (nat) query;
-  transaction : (nat) -> (Result_6);
+  transaction : (nat) -> (Result_7);
   transfer : (principal, text) -> (Result);
   transferFrom : (principal, principal, text) -> (Result);
   transferFromDip721 : (principal, principal, text) -> (Result);

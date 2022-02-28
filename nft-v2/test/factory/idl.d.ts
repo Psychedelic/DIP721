@@ -1,6 +1,7 @@
 import type { Principal } from '@dfinity/principal';
 export type GenericValue = { 'Nat64Content' : bigint } |
   { 'Nat32Content' : number } |
+  { 'BoolContent' : boolean } |
   { 'Nat8Content' : number } |
   { 'Int64Content' : bigint } |
   { 'IntContent' : bigint } |
@@ -43,11 +44,13 @@ export type Result_2 = { 'Ok' : Array<TokenMetadata> } |
   { 'Err' : NftError };
 export type Result_3 = { 'Ok' : Array<string> } |
   { 'Err' : NftError };
-export type Result_4 = { 'Ok' : [] | [Principal] } |
+export type Result_4 = { 'Ok' : boolean } |
   { 'Err' : NftError };
-export type Result_5 = { 'Ok' : Principal } |
+export type Result_5 = { 'Ok' : [] | [Principal] } |
   { 'Err' : NftError };
-export type Result_6 = { 'Ok' : TxEvent } |
+export type Result_6 = { 'Ok' : Principal } |
+  { 'Err' : NftError };
+export type Result_7 = { 'Ok' : TxEvent } |
   { 'Err' : NftError };
 export type SupportedInterface = { 'Burn' : null } |
   { 'Mint' : null } |
@@ -77,6 +80,9 @@ export interface _SERVICE {
   'getMetadataDip721' : (arg_0: string) => Promise<Result_1>,
   'getMetadataForUserDip721' : (arg_0: Principal) => Promise<Result_2>,
   'getTokenIdsForUserDip721' : (arg_0: Principal) => Promise<Result_3>,
+  'isApprovedForAll' : (arg_0: Principal, arg_1: Principal) => Promise<
+      Result_4
+    >,
   'logo' : () => Promise<[] | [string]>,
   'logoDip721' : () => Promise<[] | [string]>,
   'metadata' : () => Promise<Metadata>,
@@ -92,14 +98,15 @@ export interface _SERVICE {
     ) => Promise<Result>,
   'name' : () => Promise<[] | [string]>,
   'nameDip721' : () => Promise<[] | [string]>,
-  'operatorOf' : (arg_0: string) => Promise<Result_4>,
+  'operatorOf' : (arg_0: string) => Promise<Result_5>,
   'operatorTokenIds' : (arg_0: Principal) => Promise<Result_3>,
   'operatorTokenMetadata' : (arg_0: Principal) => Promise<Result_2>,
-  'ownerOf' : (arg_0: string) => Promise<Result_5>,
-  'ownerOfDip721' : (arg_0: string) => Promise<Result_5>,
+  'ownerOf' : (arg_0: string) => Promise<Result_6>,
+  'ownerOfDip721' : (arg_0: string) => Promise<Result_6>,
   'ownerTokenIds' : (arg_0: Principal) => Promise<Result_3>,
   'ownerTokenMetadata' : (arg_0: Principal) => Promise<Result_2>,
   'owners' : () => Promise<Array<Principal>>,
+  'setApprovalForAll' : (arg_0: Principal, arg_1: boolean) => Promise<Result>,
   'setLogo' : (arg_0: string) => Promise<undefined>,
   'setLogoDip721' : (arg_0: string) => Promise<undefined>,
   'setName' : (arg_0: string) => Promise<undefined>,
@@ -114,7 +121,7 @@ export interface _SERVICE {
   'tokenMetadata' : (arg_0: string) => Promise<Result_1>,
   'totalSupply' : () => Promise<bigint>,
   'totalSupplyDip721' : () => Promise<bigint>,
-  'transaction' : (arg_0: bigint) => Promise<Result_6>,
+  'transaction' : (arg_0: bigint) => Promise<Result_7>,
   'transfer' : (arg_0: Principal, arg_1: string) => Promise<Result>,
   'transferFrom' : (
       arg_0: Principal,

@@ -31,6 +31,7 @@ type TokenIdentifier = String;
 
 #[derive(CandidType, Clone, Deserialize)]
 enum GenericValue {
+    BoolContent(bool),
     TextContent(String),
     BlobContent(Vec<u8>),
     Principal(Principal),
@@ -349,6 +350,71 @@ fn operator_token_ids(operator: Principal) -> Result<Vec<TokenIdentifier>, NftEr
     })
 }
 
+#[update(name = "setApprovalForAll")]
+#[candid_method(update, rename = "setApprovalForAll")]
+fn set_approval_for_all(operator: Principal, is_approved: bool) -> Result<Nat, NftError> {
+    if operator == caller() {
+        return Err(NftError::SelfApprove);
+    }
+
+    let owner_token_ids = owner_token_ids(caller())?;
+
+    LEDGER.with(|ledger| {
+        let mut ledger = ledger.borrow_mut();
+
+        owner_token_ids.iter().for_each(|token_identifier| {
+            let token = ledger.tokens.get_mut(token_identifier).unwrap();
+            let old_operator = token.operator;
+
+            // update operator
+            if is_approved {
+                token.operator = Some(operator)
+            } else {
+                token.operator = None
+            }
+
+            // remove cache
+            if let Some(old_operator) = old_operator {
+                if let Some(tokens) = ledger.operators.get_mut(&old_operator) {
+                    tokens.remove(token_identifier);
+                    // remove key when empty cache
+                    if tokens.is_empty() {
+                        ledger.operators.remove(&old_operator);
+                    }
+                }
+            }
+
+            // update cache
+            if is_approved {
+                ledger
+                    .operators
+                    .entry(operator)
+                    .or_insert_with(HashSet::new)
+                    .insert(token_identifier.clone());
+            }
+        });
+
+        // history
+        Ok(ledger.add_tx(
+            caller(),
+            "setApprovalForAll".into(),
+            vec![
+                ("operator".into(), GenericValue::Principal(operator)),
+                ("is_approved".into(), GenericValue::BoolContent(is_approved)),
+            ],
+        ))
+    })
+}
+
+#[query(name = "isApprovedForAll")]
+#[candid_method(query, rename = "isApprovedForAll")]
+fn is_approved_for_all(owner: Principal, operator: Principal) -> Result<bool, NftError> {
+    let owner_token_metadata = owner_token_metadata(owner)?;
+    Ok(owner_token_metadata
+        .iter()
+        .all(|token_metadata| token_metadata.operator == Some(operator)))
+}
+
 #[update(name = "approve")]
 #[candid_method(update, rename = "approve")]
 fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
@@ -423,7 +489,7 @@ fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, Nft
         .ok_or(NftError::Unauthorized)?;
 
     let old_owner = token_metadata.owner;
-    let old_operator_maybe = token_metadata.operator;
+    let old_operator = token_metadata.operator;
 
     LEDGER.with(|ledger| {
         let mut ledger = ledger.borrow_mut();
@@ -436,7 +502,7 @@ fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, Nft
                 ledger.owners.remove(&old_owner);
             }
         }
-        if let Some(old_operator) = old_operator_maybe {
+        if let Some(old_operator) = old_operator {
             if let Some(tokens) = ledger.operators.get_mut(&old_operator) {
                 tokens.remove(&token_identifier);
                 // remove key when empty cache
@@ -546,7 +612,7 @@ fn transfer_from(
         // history
         Ok(ledger.add_tx(
             caller(),
-            "transfer_from".into(),
+            "transferFrom".into(),
             vec![
                 ("owner".into(), GenericValue::Principal(owner)),
                 ("to".into(), GenericValue::Principal(to)),
@@ -636,8 +702,6 @@ fn main() {
 }
 
 // TODO:
-// notify
-//   - transfer_from_notify
-//   - transfer_notify
-// set_approval_for_all
-// is_approved_for_all
+// - notification
+// - upgrade
+// - support: multiple operators per owner
