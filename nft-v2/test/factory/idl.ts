@@ -7,6 +7,7 @@ export const idlFactory = ({ IDL }) => {
     'symbol' : IDL.Opt(IDL.Text),
   });
   const NftError = IDL.Variant({
+    'SelfTransfer' : IDL.Null,
     'TokenNotFound' : IDL.Null,
     'TxNotFound' : IDL.Null,
     'SelfApprove' : IDL.Null,
@@ -136,6 +137,7 @@ export const idlFactory = ({ IDL }) => {
     'totalSupply' : IDL.Func([], [IDL.Nat], ['query']),
     'totalSupplyDip721' : IDL.Func([], [IDL.Nat], ['query']),
     'transaction' : IDL.Func([IDL.Nat], [Result_6], []),
+    'transfer' : IDL.Func([IDL.Principal, IDL.Text], [Result], []),
     'transferFrom' : IDL.Func(
         [IDL.Principal, IDL.Principal, IDL.Text],
         [Result],

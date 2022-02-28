@@ -28,6 +28,7 @@ type Metadata = record {
   symbol : opt text;
 };
 type NftError = variant {
+  SelfTransfer;
   TokenNotFound;
   TxNotFound;
   SelfApprove;
@@ -99,6 +100,7 @@ service : (opt InitArgs) -> {
   totalSupply : () -> (nat) query;
   totalSupplyDip721 : () -> (nat) query;
   transaction : (nat) -> (Result_6);
+  transfer : (principal, text) -> (Result);
   transferFrom : (principal, principal, text) -> (Result);
   transferFromDip721 : (principal, principal, text) -> (Result);
 }

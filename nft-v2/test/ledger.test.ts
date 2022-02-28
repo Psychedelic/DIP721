@@ -960,3 +960,330 @@ test.serial("Approve ERROR - v3", async t => {
     t.deepEqual(result, {Err: {OperatorNotFound: null}});
   });
 });
+
+test.serial("Transfer from ERROR - v1", async t => {
+  t.deepEqual(
+    await canisterOwnerActor.transferFrom(
+      canisterOwnerIdentity.getPrincipal(),
+      canisterOwnerIdentity.getPrincipal(),
+      "Nft00001"
+    ),
+    {
+      Err: {SelfTransfer: null}
+    }
+  );
+  t.deepEqual(await aliceActor.transferFrom(aliceIdentity.getPrincipal(), aliceIdentity.getPrincipal(), "Nft00002"), {
+    Err: {SelfTransfer: null}
+  });
+  t.deepEqual(await bobActor.transferFrom(bobIdentity.getPrincipal(), bobIdentity.getPrincipal(), "Nft00003"), {
+    Err: {SelfTransfer: null}
+  });
+  t.deepEqual(await johnActor.transferFrom(johnIdentity.getPrincipal(), johnIdentity.getPrincipal(), "Nft00004"), {
+    Err: {SelfTransfer: null}
+  });
+});
+
+// invalid owner
+test.serial("Transfer from ERROR - v2", async t => {
+  t.deepEqual(
+    await canisterOwnerActor.transferFrom(
+      canisterOwnerIdentity.getPrincipal(),
+      aliceIdentity.getPrincipal(),
+      "Nft00001"
+    ),
+    {
+      Err: {Unauthorized: null}
+    }
+  );
+  t.deepEqual(
+    await aliceActor.transferFrom(canisterOwnerIdentity.getPrincipal(), aliceIdentity.getPrincipal(), "Nft00002"),
+    {
+      Err: {Unauthorized: null}
+    }
+  );
+  t.deepEqual(
+    await bobActor.transferFrom(canisterOwnerIdentity.getPrincipal(), bobIdentity.getPrincipal(), "Nft00003"),
+    {
+      Err: {Unauthorized: null}
+    }
+  );
+  t.deepEqual(
+    await johnActor.transferFrom(canisterOwnerIdentity.getPrincipal(), johnIdentity.getPrincipal(), "Nft00004"),
+    {
+      Err: {Unauthorized: null}
+    }
+  );
+});
+
+// invalid operator
+test.serial("Transfer from ERROR - v3", async t => {
+  t.deepEqual(
+    await bobActor.transferFrom(aliceIdentity.getPrincipal(), canisterOwnerIdentity.getPrincipal(), "Nft00001"),
+    {
+      Err: {Unauthorized: null}
+    }
+  );
+  t.deepEqual(
+    await bobActor.transferFrom(aliceIdentity.getPrincipal(), canisterOwnerIdentity.getPrincipal(), "Nft00002"),
+    {
+      Err: {Unauthorized: null}
+    }
+  );
+  t.deepEqual(
+    await johnActor.transferFrom(bobIdentity.getPrincipal(), canisterOwnerIdentity.getPrincipal(), "Nft00003"),
+    {
+      Err: {Unauthorized: null}
+    }
+  );
+  t.deepEqual(
+    await aliceActor.transferFrom(johnIdentity.getPrincipal(), canisterOwnerIdentity.getPrincipal(), "Nft00004"),
+    {
+      Err: {Unauthorized: null}
+    }
+  );
+});
+
+test.serial("Transfer from OK - v1", async t => {
+  t.deepEqual(
+    await canisterOwnerActor.transferFrom(
+      aliceIdentity.getPrincipal(),
+      canisterOwnerIdentity.getPrincipal(),
+      "Nft00001"
+    ),
+    {
+      Ok: BigInt(13)
+    }
+  );
+  t.deepEqual(
+    await canisterOwnerActor.transferFrom(
+      aliceIdentity.getPrincipal(),
+      canisterOwnerIdentity.getPrincipal(),
+      "Nft00002"
+    ),
+    {
+      Ok: BigInt(14)
+    }
+  );
+  t.deepEqual(
+    await canisterOwnerActor.transferFrom(bobIdentity.getPrincipal(), canisterOwnerIdentity.getPrincipal(), "Nft00003"),
+    {
+      Ok: BigInt(15)
+    }
+  );
+  t.deepEqual(
+    await canisterOwnerActor.transferFrom(johnIdentity.getPrincipal(), aliceIdentity.getPrincipal(), "Nft00004"),
+    {
+      Ok: BigInt(16)
+    }
+  );
+});
+
+test.serial("Transfer from OK - v2", async t => {
+  (await Promise.all(allActors.map(actor => actor.transaction(BigInt(13))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        operation: "transfer_from",
+        caller: canisterOwnerIdentity.getPrincipal(),
+        details: [
+          ["owner", {Principal: aliceIdentity.getPrincipal()}],
+          ["to", {Principal: canisterOwnerIdentity.getPrincipal()}],
+          ["token_identifier", {TextContent: "Nft00001"}]
+        ]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.transaction(BigInt(14))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        operation: "transfer_from",
+        caller: canisterOwnerIdentity.getPrincipal(),
+        details: [
+          ["owner", {Principal: aliceIdentity.getPrincipal()}],
+          ["to", {Principal: canisterOwnerIdentity.getPrincipal()}],
+          ["token_identifier", {TextContent: "Nft00002"}]
+        ]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.transaction(BigInt(15))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        operation: "transfer_from",
+        caller: canisterOwnerIdentity.getPrincipal(),
+        details: [
+          ["owner", {Principal: bobIdentity.getPrincipal()}],
+          ["to", {Principal: canisterOwnerIdentity.getPrincipal()}],
+          ["token_identifier", {TextContent: "Nft00003"}]
+        ]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.transaction(BigInt(16))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        operation: "transfer_from",
+        caller: canisterOwnerIdentity.getPrincipal(),
+        details: [
+          ["owner", {Principal: johnIdentity.getPrincipal()}],
+          ["to", {Principal: aliceIdentity.getPrincipal()}],
+          ["token_identifier", {TextContent: "Nft00004"}]
+        ]
+      }
+    });
+  });
+});
+
+test.serial("Transfer from OK - v3", async t => {
+  // verify balanceOf
+  (await Promise.all(allActors.map(actor => actor.balanceOf(aliceIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Ok: BigInt(1)});
+  });
+  (await Promise.all(allActors.map(actor => actor.balanceOf(canisterOwnerIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Ok: BigInt(3)});
+  });
+
+  // verify ownerOf
+  (await Promise.all(allActors.map(actor => actor.ownerOf("Nft00001")))).forEach(result => {
+    t.deepEqual(result, {Ok: canisterOwnerIdentity.getPrincipal()});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerOf("Nft00002")))).forEach(result => {
+    t.deepEqual(result, {Ok: canisterOwnerIdentity.getPrincipal()});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerOf("Nft00003")))).forEach(result => {
+    t.deepEqual(result, {Ok: canisterOwnerIdentity.getPrincipal()});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerOf("Nft00004")))).forEach(result => {
+    t.deepEqual(result, {Ok: aliceIdentity.getPrincipal()});
+  });
+
+  // verify operatorOf
+  (await Promise.all(allActors.map(actor => actor.operatorOf("Nft00001")))).forEach(result => {
+    t.deepEqual(result, {Ok: []});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf("Nft00002")))).forEach(result => {
+    t.deepEqual(result, {Ok: []});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf("Nft00003")))).forEach(result => {
+    t.deepEqual(result, {Ok: []});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf("Nft00004")))).forEach(result => {
+    t.deepEqual(result, {Ok: []});
+  });
+
+  // verify token
+  (await Promise.all(allActors.map(actor => actor.tokenMetadata("Nft00001")))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        owner: canisterOwnerIdentity.getPrincipal(),
+        operator: [],
+        properties: [["A", {Nat64Content: BigInt(9999)}]],
+        token_identifier: "Nft00001",
+        minted_by: canisterOwnerIdentity.getPrincipal(),
+        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.tokenMetadata("Nft00002")))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        owner: canisterOwnerIdentity.getPrincipal(),
+        operator: [],
+        properties: [["B", {Int64Content: BigInt(1234)}]],
+        token_identifier: "Nft00002",
+        minted_by: canisterOwnerIdentity.getPrincipal(),
+        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.tokenMetadata("Nft00003")))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        owner: canisterOwnerIdentity.getPrincipal(),
+        operator: [],
+        properties: [["C", {Int32Content: 5678}]],
+        token_identifier: "Nft00003",
+        minted_by: canisterOwnerIdentity.getPrincipal(),
+        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.tokenMetadata("Nft00004")))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        owner: aliceIdentity.getPrincipal(),
+        operator: [],
+        properties: [["D", {TextContent: "∆≈ç√∫"}]],
+        token_identifier: "Nft00004",
+        minted_by: canisterOwnerIdentity.getPrincipal(),
+        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+      }
+    });
+  });
+
+  // verify ownerTokenMetadata
+  (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(aliceIdentity.getPrincipal())))).forEach(
+    result => {
+      t.true("Ok" in result);
+      t.is((result as {Ok: Array<TokenMetadata>}).Ok.length, 1);
+      t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
+        owner: aliceIdentity.getPrincipal(),
+        operator: [],
+        properties: [["D", {TextContent: "∆≈ç√∫"}]],
+        token_identifier: "Nft00004",
+        minted_by: canisterOwnerIdentity.getPrincipal(),
+        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+      });
+    }
+  );
+  (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(canisterOwnerIdentity.getPrincipal())))).forEach(
+    result => {
+      t.true("Ok" in result);
+      t.is((result as {Ok: Array<TokenMetadata>}).Ok.length, 3);
+      t.like(
+        (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === "Nft00001"),
+        {
+          owner: canisterOwnerIdentity.getPrincipal(),
+          operator: [],
+          properties: [["A", {Nat64Content: BigInt(9999)}]],
+          token_identifier: "Nft00001",
+          minted_by: canisterOwnerIdentity.getPrincipal(),
+          transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        }
+      );
+      t.like(
+        (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === "Nft00002"),
+        {
+          owner: canisterOwnerIdentity.getPrincipal(),
+          operator: [],
+          properties: [["B", {Int64Content: BigInt(1234)}]],
+          token_identifier: "Nft00002",
+          minted_by: canisterOwnerIdentity.getPrincipal(),
+          transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        }
+      );
+      t.like(
+        (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === "Nft00003"),
+        {
+          owner: canisterOwnerIdentity.getPrincipal(),
+          operator: [],
+          properties: [["C", {Int32Content: 5678}]],
+          token_identifier: "Nft00003",
+          minted_by: canisterOwnerIdentity.getPrincipal(),
+          transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        }
+      );
+    }
+  );
+
+  // verify ownerTokenIds
+  (await Promise.all(allActors.map(actor => actor.ownerTokenIds(aliceIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Ok: ["Nft00004"]});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerTokenIds(canisterOwnerIdentity.getPrincipal())))).forEach(
+    result => {
+      t.true((result as {Ok: Array<string>}).Ok.includes("Nft00001"));
+      t.true((result as {Ok: Array<string>}).Ok.includes("Nft00002"));
+      t.true((result as {Ok: Array<string>}).Ok.includes("Nft00003"));
+    }
+  );
+});

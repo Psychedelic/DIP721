@@ -216,6 +216,7 @@ enum NftError {
     TokenNotFound,
     ExistedNFT,
     SelfApprove,
+    SelfTransfer,
     TxNotFound,
     Other(String),
 }
@@ -405,6 +406,78 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
     })
 }
 
+#[update(name = "transfer")]
+#[candid_method(update, rename = "transfer")]
+fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
+    if to == caller() {
+        return Err(NftError::SelfTransfer);
+    }
+
+    let token_metadata = token_metadata(token_identifier.clone())?;
+
+    // check valid owner
+    token_metadata
+        .owner
+        .eq(&caller())
+        .then(|| ())
+        .ok_or(NftError::Unauthorized)?;
+
+    let old_owner = token_metadata.owner;
+    let old_operator_maybe = token_metadata.operator;
+
+    LEDGER.with(|ledger| {
+        let mut ledger = ledger.borrow_mut();
+
+        // remove cache
+        if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
+            tokens.remove(&token_identifier);
+            // remove key when empty cache
+            if tokens.is_empty() {
+                ledger.owners.remove(&old_owner);
+            }
+        }
+        if let Some(old_operator) = old_operator_maybe {
+            if let Some(tokens) = ledger.operators.get_mut(&old_operator) {
+                tokens.remove(&token_identifier);
+                // remove key when empty cache
+                if tokens.is_empty() {
+                    ledger.operators.remove(&old_operator);
+                }
+            }
+        }
+
+        // update owner
+        let token = ledger.tokens.get_mut(&token_identifier).unwrap();
+        token.owner = to;
+        token.transferred_at = Some(time());
+        token.transferred_by = Some(caller());
+
+        // remove operator
+        token.operator = None;
+
+        // update cache
+        ledger
+            .owners
+            .entry(to)
+            .or_insert_with(HashSet::new)
+            .insert(token_identifier.clone());
+
+        // history
+        Ok(ledger.add_tx(
+            caller(),
+            "transfer".into(),
+            vec![
+                ("owner".into(), GenericValue::Principal(caller())),
+                ("to".into(), GenericValue::Principal(to)),
+                (
+                    "token_identifier".into(),
+                    GenericValue::TextContent(token_identifier),
+                ),
+            ],
+        ))
+    })
+}
+
 #[update(name = "transferFrom")]
 #[candid_method(update, rename = "transferFrom")]
 fn transfer_from(
@@ -412,6 +485,10 @@ fn transfer_from(
     to: Principal,
     token_identifier: TokenIdentifier,
 ) -> Result<Nat, NftError> {
+    if owner == to {
+        return Err(NftError::SelfTransfer);
+    }
+
     let token_metadata = token_metadata(token_identifier.clone())?;
 
     // check valid owner
@@ -429,6 +506,7 @@ fn transfer_from(
         .ok_or(NftError::Unauthorized)?;
 
     let old_owner = token_metadata.owner;
+    let old_operator = token_metadata.operator.unwrap();
 
     LEDGER.with(|ledger| {
         let mut ledger = ledger.borrow_mut();
@@ -441,12 +519,22 @@ fn transfer_from(
                 ledger.owners.remove(&old_owner);
             }
         }
+        if let Some(tokens) = ledger.operators.get_mut(&old_operator) {
+            tokens.remove(&token_identifier);
+            // remove key when empty cache
+            if tokens.is_empty() {
+                ledger.operators.remove(&old_operator);
+            }
+        }
 
         // update owner
         let token = ledger.tokens.get_mut(&token_identifier).unwrap();
         token.owner = to;
         token.transferred_at = Some(time());
         token.transferred_by = Some(caller());
+
+        // remove operator
+        token.operator = None;
 
         // update cache
         ledger
@@ -546,3 +634,10 @@ fn main() {
     ic_cdk::export::candid::export_service!();
     std::print!("{}", __export_service());
 }
+
+// TODO:
+// notify
+//   - transfer_from_notify
+//   - transfer_notify
+// set_approval_for_all
+// is_approved_for_all

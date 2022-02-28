@@ -26,7 +26,8 @@ export interface Metadata {
   'upgraded_at' : bigint,
   'symbol' : [] | [string],
 }
-export type NftError = { 'TokenNotFound' : null } |
+export type NftError = { 'SelfTransfer' : null } |
+  { 'TokenNotFound' : null } |
   { 'TxNotFound' : null } |
   { 'SelfApprove' : null } |
   { 'OperatorNotFound' : null } |
@@ -114,6 +115,7 @@ export interface _SERVICE {
   'totalSupply' : () => Promise<bigint>,
   'totalSupplyDip721' : () => Promise<bigint>,
   'transaction' : (arg_0: bigint) => Promise<Result_6>,
+  'transfer' : (arg_0: Principal, arg_1: string) => Promise<Result>,
   'transferFrom' : (
       arg_0: Principal,
       arg_1: Principal,
