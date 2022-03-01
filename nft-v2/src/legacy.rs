@@ -1,3 +1,4 @@
+// turn it on if you find it annoying but it DOES NOT RECOMMENDED
 // #![allow(deprecated)]
 
 use crate::*;
