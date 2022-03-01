@@ -718,6 +718,7 @@ fn post_upgrade() {
         Ok((metadata_store, ledger_store)) => {
             METADATA.with(|metadata| {
                 *metadata.borrow_mut() = metadata_store;
+                metadata.borrow_mut().upgraded_at = time();
             });
             LEDGER.with(|ledger| {
                 *ledger.borrow_mut() = ledger_store;
