@@ -14,15 +14,17 @@ candid:
 	didc bind -t js nft-v2.did  >> test/factory/idl.ts
 
 build: candid
-	dfx stop
-	dfx start --clean --background
+	dfx ping local || dfx start --clean --background
 	dfx canister create nft-v2
 	dfx build nft-v2
 
 local: build
-	dfx canister install nft-v2  --argument '(opt record{owners=opt vec{principal"$(LOCAL_OWNER_CANISTER_PRINCIPAL)"}})'
+	dfx deploy nft-v2  --argument '(opt record{owners=opt vec{principal"$(LOCAL_OWNER_CANISTER_PRINCIPAL)"}})'
 
-test: build
+stop-replica:
+	dfx stop
+
+test: stop-replica build
 	dfx canister install nft-v2  --argument '(opt record{owners=opt vec{principal"$(TEST_OWNER_CANISTER_PRINCIPAL)"}})'
 	npm t
 	dfx stop
