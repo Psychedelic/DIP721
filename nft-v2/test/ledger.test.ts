@@ -1818,11 +1818,116 @@ test.serial("setApprovalForAll OK - v3", async t => {
   });
 });
 
-test.serial("setApprovalForAll ERROR", async t => {
-  t.deepEqual(await johnActor.setApprovalForAll(johnIdentity.getPrincipal(), true), {Err: {SelfApprove: null}})
-  t.deepEqual(await bobActor.setApprovalForAll(bobIdentity.getPrincipal(), true), {Err: {SelfApprove: null}})
-  t.deepEqual(await johnActor.setApprovalForAll(johnIdentity.getPrincipal(), false), {Err: {SelfApprove: null}})
-  t.deepEqual(await bobActor.setApprovalForAll(bobIdentity.getPrincipal(), false), {Err: {SelfApprove: null}})
-})
+test.serial("setApprovalForAll ERROR - v1", async t => {
+  t.deepEqual(await johnActor.setApprovalForAll(johnIdentity.getPrincipal(), true), {Err: {SelfApprove: null}});
+  t.deepEqual(await bobActor.setApprovalForAll(bobIdentity.getPrincipal(), true), {Err: {SelfApprove: null}});
+  t.deepEqual(await johnActor.setApprovalForAll(johnIdentity.getPrincipal(), false), {Err: {SelfApprove: null}});
+  t.deepEqual(await bobActor.setApprovalForAll(bobIdentity.getPrincipal(), false), {Err: {SelfApprove: null}});
+});
 
-// TODO is_approved = false
+test.serial("setApprovalForAll OK - v4", async t => {
+  t.deepEqual(await bobActor.setApprovalForAll(johnIdentity.getPrincipal(), false), {Ok: BigInt(23)});
+  t.deepEqual(await johnActor.setApprovalForAll(bobIdentity.getPrincipal(), false), {Ok: BigInt(24)});
+
+  // verify isApprovedForAll
+  (
+    await Promise.all([
+      ...allActors.map(actor => actor.isApprovedForAll(bobIdentity.getPrincipal(), johnIdentity.getPrincipal())),
+      ...allActors.map(actor => actor.isApprovedForAll(johnIdentity.getPrincipal(), bobIdentity.getPrincipal()))
+    ])
+  ).forEach(result => t.deepEqual(result, {Ok: false}));
+});
+
+test.serial("setApprovalForAll OK - v5", async t => {
+  // verify transaction
+  (await Promise.all(allActors.map(actor => actor.transaction(BigInt(23))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        operation: "setApprovalForAll",
+        caller: bobIdentity.getPrincipal(),
+        details: [
+          ["operator", {Principal: johnIdentity.getPrincipal()}],
+          ["is_approved", {BoolContent: false}]
+        ]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.transaction(BigInt(24))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        operation: "setApprovalForAll",
+        caller: johnIdentity.getPrincipal(),
+        details: [
+          ["operator", {Principal: bobIdentity.getPrincipal()}],
+          ["is_approved", {BoolContent: false}]
+        ]
+      }
+    });
+  });
+});
+
+test.serial("setApprovalForAll OK - v6", async t => {
+  // verify balanceOf
+  (await Promise.all(allActors.map(actor => actor.balanceOf(bobIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Ok: BigInt(2)});
+  });
+  (await Promise.all(allActors.map(actor => actor.balanceOf(johnIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Ok: BigInt(2)});
+  });
+
+  // verify ownerOf
+  (await Promise.all(allActors.map(actor => actor.ownerOf("Nft00001")))).forEach(result => {
+    t.deepEqual(result, {Ok: johnIdentity.getPrincipal()});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerOf("Nft00002")))).forEach(result => {
+    t.deepEqual(result, {Ok: johnIdentity.getPrincipal()});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerOf("Nft00003")))).forEach(result => {
+    t.deepEqual(result, {Ok: bobIdentity.getPrincipal()});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerOf("Nft00004")))).forEach(result => {
+    t.deepEqual(result, {Ok: bobIdentity.getPrincipal()});
+  });
+
+  // verify operatorOf
+  (await Promise.all(allActors.map(actor => actor.operatorOf("Nft00001")))).forEach(result => {
+    t.deepEqual(result, {Ok: []});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf("Nft00002")))).forEach(result => {
+    t.deepEqual(result, {Ok: []});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf("Nft00003")))).forEach(result => {
+    t.deepEqual(result, {Ok: []});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf("Nft00004")))).forEach(result => {
+    t.deepEqual(result, {Ok: []});
+  });
+
+  // verify ownerTokenIds
+  (await Promise.all(allActors.map(actor => actor.ownerTokenIds(johnIdentity.getPrincipal())))).forEach(result => {
+    t.true((result as {Ok: Array<string>}).Ok.includes("Nft00001"));
+    t.true((result as {Ok: Array<string>}).Ok.includes("Nft00002"));
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerTokenIds(bobIdentity.getPrincipal())))).forEach(result => {
+    t.true((result as {Ok: Array<string>}).Ok.includes("Nft00003"));
+    t.true((result as {Ok: Array<string>}).Ok.includes("Nft00004"));
+  });
+});
+
+test.serial("setApprovalForAll ERROR - v2", async t => {
+  // verify operatorTokenMetadata
+  (await Promise.all(allActors.map(actor => actor.operatorTokenMetadata(johnIdentity.getPrincipal())))).forEach(
+    result => t.deepEqual(result, {Err: {OperatorNotFound: null}})
+  );
+  (await Promise.all(allActors.map(actor => actor.operatorTokenMetadata(bobIdentity.getPrincipal())))).forEach(result =>
+    t.deepEqual(result, {Err: {OperatorNotFound: null}})
+  );
+
+  // verify operatorTokenIds
+  (await Promise.all(allActors.map(actor => actor.operatorTokenIds(johnIdentity.getPrincipal())))).forEach(result =>
+    t.deepEqual(result, {Err: {OperatorNotFound: null}})
+  );
+  (await Promise.all(allActors.map(actor => actor.operatorTokenIds(bobIdentity.getPrincipal())))).forEach(result =>
+    t.deepEqual(result, {Err: {OperatorNotFound: null}})
+  );
+});

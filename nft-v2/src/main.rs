@@ -1,9 +1,9 @@
 mod legacy;
 
-use ic_cdk::api::{caller, time};
+use ic_cdk::api::{caller, time, trap};
 use ic_cdk::export::candid::{candid_method, CandidType, Deserialize, Int, Nat};
 use ic_cdk::export::Principal;
-use ic_cdk_macros::{init, query, update};
+use ic_cdk_macros::{init, post_upgrade, pre_upgrade, query, update};
 use num_traits::cast::ToPrimitive;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -17,7 +17,7 @@ struct InitArgs {
     owners: Option<Vec<Principal>>,
 }
 
-#[derive(CandidType, Default, Clone)]
+#[derive(CandidType, Default, Deserialize, Clone)]
 struct Metadata {
     name: Option<String>,
     logo: Option<String>,
@@ -29,7 +29,7 @@ struct Metadata {
 
 type TokenIdentifier = String;
 
-#[derive(CandidType, Clone, Deserialize)]
+#[derive(CandidType, Deserialize, Clone)]
 enum GenericValue {
     BoolContent(bool),
     TextContent(String),
@@ -47,7 +47,7 @@ enum GenericValue {
     Int64Content(i64),
 }
 
-#[derive(CandidType, Clone)]
+#[derive(CandidType, Deserialize, Clone)]
 struct TokenMetadata {
     token_identifier: TokenIdentifier,
     owner: Principal,
@@ -59,7 +59,7 @@ struct TokenMetadata {
     transferred_by: Option<Principal>,
 }
 
-#[derive(Default)]
+#[derive(CandidType, Default, Deserialize, Clone)]
 struct Ledger {
     tokens: HashMap<TokenIdentifier, TokenMetadata>,
     owners: HashMap<Principal, HashSet<TokenIdentifier>>, // quick lookup
@@ -67,7 +67,7 @@ struct Ledger {
     tx_records: Vec<TxEvent>,
 }
 
-#[derive(CandidType, Clone)]
+#[derive(CandidType, Deserialize, Clone)]
 struct TxEvent {
     time: u64,
     caller: Principal,
@@ -350,6 +350,9 @@ fn operator_token_ids(operator: Principal) -> Result<Vec<TokenIdentifier>, NftEr
     })
 }
 
+// since we've supported single operator per owner only
+// so when `is_approved` is false that mean set all caller's nfts to None regardless of `operator`
+// otherwise set all caller's nfts to `operator`
 #[update(name = "setApprovalForAll")]
 #[candid_method(update, rename = "setApprovalForAll")]
 fn set_approval_for_all(operator: Principal, is_approved: bool) -> Result<Nat, NftError> {
@@ -692,6 +695,43 @@ fn transaction(tx_id: Nat) -> Result<TxEvent, NftError> {
     })
 }
 
+// NOTE:
+// If you plan to store gigabytes of state and upgrade the code,
+// Using stable memory as the main storage is a good option to consider
+#[pre_upgrade]
+fn pre_upgrade() {
+    if let Err(err) = ic_cdk::storage::stable_save::<(Metadata, Ledger)>((
+        METADATA.with(|metadata| metadata.borrow().clone()),
+        LEDGER.with(|ledger| ledger.borrow().clone()),
+    )) {
+        // NOTE: be careful and make sure it will never trap
+        trap(&format!(
+            "An error occurred when saving to stable memory (pre_upgrade): {:?}",
+            err
+        ));
+    };
+}
+
+#[post_upgrade]
+fn post_upgrade() {
+    match ic_cdk::storage::stable_restore::<(Metadata, Ledger)>() {
+        Ok((metadata_store, ledger_store)) => {
+            METADATA.with(|metadata| {
+                *metadata.borrow_mut() = metadata_store;
+            });
+            LEDGER.with(|ledger| {
+                *ledger.borrow_mut() = ledger_store;
+            });
+        }
+        Err(err) => {
+            trap(&format!(
+                "An error occurred when loading from stable memory (post_upgrade): {:?}",
+                err
+            ));
+        }
+    }
+}
+
 #[cfg(any(target_arch = "wasm32", test))]
 fn main() {}
 
@@ -703,5 +743,4 @@ fn main() {
 
 // TODO:
 // - notification
-// - upgrade
-// - support: multiple operators per owner
+// - consider support: multiple operators per owner
