@@ -2,9 +2,9 @@
   "version": 1,
   "dfx": "0.8.4",
   "canisters": {
-    "nft": {
-      "package": "nft",
-      "candid": "nft/candid/nft.did",
+    "nft-v2": {
+      "package": "nft-v2",
+      "candid": "nft-v2.did",
       "type": "rust"
     }
   },
