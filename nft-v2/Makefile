@@ -1,6 +1,7 @@
 .PHONY: init candid build local test format lint clean
 
-OWNER_CANISTER_PRINCIPAL=$(shell cat canister-owner-test-principal.txt)
+LOCAL_OWNER_CANISTER_PRINCIPAL=$(shell dfx identity get-principal)
+TEST_OWNER_CANISTER_PRINCIPAL=$(shell cat canister-owner-test-principal.txt)
 
 init:
 	npm i
@@ -19,10 +20,10 @@ build: candid
 	dfx build nft-v2
 
 local: build
-	dfx canister install nft-v2  --argument '()'
+	dfx canister install nft-v2  --argument '(opt record{owners=opt vec{principal"$(LOCAL_OWNER_CANISTER_PRINCIPAL)"}})'
 
 test: build
-	dfx canister install nft-v2  --argument '(opt record{owners=opt vec{principal"$(OWNER_CANISTER_PRINCIPAL)"}})'
+	dfx canister install nft-v2  --argument '(opt record{owners=opt vec{principal"$(TEST_OWNER_CANISTER_PRINCIPAL)"}})'
 	npm t
 	dfx stop
 
