@@ -680,8 +680,8 @@ fn mint(
 
 #[update(name = "burn", guard = "is_canister_owner")]
 #[candid_method(update, rename = "burn")]
-fn burn(token_identifier: TokenIdentifier) {
-    trap!("Not supported")
+fn burn(_token_identifier: TokenIdentifier) {
+    trap("Not supported")
 }
 
 #[update(name = "transaction")]
