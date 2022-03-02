@@ -7,8 +7,8 @@ import {
   canisterOwnerIdentity,
   johnActor,
   johnIdentity
-} from "./setup";
-import {TokenMetadata} from "./factory/idl.d";
+} from "../setup";
+import {TokenMetadata} from "../factory/idl.d";
 import test from "ava";
 
 const normalActors = [aliceActor, bobActor, johnActor];

@@ -1,4 +1,4 @@
-import {aliceActor, bobActor, canisterOwnerActor, canisterOwnerIdentity, johnActor} from "./setup";
+import {aliceActor, bobActor, canisterOwnerActor, canisterOwnerIdentity, johnActor} from "../setup";
 import test, {Assertions} from "ava";
 
 const normalActors = [aliceActor, bobActor, johnActor];

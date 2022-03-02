@@ -11,10 +11,10 @@ export const johnIdentity = Ed25519KeyIdentity.generate();
 
 // for testing only
 // principal id = "xxzsj-nukpm-lgp77-ogouk-7u72u-qvpnj-ppjgn-o736o-z4ezi-jvegq-uae"
-const secretKey = readFileSync("./canister-owner-test-secret.txt", {encoding: "utf8"});
+const secretKey = readFileSync("./canister-owner-test-secret", {encoding: "utf8"});
 export const canisterOwnerIdentity = Ed25519KeyIdentity.fromSecretKey(Buffer.from(secretKey, "hex"));
 
-const canisterIds = JSON.parse(readFileSync("./canister_ids.json", {encoding: "utf8"}));
+const canisterIds = JSON.parse(readFileSync("../canister_ids.json", {encoding: "utf8"}));
 
 const createActor = async (identity: Identity): Promise<Service> => {
   const agent = new HttpAgent({host: "http://127.0.0.1:8000", fetch, identity});
