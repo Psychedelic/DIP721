@@ -59,5 +59,8 @@
         "alwaysTryTypes": false
       }
     }
+  },
+  "parserOptions": {
+    "warnOnUnsupportedTypeScriptVersion": false
   }
 }
