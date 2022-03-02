@@ -113,9 +113,9 @@ fn init(args: Option<InitArgs>) {
                     metadata.owners.insert(owner);
                 }
             }
-            metadata.created_at = time();
-            metadata.upgraded_at = time();
         }
+        metadata.created_at = time();
+        metadata.upgraded_at = time();
     });
 }
 
@@ -676,6 +676,12 @@ fn mint(
             ],
         ))
     })
+}
+
+#[update(name = "burn", guard = "is_canister_owner")]
+#[candid_method(update, rename = "burn")]
+fn burn(token_identifier: TokenIdentifier) {
+    trap!("Not supported")
 }
 
 #[update(name = "transaction")]
