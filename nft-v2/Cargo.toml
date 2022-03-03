@@ -8,8 +8,6 @@ edition = "2018"
 ic-cdk-macros = "0.3.2"
 ic-cdk = "0.3.2"
 serde = "1.0.132"
-cap-sdk = { git = "https://github.com/Psychedelic/cap", branch = "cap-sdk", package="cap-sdk" }
-cap-std = { git = "https://github.com/Psychedelic/cap", branch = "cap-sdk", package="cap-standards", features = ["alpha-dip721"] }
 num-traits = "0.2.14"
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
