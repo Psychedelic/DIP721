@@ -77,6 +77,7 @@ export interface _SERVICE {
   'approveDip721' : (arg_0: Principal, arg_1: string) => Promise<Result>,
   'balanceOf' : (arg_0: Principal) => Promise<Result>,
   'balanceOfDip721' : (arg_0: Principal) => Promise<Result>,
+  'burn' : (arg_0: string) => Promise<undefined>,
   'getMetadataDip721' : (arg_0: string) => Promise<Result_1>,
   'getMetadataForUserDip721' : (arg_0: Principal) => Promise<Result_2>,
   'getTokenIdsForUserDip721' : (arg_0: Principal) => Promise<Result_3>,
@@ -121,6 +122,7 @@ export interface _SERVICE {
   'tokenMetadata' : (arg_0: string) => Promise<Result_1>,
   'totalSupply' : () => Promise<bigint>,
   'totalSupplyDip721' : () => Promise<bigint>,
+  'totalTransactions' : () => Promise<bigint>,
   'transaction' : (arg_0: bigint) => Promise<Result_7>,
   'transfer' : (arg_0: Principal, arg_1: string) => Promise<Result>,
   'transferFrom' : (
