@@ -34,6 +34,9 @@ test.serial("mint OK - v1", async t => {
       }
     });
   });
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(1));
+  });
 
   // verify token
   (await Promise.all(allActors.map(actor => actor.tokenMetadata("Nft00001")))).forEach(result => {
@@ -209,6 +212,9 @@ test.serial("mint OK - v3", async t => {
         ]
       }
     });
+  });
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(4));
   });
 
   // verify token
@@ -434,6 +440,9 @@ test.serial("approve OK - v2", async t => {
         ]
       }
     });
+  });
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(8));
   });
 });
 
@@ -748,6 +757,9 @@ test.serial("approve OK - v5", async t => {
         ]
       }
     });
+  });
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(12));
   });
 });
 
@@ -1091,6 +1103,9 @@ test.serial("transferFrom OK - v1", async t => {
       Ok: BigInt(16)
     }
   );
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(16));
+  });
 });
 
 test.serial("transferFrom OK - v2", async t => {
@@ -1403,6 +1418,9 @@ test.serial("transfer OK - v2", async t => {
       }
     });
   });
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(20));
+  });
 });
 
 test.serial("transfer OK - v3", async t => {
@@ -1595,6 +1613,9 @@ test.serial("setApprovalForAll OK - v2", async t => {
         ]
       }
     });
+  });
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(22));
   });
 });
 
@@ -1863,6 +1884,9 @@ test.serial("setApprovalForAll OK - v5", async t => {
         ]
       }
     });
+  });
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(24));
   });
 });
 

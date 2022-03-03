@@ -69,6 +69,7 @@ service : (opt InitArgs) -> {
   approveDip721 : (principal, text) -> (Result);
   balanceOf : (principal) -> (Result) query;
   balanceOfDip721 : (principal) -> (Result) query;
+  burn : (text) -> ();
   getMetadataDip721 : (text) -> (Result_1) query;
   getMetadataForUserDip721 : (principal) -> (Result_2) query;
   getTokenIdsForUserDip721 : (principal) -> (Result_3) query;
@@ -103,7 +104,8 @@ service : (opt InitArgs) -> {
   tokenMetadata : (text) -> (Result_1) query;
   totalSupply : () -> (nat) query;
   totalSupplyDip721 : () -> (nat) query;
-  transaction : (nat) -> (Result_7);
+  totalTransactions : () -> (nat) query;
+  transaction : (nat) -> (Result_7) query;
   transfer : (principal, text) -> (Result);
   transferFrom : (principal, principal, text) -> (Result);
   transferFromDip721 : (principal, principal, text) -> (Result);
