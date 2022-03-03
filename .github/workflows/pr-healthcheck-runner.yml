@@ -85,3 +85,6 @@ jobs:
       - name: DIP-721 Healthcheck
         run: |
           yarn dip721:healthcheck
+            
+      - name: Integration tests
+        run: cd nft-v2 && make test
