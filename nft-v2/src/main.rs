@@ -61,7 +61,7 @@ struct TokenMetadata {
 
 #[derive(CandidType, Default, Deserialize, Clone)]
 struct Ledger {
-    tokens: HashMap<TokenIdentifier, TokenMetadata>,
+    tokens: HashMap<TokenIdentifier, TokenMetadata>, // recommend to have sequential id
     owners: HashMap<Principal, HashSet<TokenIdentifier>>, // quick lookup
     operators: HashMap<Principal, HashSet<TokenIdentifier>>, // quick lookup
     tx_records: Vec<TxEvent>,
@@ -754,6 +754,6 @@ fn main() {
     std::print!("{}", __export_service());
 }
 
-// TODO:
+// ROADMAP:
 // - notification
 // - consider support: multiple operators per owner
