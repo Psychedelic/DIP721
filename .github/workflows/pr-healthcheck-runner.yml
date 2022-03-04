@@ -85,20 +85,3 @@ jobs:
       - name: DIP-721 Healthcheck
         run: |
           yarn dip721:healthcheck
-
-      - name: Cache npm modules
-        id: cache-npm-integration-tests
-        uses: actions/cache@v2
-        with:
-          path: |
-            /usr/local/lib/node_modules
-            $(pwd)/nft-v2/test/node_modules
-          key: cache-cache-npm-integration-tests-${{ hashFiles('package.json') }}
-
-      - name: Install global npm modules
-        if: steps.cache-npm-integration-tests.outputs.cache-hit != 'true'
-        run: |
-          cd nft-v2 && npm install
-
-      - name: Integration tests
-        run: cd nft-v2 && make test
