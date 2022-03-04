@@ -1,4 +1,4 @@
-name: Healthcheck
+name: Integration tests
 
 on:
   pull_request:
@@ -19,6 +19,7 @@ jobs:
       DFX_VERSION: 0.8.4
       DFX_WARNING: -version_check 
       NODE_ENV: ci
+      DFX_CANDID_RELEASE: 2022-01-06
 
     steps:
       - uses: actions/checkout@v2
@@ -52,36 +53,35 @@ jobs:
         run: |
           yes Y | DFX_VERSION="$DFX_VERSION" sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
 
-      - name: Adds pcregrep
-        run: |
-          sudo apt-get update
-          sudo apt-get -y install pcregrep
-
-      - name: Cache build artifacts
-        id: cache-rust-target
+      - name: Cache npm modules
+        id: cache-npm-integration-tests
         uses: actions/cache@v2
         with:
           path: |
-            **/target
-          key: cache-rust-target-${{ hashFiles('**/Cargo.lock') }}
+            /usr/local/lib/node_modules
+            $(pwd)/nft-v2/test/node_modules
+          key: cache-cache-npm-integration-tests-${{ hashFiles('package.json') }}
 
-      - name: Dfx local network replica
+      - name: Install global npm modules
+        if: steps.cache-npm-integration-tests.outputs.cache-hit != 'true'
         run: |
-          dfx start --background
+          cd nft-v2/test && npm install
 
-      - name: Dfx identity
+      - name: Cache npm modules
+        id: cache-didc
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/local/lib/node_modules
+            $(pwd)/nft-v2/test/node_modules
+          key: cache-didc-${{ hashFiles('package.json') }}
+
+      - name: Candid didc install
+        if: steps.cache-didc.outputs.cache-hit != 'true'
         run: |
-          dfx identity use default
+          wget https://github.com/dfinity/candid/releases/download/"$DFX_CANDID_RELEASE"/didc-linux64
+          chmod +x ./didc-linux64
+          ln -s "$(pwd)/didc-linux64" /usr/local/bin/didc
 
-      - name: Cap Service
-        run: |
-          npm install -g json
-          json -I -f dfx.json -e "this.dfx=\"$DFX_VERSION\""
-          yarn cap:start
-
-      - name: Test
-        run: yarn test
-
-      - name: DIP-721 Healthcheck
-        run: |
-          yarn dip721:healthcheck
+      - name: Integration tests
+        run: cd nft-v2 && make test
