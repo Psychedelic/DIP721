@@ -27,7 +27,7 @@ struct Metadata {
     upgraded_at: u64,
 }
 
-type TokenIdentifier = String;
+type TokenIdentifier = Nat;
 
 #[derive(CandidType, Deserialize, Clone)]
 enum GenericValue {
@@ -61,7 +61,7 @@ struct TokenMetadata {
 
 #[derive(CandidType, Default, Deserialize, Clone)]
 struct Ledger {
-    tokens: HashMap<TokenIdentifier, TokenMetadata>,
+    tokens: HashMap<TokenIdentifier, TokenMetadata>, // recommend to have sequential id
     owners: HashMap<Principal, HashSet<TokenIdentifier>>, // quick lookup
     operators: HashMap<Principal, HashSet<TokenIdentifier>>, // quick lookup
     tx_records: Vec<TxEvent>,
@@ -468,7 +468,7 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
                 ("operator".into(), GenericValue::Principal(operator)),
                 (
                     "token_identifier".into(),
-                    GenericValue::TextContent(token_identifier),
+                    GenericValue::NatContent(token_identifier),
                 ),
             ],
         ))
@@ -540,7 +540,7 @@ fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, Nft
                 ("to".into(), GenericValue::Principal(to)),
                 (
                     "token_identifier".into(),
-                    GenericValue::TextContent(token_identifier),
+                    GenericValue::NatContent(token_identifier),
                 ),
             ],
         ))
@@ -621,7 +621,7 @@ fn transfer_from(
                 ("to".into(), GenericValue::Principal(to)),
                 (
                     "token_identifier".into(),
-                    GenericValue::TextContent(token_identifier),
+                    GenericValue::NatContent(token_identifier),
                 ),
             ],
         ))
@@ -671,7 +671,7 @@ fn mint(
                 ("to".into(), GenericValue::Principal(to)),
                 (
                     "token_identifier".into(),
-                    GenericValue::TextContent(token_identifier),
+                    GenericValue::NatContent(token_identifier),
                 ),
             ],
         ))
@@ -754,6 +754,6 @@ fn main() {
     std::print!("{}", __export_service());
 }
 
-// TODO:
+// ROADMAP:
 // - notification
 // - consider support: multiple operators per owner
