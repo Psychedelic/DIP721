@@ -67,7 +67,7 @@ jobs:
         run: |
           cd nft-v2/test && npm install
 
-      - name: Cache npm modules
+      - name: Cache didc
         id: cache-didc
         uses: actions/cache@v2
         with:
