@@ -99,6 +99,7 @@ jobs:
       - name: Install global npm modules
         if: steps.cache-npm-integration-tests.outputs.cache-hit != 'true'
         run: |
+          npm install -g prettier
           cd nft-v2 && npm install
 
       - name: Candid didc install
