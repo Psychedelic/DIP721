@@ -40,7 +40,7 @@ export const idlFactory = ({ IDL }) => {
     'owner' : IDL.Principal,
     'operator' : IDL.Opt(IDL.Principal),
     'properties' : IDL.Vec(IDL.Tuple(IDL.Text, GenericValue)),
-    'token_identifier' : IDL.Text,
+    'token_identifier' : IDL.Nat,
     'minted_at' : IDL.Nat64,
     'minted_by' : IDL.Principal,
   });
@@ -49,7 +49,7 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : IDL.Vec(TokenMetadata),
     'Err' : NftError,
   });
-  const Result_3 = IDL.Variant({ 'Ok' : IDL.Vec(IDL.Text), 'Err' : NftError });
+  const Result_3 = IDL.Variant({ 'Ok' : IDL.Vec(IDL.Nat), 'Err' : NftError });
   const Result_4 = IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : NftError });
   const Metadata = IDL.Record({
     'owners' : IDL.Vec(IDL.Principal),
@@ -78,12 +78,12 @@ export const idlFactory = ({ IDL }) => {
   });
   const Result_7 = IDL.Variant({ 'Ok' : TxEvent, 'Err' : NftError });
   return IDL.Service({
-    'approve' : IDL.Func([IDL.Principal, IDL.Text], [Result], []),
-    'approveDip721' : IDL.Func([IDL.Principal, IDL.Text], [Result], []),
+    'approve' : IDL.Func([IDL.Principal, IDL.Nat], [Result], []),
+    'approveDip721' : IDL.Func([IDL.Principal, IDL.Nat], [Result], []),
     'balanceOf' : IDL.Func([IDL.Principal], [Result], ['query']),
     'balanceOfDip721' : IDL.Func([IDL.Principal], [Result], ['query']),
-    'burn' : IDL.Func([IDL.Text], [], []),
-    'getMetadataDip721' : IDL.Func([IDL.Text], [Result_1], ['query']),
+    'burn' : IDL.Func([IDL.Nat], [], []),
+    'getMetadataDip721' : IDL.Func([IDL.Nat], [Result_1], ['query']),
     'getMetadataForUserDip721' : IDL.Func(
         [IDL.Principal],
         [Result_2],
@@ -103,22 +103,22 @@ export const idlFactory = ({ IDL }) => {
     'logoDip721' : IDL.Func([], [IDL.Opt(IDL.Text)], ['query']),
     'metadata' : IDL.Func([], [Metadata], ['query']),
     'mint' : IDL.Func(
-        [IDL.Principal, IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, GenericValue))],
+        [IDL.Principal, IDL.Nat, IDL.Vec(IDL.Tuple(IDL.Text, GenericValue))],
         [Result],
         [],
       ),
     'mintDip721' : IDL.Func(
-        [IDL.Principal, IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, GenericValue))],
+        [IDL.Principal, IDL.Nat, IDL.Vec(IDL.Tuple(IDL.Text, GenericValue))],
         [Result],
         [],
       ),
     'name' : IDL.Func([], [IDL.Opt(IDL.Text)], ['query']),
     'nameDip721' : IDL.Func([], [IDL.Opt(IDL.Text)], ['query']),
-    'operatorOf' : IDL.Func([IDL.Text], [Result_5], ['query']),
+    'operatorOf' : IDL.Func([IDL.Nat], [Result_5], ['query']),
     'operatorTokenIds' : IDL.Func([IDL.Principal], [Result_3], ['query']),
     'operatorTokenMetadata' : IDL.Func([IDL.Principal], [Result_2], ['query']),
-    'ownerOf' : IDL.Func([IDL.Text], [Result_6], ['query']),
-    'ownerOfDip721' : IDL.Func([IDL.Text], [Result_6], ['query']),
+    'ownerOf' : IDL.Func([IDL.Nat], [Result_6], ['query']),
+    'ownerOfDip721' : IDL.Func([IDL.Nat], [Result_6], ['query']),
     'ownerTokenIds' : IDL.Func([IDL.Principal], [Result_3], ['query']),
     'ownerTokenMetadata' : IDL.Func([IDL.Principal], [Result_2], ['query']),
     'owners' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
@@ -142,19 +142,19 @@ export const idlFactory = ({ IDL }) => {
       ),
     'symbol' : IDL.Func([], [IDL.Opt(IDL.Text)], ['query']),
     'symbolDip721' : IDL.Func([], [IDL.Opt(IDL.Text)], ['query']),
-    'tokenMetadata' : IDL.Func([IDL.Text], [Result_1], ['query']),
+    'tokenMetadata' : IDL.Func([IDL.Nat], [Result_1], ['query']),
     'totalSupply' : IDL.Func([], [IDL.Nat], ['query']),
     'totalSupplyDip721' : IDL.Func([], [IDL.Nat], ['query']),
     'totalTransactions' : IDL.Func([], [IDL.Nat], ['query']),
     'transaction' : IDL.Func([IDL.Nat], [Result_7], ['query']),
-    'transfer' : IDL.Func([IDL.Principal, IDL.Text], [Result], []),
+    'transfer' : IDL.Func([IDL.Principal, IDL.Nat], [Result], []),
     'transferFrom' : IDL.Func(
-        [IDL.Principal, IDL.Principal, IDL.Text],
+        [IDL.Principal, IDL.Principal, IDL.Nat],
         [Result],
         [],
       ),
     'transferFromDip721' : IDL.Func(
-        [IDL.Principal, IDL.Principal, IDL.Text],
+        [IDL.Principal, IDL.Principal, IDL.Nat],
         [Result],
         [],
       ),

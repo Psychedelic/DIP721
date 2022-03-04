@@ -42,7 +42,7 @@ export type Result_1 = { 'Ok' : TokenMetadata } |
   { 'Err' : NftError };
 export type Result_2 = { 'Ok' : Array<TokenMetadata> } |
   { 'Err' : NftError };
-export type Result_3 = { 'Ok' : Array<string> } |
+export type Result_3 = { 'Ok' : Array<bigint> } |
   { 'Err' : NftError };
 export type Result_4 = { 'Ok' : boolean } |
   { 'Err' : NftError };
@@ -62,7 +62,7 @@ export interface TokenMetadata {
   'owner' : Principal,
   'operator' : [] | [Principal],
   'properties' : Array<[string, GenericValue]>,
-  'token_identifier' : string,
+  'token_identifier' : bigint,
   'minted_at' : bigint,
   'minted_by' : Principal,
 }
@@ -73,12 +73,12 @@ export interface TxEvent {
   'caller' : Principal,
 }
 export interface _SERVICE {
-  'approve' : (arg_0: Principal, arg_1: string) => Promise<Result>,
-  'approveDip721' : (arg_0: Principal, arg_1: string) => Promise<Result>,
+  'approve' : (arg_0: Principal, arg_1: bigint) => Promise<Result>,
+  'approveDip721' : (arg_0: Principal, arg_1: bigint) => Promise<Result>,
   'balanceOf' : (arg_0: Principal) => Promise<Result>,
   'balanceOfDip721' : (arg_0: Principal) => Promise<Result>,
-  'burn' : (arg_0: string) => Promise<undefined>,
-  'getMetadataDip721' : (arg_0: string) => Promise<Result_1>,
+  'burn' : (arg_0: bigint) => Promise<undefined>,
+  'getMetadataDip721' : (arg_0: bigint) => Promise<Result_1>,
   'getMetadataForUserDip721' : (arg_0: Principal) => Promise<Result_2>,
   'getTokenIdsForUserDip721' : (arg_0: Principal) => Promise<Result_3>,
   'isApprovedForAll' : (arg_0: Principal, arg_1: Principal) => Promise<
@@ -89,21 +89,21 @@ export interface _SERVICE {
   'metadata' : () => Promise<Metadata>,
   'mint' : (
       arg_0: Principal,
-      arg_1: string,
+      arg_1: bigint,
       arg_2: Array<[string, GenericValue]>,
     ) => Promise<Result>,
   'mintDip721' : (
       arg_0: Principal,
-      arg_1: string,
+      arg_1: bigint,
       arg_2: Array<[string, GenericValue]>,
     ) => Promise<Result>,
   'name' : () => Promise<[] | [string]>,
   'nameDip721' : () => Promise<[] | [string]>,
-  'operatorOf' : (arg_0: string) => Promise<Result_5>,
+  'operatorOf' : (arg_0: bigint) => Promise<Result_5>,
   'operatorTokenIds' : (arg_0: Principal) => Promise<Result_3>,
   'operatorTokenMetadata' : (arg_0: Principal) => Promise<Result_2>,
-  'ownerOf' : (arg_0: string) => Promise<Result_6>,
-  'ownerOfDip721' : (arg_0: string) => Promise<Result_6>,
+  'ownerOf' : (arg_0: bigint) => Promise<Result_6>,
+  'ownerOfDip721' : (arg_0: bigint) => Promise<Result_6>,
   'ownerTokenIds' : (arg_0: Principal) => Promise<Result_3>,
   'ownerTokenMetadata' : (arg_0: Principal) => Promise<Result_2>,
   'owners' : () => Promise<Array<Principal>>,
@@ -119,20 +119,20 @@ export interface _SERVICE {
   'supportedInterfacesDip721' : () => Promise<Array<SupportedInterface>>,
   'symbol' : () => Promise<[] | [string]>,
   'symbolDip721' : () => Promise<[] | [string]>,
-  'tokenMetadata' : (arg_0: string) => Promise<Result_1>,
+  'tokenMetadata' : (arg_0: bigint) => Promise<Result_1>,
   'totalSupply' : () => Promise<bigint>,
   'totalSupplyDip721' : () => Promise<bigint>,
   'totalTransactions' : () => Promise<bigint>,
   'transaction' : (arg_0: bigint) => Promise<Result_7>,
-  'transfer' : (arg_0: Principal, arg_1: string) => Promise<Result>,
+  'transfer' : (arg_0: Principal, arg_1: bigint) => Promise<Result>,
   'transferFrom' : (
       arg_0: Principal,
       arg_1: Principal,
-      arg_2: string,
+      arg_2: bigint,
     ) => Promise<Result>,
   'transferFromDip721' : (
       arg_0: Principal,
       arg_1: Principal,
-      arg_2: string,
+      arg_2: bigint,
     ) => Promise<Result>,
 }
