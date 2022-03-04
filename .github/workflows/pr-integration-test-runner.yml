@@ -1,0 +1,87 @@
+name: Integration tests
+
+on:
+  pull_request:
+    branches: [ develop, main ]
+  push:
+    branches:
+      - main
+      - developer
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      CI: 1
+      DEBUG: 0
+      DFX_VERSION: 0.8.4
+      DFX_WARNING: -version_check 
+      NODE_ENV: ci
+      DFX_CANDID_RELEASE: 2022-01-06
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Adds ic-cdk-optimizer
+        run: |
+          cd ./.bin/stable-x86_64-unknown-linux-gnu
+          gzip -d ic-cdk-optimizer.gz
+          cp ic-cdk-optimizer /usr/local/bin
+
+      - name: Cache Dfx
+        id: cache-dfx
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/local/bin/dfx
+          key: cache-dfx-${{ hashFiles('dfx.json') }}
+
+      - name: Install DFX
+        if: steps.cache-dfx.outputs.cache-hit != 'true'
+        run: |
+          yes Y | DFX_VERSION="$DFX_VERSION" sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+
+      - name: Cache npm modules
+        id: cache-npm-integration-tests
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/local/lib/node_modules
+            $(pwd)/nft-v2/test/node_modules
+          key: cache-cache-npm-integration-tests-${{ hashFiles('package.json') }}
+
+      - name: Install global npm modules
+        if: steps.cache-npm-integration-tests.outputs.cache-hit != 'true'
+        run: |
+          cd nft-v2/test && npm install
+
+      - name: Cache npm modules
+        id: cache-didc
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/local/lib/node_modules
+            $(pwd)/nft-v2/test/node_modules
+          key: cache-didc-${{ hashFiles('package.json') }}
+
+      - name: Candid didc install
+        if: steps.cache-didc.outputs.cache-hit != 'true'
+        run: |
+          wget https://github.com/dfinity/candid/releases/download/"$DFX_CANDID_RELEASE"/didc-linux64
+          chmod +x ./didc-linux64
+          ln -s "$(pwd)/didc-linux64" /usr/local/bin/didc
+
+      - name: Integration tests
+        run: cd nft-v2 && make test
