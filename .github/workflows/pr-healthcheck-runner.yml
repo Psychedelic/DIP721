@@ -100,6 +100,7 @@ jobs:
         if: steps.cache-npm-integration-tests.outputs.cache-hit != 'true'
         run: |
           npm install -g prettier
+          npm install -g eslint
           cd nft-v2 && npm install
 
       - name: Candid didc install
