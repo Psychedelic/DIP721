@@ -2,6 +2,7 @@
 // #![allow(deprecated)]
 
 use crate::*;
+use std::str::FromStr;
 
 #[query(name = "nameDip721")]
 #[candid_method(query, rename = "nameDip721")]
@@ -69,15 +70,15 @@ fn balance_of_dip721(owner: Principal) -> Result<Nat, NftError> {
 #[query(name = "ownerOfDip721")]
 #[candid_method(query, rename = "ownerOfDip721")]
 #[deprecated(note = "please use method: `owner_of` instead")]
-fn owner_of_dip721(token_identifier: TokenIdentifier) -> Result<Principal, NftError> {
-    owner_of(token_identifier)
+fn owner_of_dip721(token_identifier: String) -> Result<Principal, NftError> {
+    owner_of(Nat::from_str(token_identifier.as_ref()).unwrap())
 }
 
 #[query(name = "getMetadataDip721")]
 #[candid_method(query, rename = "getMetadataDip721")]
 #[deprecated(note = "please use method: `token_metadata` instead")]
-fn get_metadata_dip721(token_identifier: TokenIdentifier) -> Result<TokenMetadata, NftError> {
-    token_metadata(token_identifier)
+fn get_metadata_dip721(token_identifier: String) -> Result<TokenMetadata, NftError> {
+    token_metadata(Nat::from_str(token_identifier.as_ref()).unwrap())
 }
 
 #[query(name = "getMetadataForUserDip721")]
@@ -90,15 +91,15 @@ fn get_metadata_for_user_dip721(owner: Principal) -> Result<Vec<TokenMetadata>, 
 #[query(name = "getTokenIdsForUserDip721")]
 #[candid_method(query, rename = "getTokenIdsForUserDip721")]
 #[deprecated(note = "please use method: `owner_token_ids` instead")]
-fn get_token_ids_for_user_dip721(owner: Principal) -> Result<Vec<TokenIdentifier>, NftError> {
-    owner_token_ids(owner)
+fn get_token_ids_for_user_dip721(owner: Principal) -> Result<Vec<String>, NftError> {
+    owner_token_ids(owner).map(|ids| ids.into_iter().map(|id| id.to_string()).collect())
 }
 
 #[update(name = "approveDip721")]
 #[candid_method(update, rename = "approveDip721")]
 #[deprecated(note = "please use method: `approve` instead")]
-fn approve_dip721(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
-    approve(operator, token_identifier)
+fn approve_dip721(operator: Principal, token_identifier: String) -> Result<Nat, NftError> {
+    approve(operator, Nat::from_str(token_identifier.as_ref()).unwrap())
 }
 
 #[update(name = "transferFromDip721")]
@@ -107,18 +108,22 @@ fn approve_dip721(operator: Principal, token_identifier: TokenIdentifier) -> Res
 fn transfer_from_dip721(
     owner: Principal,
     to: Principal,
-    token_identifier: TokenIdentifier,
+    token_identifier: String,
 ) -> Result<Nat, NftError> {
-    transfer_from(owner, to, token_identifier)
+    transfer_from(owner, to, Nat::from_str(token_identifier.as_ref()).unwrap())
 }
 
-#[update(name = "mintDip721")]
+#[update(name = "mintDip721", guard = "is_canister_owner")]
 #[candid_method(update, rename = "mintDip721")]
 #[deprecated(note = "please use method: `mint` instead")]
 fn mint_dip721(
     to: Principal,
-    token_identifier: TokenIdentifier,
+    token_identifier: String,
     properties: Vec<(String, GenericValue)>,
 ) -> Result<Nat, NftError> {
-    mint(to, token_identifier, properties)
+    mint(
+        to,
+        Nat::from_str(token_identifier.as_ref()).unwrap(),
+        properties,
+    )
 }
