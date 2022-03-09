@@ -14,7 +14,7 @@ import test from "ava";
 const normalActors = [aliceActor, bobActor, johnActor];
 const allActors = [...normalActors, canisterOwnerActor];
 
-test.serial("mint OK - v1", async t => {
+test.serial("simple mint NFT and verify information.", async t => {
   // mint
   t.deepEqual(
     await canisterOwnerActor.mint(aliceIdentity.getPrincipal(), BigInt(1), [["A", {Nat64Content: BigInt(9999)}]]),
@@ -96,7 +96,7 @@ test.serial("mint OK - v1", async t => {
   });
 });
 
-test.serial("mint ERROR", async t => {
+test.serial("error on query non-existed information.", async t => {
   // mint error when caller is not an owner
   (
     await Promise.allSettled(
@@ -162,7 +162,7 @@ test.serial("mint ERROR", async t => {
   });
 });
 
-test.serial("mint OK - v2", async t => {
+test.serial("mint NFTs.", async t => {
   t.deepEqual(
     await canisterOwnerActor.mint(aliceIdentity.getPrincipal(), BigInt(2), [["B", {Int64Content: BigInt(1234)}]]),
     {Ok: BigInt(2)}
@@ -175,7 +175,7 @@ test.serial("mint OK - v2", async t => {
   });
 });
 
-test.serial("mint OK - v3", async t => {
+test.serial("verify mint information.", async t => {
   // verify transaction
   (await Promise.all(allActors.map(actor => actor.transaction(BigInt(2))))).forEach(result => {
     t.like(result, {
@@ -370,7 +370,7 @@ test.serial("mint OK - v3", async t => {
   });
 });
 
-test.serial("approve OK - v1", async t => {
+test.serial("approve NFTs.", async t => {
   t.deepEqual(await bobActor.approve(aliceIdentity.getPrincipal(), BigInt(3)), {Ok: BigInt(5)});
   t.deepEqual(await johnActor.approve(aliceIdentity.getPrincipal(), BigInt(4)), {Ok: BigInt(6)});
   t.deepEqual(await aliceActor.approve(bobIdentity.getPrincipal(), BigInt(1)), {Ok: BigInt(7)});
@@ -391,7 +391,7 @@ test.serial("approve OK - v1", async t => {
   ).forEach(result => t.deepEqual(result, {Ok: false}));
 });
 
-test.serial("approve OK - v2", async t => {
+test.serial("verify approve transactions.", async t => {
   // verify transaction
   (await Promise.all(allActors.map(actor => actor.transaction(BigInt(5))))).forEach(result => {
     t.like(result, {
@@ -446,7 +446,7 @@ test.serial("approve OK - v2", async t => {
   });
 });
 
-test.serial("approve OK - v3", async t => {
+test.serial("verify approve information.", async t => {
   // verify balanceOf
   (await Promise.all(allActors.map(actor => actor.balanceOf(aliceIdentity.getPrincipal())))).forEach(result => {
     t.deepEqual(result, {Ok: BigInt(2)});
@@ -673,7 +673,7 @@ test.serial("approve OK - v3", async t => {
   });
 });
 
-test.serial("approve ERROR - v1", async t => {
+test.serial("error on self approve or approve non-existed operator.", async t => {
   t.deepEqual(await aliceActor.approve(aliceIdentity.getPrincipal(), BigInt(1)), {Err: {SelfApprove: null}});
   t.deepEqual(await aliceActor.approve(aliceIdentity.getPrincipal(), BigInt(2)), {Err: {SelfApprove: null}});
   t.deepEqual(await bobActor.approve(bobIdentity.getPrincipal(), BigInt(3)), {Err: {SelfApprove: null}});
@@ -694,21 +694,21 @@ test.serial("approve ERROR - v1", async t => {
   );
 });
 
-test.serial("approve ERROR - v2", async t => {
+test.serial("error on unauthorize owner when approve.", async t => {
   t.deepEqual(await canisterOwnerActor.approve(aliceIdentity.getPrincipal(), BigInt(1)), {Err: {Unauthorized: null}});
   t.deepEqual(await canisterOwnerActor.approve(aliceIdentity.getPrincipal(), BigInt(2)), {Err: {Unauthorized: null}});
   t.deepEqual(await canisterOwnerActor.approve(aliceIdentity.getPrincipal(), BigInt(3)), {Err: {Unauthorized: null}});
   t.deepEqual(await canisterOwnerActor.approve(aliceIdentity.getPrincipal(), BigInt(4)), {Err: {Unauthorized: null}});
 });
 
-test.serial("approve OK - v4", async t => {
+test.serial("approve NFTs (new operator).", async t => {
   t.deepEqual(await aliceActor.approve(canisterOwnerIdentity.getPrincipal(), BigInt(1)), {Ok: BigInt(9)});
   t.deepEqual(await aliceActor.approve(canisterOwnerIdentity.getPrincipal(), BigInt(2)), {Ok: BigInt(10)});
   t.deepEqual(await bobActor.approve(canisterOwnerIdentity.getPrincipal(), BigInt(3)), {Ok: BigInt(11)});
   t.deepEqual(await johnActor.approve(canisterOwnerIdentity.getPrincipal(), BigInt(4)), {Ok: BigInt(12)});
 });
 
-test.serial("approve OK - v5", async t => {
+test.serial("verify approve transactions after updated to new operator.", async t => {
   // verify transaction
   (await Promise.all(allActors.map(actor => actor.transaction(BigInt(9))))).forEach(result => {
     t.like(result, {
@@ -763,7 +763,7 @@ test.serial("approve OK - v5", async t => {
   });
 });
 
-test.serial("approve OK - v6", async t => {
+test.serial("verify approve information after updated to new operator.", async t => {
   // verify operatorOf
   (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(1))))).forEach(result => {
     t.deepEqual(result, {Ok: [canisterOwnerIdentity.getPrincipal()]});
@@ -957,7 +957,7 @@ test.serial("approve OK - v6", async t => {
   );
 });
 
-test.serial("approve ERROR - v3", async t => {
+test.serial("error on query old operator information.", async t => {
   // operatorTokenMetadata error when non-existed operator
   (await Promise.all(allActors.map(actor => actor.operatorTokenMetadata(aliceIdentity.getPrincipal())))).forEach(
     result => {
@@ -987,7 +987,7 @@ test.serial("approve ERROR - v3", async t => {
   });
 });
 
-test.serial("transferFrom ERROR - v1", async t => {
+test.serial("error on self transferFrom.", async t => {
   t.deepEqual(
     await canisterOwnerActor.transferFrom(
       canisterOwnerIdentity.getPrincipal(),
@@ -1010,7 +1010,7 @@ test.serial("transferFrom ERROR - v1", async t => {
 });
 
 // invalid owner
-test.serial("transferFrom ERROR - v2", async t => {
+test.serial("error on unauthorize owner when transferFrom.", async t => {
   t.deepEqual(
     await canisterOwnerActor.transferFrom(
       canisterOwnerIdentity.getPrincipal(),
@@ -1042,7 +1042,7 @@ test.serial("transferFrom ERROR - v2", async t => {
 });
 
 // invalid operator
-test.serial("transferFrom ERROR - v3", async t => {
+test.serial("error on unauthorize operator when transferFrom.", async t => {
   t.deepEqual(
     await bobActor.transferFrom(aliceIdentity.getPrincipal(), canisterOwnerIdentity.getPrincipal(), BigInt(1)),
     {
@@ -1069,8 +1069,7 @@ test.serial("transferFrom ERROR - v3", async t => {
   );
 });
 
-test.serial("transferFrom OK - v1", async t => {
-  // verify transaction
+test.serial("transferFrom.", async t => {
   t.deepEqual(
     await canisterOwnerActor.transferFrom(
       aliceIdentity.getPrincipal(),
@@ -1108,7 +1107,8 @@ test.serial("transferFrom OK - v1", async t => {
   });
 });
 
-test.serial("transferFrom OK - v2", async t => {
+test.serial("verify transferFrom transactions.", async t => {
+  // verify transaction
   (await Promise.all(allActors.map(actor => actor.transaction(BigInt(13))))).forEach(result => {
     t.like(result, {
       Ok: {
@@ -1163,7 +1163,7 @@ test.serial("transferFrom OK - v2", async t => {
   });
 });
 
-test.serial("transferFrom OK - v3", async t => {
+test.serial("verify transferFrom information.", async t => {
   // verify balanceOf
   (await Promise.all(allActors.map(actor => actor.balanceOf(aliceIdentity.getPrincipal())))).forEach(result => {
     t.deepEqual(result, {Ok: BigInt(1)});
@@ -1318,7 +1318,7 @@ test.serial("transferFrom OK - v3", async t => {
   );
 });
 
-test.serial("transfer ERROR - v1", async t => {
+test.serial("error on self transfer.", async t => {
   t.deepEqual(await canisterOwnerActor.transfer(canisterOwnerIdentity.getPrincipal(), BigInt(1)), {
     Err: {SelfTransfer: null}
   });
@@ -1334,7 +1334,7 @@ test.serial("transfer ERROR - v1", async t => {
 });
 
 // invalid owner
-test.serial("transfer ERROR - v2", async t => {
+test.serial("error on unauthorize owner when transfer.", async t => {
   t.deepEqual(await aliceActor.transfer(canisterOwnerIdentity.getPrincipal(), BigInt(1)), {
     Err: {Unauthorized: null}
   });
@@ -1349,7 +1349,7 @@ test.serial("transfer ERROR - v2", async t => {
   });
 });
 
-test.serial("transfer OK - v1", async t => {
+test.serial("transfer.", async t => {
   t.deepEqual(await canisterOwnerActor.transfer(johnIdentity.getPrincipal(), BigInt(1)), {
     Ok: BigInt(17)
   });
@@ -1364,7 +1364,7 @@ test.serial("transfer OK - v1", async t => {
   });
 });
 
-test.serial("transfer OK - v2", async t => {
+test.serial("verify transfer transactions.", async t => {
   // verify transaction
   (await Promise.all(allActors.map(actor => actor.transaction(BigInt(17))))).forEach(result => {
     t.like(result, {
@@ -1423,7 +1423,7 @@ test.serial("transfer OK - v2", async t => {
   });
 });
 
-test.serial("transfer OK - v3", async t => {
+test.serial("verify transfer information.", async t => {
   // verify balanceOf
   (await Promise.all(allActors.map(actor => actor.balanceOf(bobIdentity.getPrincipal())))).forEach(result => {
     t.deepEqual(result, {Ok: BigInt(2)});
@@ -1575,7 +1575,7 @@ test.serial("transfer OK - v3", async t => {
   });
 });
 
-test.serial("setApprovalForAll OK - v1", async t => {
+test.serial("setApprovalForAll(true).", async t => {
   t.deepEqual(await bobActor.setApprovalForAll(johnIdentity.getPrincipal(), true), {Ok: BigInt(21)});
   t.deepEqual(await johnActor.setApprovalForAll(bobIdentity.getPrincipal(), true), {Ok: BigInt(22)});
 
@@ -1588,7 +1588,7 @@ test.serial("setApprovalForAll OK - v1", async t => {
   ).forEach(result => t.deepEqual(result, {Ok: true}));
 });
 
-test.serial("setApprovalForAll OK - v2", async t => {
+test.serial("verify setApprovalForAll(true) transactions.", async t => {
   // verify transaction
   (await Promise.all(allActors.map(actor => actor.transaction(BigInt(21))))).forEach(result => {
     t.like(result, {
@@ -1619,7 +1619,7 @@ test.serial("setApprovalForAll OK - v2", async t => {
   });
 });
 
-test.serial("setApprovalForAll OK - v3", async t => {
+test.serial("verify setApprovalForAll(true) information.", async t => {
   // verify balanceOf
   (await Promise.all(allActors.map(actor => actor.balanceOf(bobIdentity.getPrincipal())))).forEach(result => {
     t.deepEqual(result, {Ok: BigInt(2)});
@@ -1839,14 +1839,14 @@ test.serial("setApprovalForAll OK - v3", async t => {
   });
 });
 
-test.serial("setApprovalForAll ERROR - v1", async t => {
+test.serial("error on self approve when setApprovalForAll.", async t => {
   t.deepEqual(await johnActor.setApprovalForAll(johnIdentity.getPrincipal(), true), {Err: {SelfApprove: null}});
   t.deepEqual(await bobActor.setApprovalForAll(bobIdentity.getPrincipal(), true), {Err: {SelfApprove: null}});
   t.deepEqual(await johnActor.setApprovalForAll(johnIdentity.getPrincipal(), false), {Err: {SelfApprove: null}});
   t.deepEqual(await bobActor.setApprovalForAll(bobIdentity.getPrincipal(), false), {Err: {SelfApprove: null}});
 });
 
-test.serial("setApprovalForAll OK - v4", async t => {
+test.serial("setApprovalForAll(false).", async t => {
   t.deepEqual(await bobActor.setApprovalForAll(johnIdentity.getPrincipal(), false), {Ok: BigInt(23)});
   t.deepEqual(await johnActor.setApprovalForAll(bobIdentity.getPrincipal(), false), {Ok: BigInt(24)});
 
@@ -1859,7 +1859,7 @@ test.serial("setApprovalForAll OK - v4", async t => {
   ).forEach(result => t.deepEqual(result, {Ok: false}));
 });
 
-test.serial("setApprovalForAll OK - v5", async t => {
+test.serial("verify setApprovalForAll(false) transactions.", async t => {
   // verify transaction
   (await Promise.all(allActors.map(actor => actor.transaction(BigInt(23))))).forEach(result => {
     t.like(result, {
@@ -1890,7 +1890,7 @@ test.serial("setApprovalForAll OK - v5", async t => {
   });
 });
 
-test.serial("setApprovalForAll OK - v6", async t => {
+test.serial("verify setApprovalForAll(false) information.", async t => {
   // verify balanceOf
   (await Promise.all(allActors.map(actor => actor.balanceOf(bobIdentity.getPrincipal())))).forEach(result => {
     t.deepEqual(result, {Ok: BigInt(2)});
@@ -1938,7 +1938,7 @@ test.serial("setApprovalForAll OK - v6", async t => {
   });
 });
 
-test.serial("setApprovalForAll ERROR - v2", async t => {
+test.serial("error on query non-existed operator (operator removed from tokenMetadata).", async t => {
   // verify operatorTokenMetadata
   (await Promise.all(allActors.map(actor => actor.operatorTokenMetadata(johnIdentity.getPrincipal())))).forEach(
     result => t.deepEqual(result, {Err: {OperatorNotFound: null}})
