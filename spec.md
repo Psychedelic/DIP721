@@ -435,7 +435,7 @@ Returns the `TxEvent` that corresponds with `tx_id`.
 If there is no `TxEvent` that corresponds with the `tx_id` entered, returns a `NftError.TxNotFound`.
 
 ```
-transaction : (nat) -> (Result_8) query;
+transaction: (nat) -> (Result_8) query;
 ```
 
 <br>
@@ -445,7 +445,7 @@ transaction : (nat) -> (Result_8) query;
 Returns a `Nat` that represents the total number of transactions that have occured in the NFT canister.
 
 ```
-totalTransactions : () -> (nat) query;
+totalTransactions: () -> (nat) query;
 ```
 <br>
 
