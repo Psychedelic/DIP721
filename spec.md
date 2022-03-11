@@ -10,6 +10,7 @@ simple, non-ambiguous, extendable API for the transfer and tracking ownership of
 
 ## Table Of Contents
 - [Our Motivation](#motivation)
+- [V1 to V2 -- What's Changed?](#v1-to-v2----whats-changed)
 - [Interface Specification](#interface-specification)
     - [Basic Interface](#🚦-basic-interface)
     - [Approval Interface](#✅-approval-interface)
@@ -17,8 +18,11 @@ simple, non-ambiguous, extendable API for the transfer and tracking ownership of
     - [Burn Interface](#🔥-burn-interface)
     - [History Interface](#📬-history-interface)
 - [Data Structure Specification](#data-structure-specification)
-- [Deprecated Interface & Data Structure](#deprecated-interface--data-structure)
 - [Fees](#🤑-fees)
+- [Deprecated Interface & Data Structure](#🗑-deprecated-interface--data-structure)
+  - [Deprecated Data Structures](#deprecated-data-structure)
+  - [Deprecated Methods](#deprecated-methods)
+
 
 <br>
 
@@ -40,6 +44,16 @@ DIP-721 tries to improve on existing Internet Computer standards in the followin
 
 <br>
 
+## V1 to V2 -- What's Changed? 
+
+- Removed the `Dip721` suffix from methods.
+- Token Identifier is now a `Nat` instead of `String` type.
+- Simplified data structures.
+- Added safe Rust data storage practices for our [example implememtation](./nft-v2/src/main.rs).
+
+<br>
+
+---
 ## Interface Specification
 
 ### 🚦 Basic interface
@@ -608,11 +622,60 @@ type TxEvent = record {
 
 ---
 ---
-## Deprecated Interface & Data Structure
 
+## 🤑 Fees
 
+Implementations are encouraged not to charge any fees when an approved entity
+transfers NFTs on the user's behalf, as that entity might have no means for payment.
+If any fees needs to be taken for such a `transferFromDip721`, `safeTransferFromDip721`,
+`transferFromNotifyDip721`, `safeTransferFromNotifyDip721` call,
+then it is encouraged to be taken during the call to `approveDip721`, `setApprovalForAllDip721`
+from the caller's balance.
 
-### OwnerResult
+<br>
+
+----
+---
+
+## 🗑 Deprecated Interface & Data Structure
+This section encompases the data structures and interface methods that we deprecated when going from v1 --> v2 of DIP721.
+
+If you are currently using deprecated methods or data structures, we strongly suggest you migrate to the current implementations to ensure interoperability between your canisters and other canisters interacting with DIP721.
+
+### Deprecated Methods
+```
+approveDip721: (spender: principal, token_id: nat64) -> (ApproveResult);
+
+balanceOfDip721: (user: principal) -> (nat64) query;
+
+ownerOfDip721: (token_id: nat64) -> (OwnerResult) query;
+
+safeTransferFromDip721: (from: principal, to: principal, token_id: nat64) -> (TxReceipt);
+
+transferFromDip721: (from: principal, to: principal, token_id: nat64) -> (TxReceipt);
+
+supportedInterfacesDip721: () -> (vec InterfaceId) query;
+
+logoDip721: () -> (LogoResult) query;
+
+nameDip721: () -> (text) query;
+
+symbolDip721: () -> (text) query;
+
+totalSupplyDip721: () -> (nat64) query;
+
+getMetadataDip721: (token_id: nat64) -> (MetadataResult) query;
+
+getMaxLimitDip721: () -> (nat16) query;
+
+mintDip721: (to: principal, metadata: MetadataDesc) -> (MintReceipt);
+
+getMetadataForUserDip721: (user: principal) -> (vec ExtendedMetadataResult);
+
+getTokenIdsForUserDip721: (user: principal) -> (vec nat64) query;
+```
+### Deprecated Data Structure
+#### OwnerResult
 ---
 
 ```
@@ -635,7 +698,7 @@ variant {
 
 <br>
 
-### TxReceipt
+#### TxReceipt
 ---
 ```
 type TxReceipt =
@@ -647,7 +710,7 @@ variant {
 
 <br>
 
-### InterfaceId
+#### InterfaceId
 ---
 
 ```
@@ -663,7 +726,7 @@ type InterfaceId =
 
 <br>
 
-### LogoResult
+#### LogoResult
 ---
 ```
 type LogoResult =
@@ -683,7 +746,7 @@ type LogoResult =
 
 <br>
 
-### MetadataResult
+#### MetadataResult
 ---
 ```
 type MetadataResult =
@@ -737,7 +800,7 @@ type MetadataVal =
 
 <br>
 
-### TxResult
+#### TxResult
 ---
 ```
 type TxResult =
@@ -784,7 +847,7 @@ type TransactionType =
 
 <br>
 
-### MintReceipt
+#### MintReceipt
 ---
 ```
 type MintReceipt =
@@ -801,7 +864,7 @@ type MintReceipt =
 
 <br>
 
-### BurnRequest
+#### BurnRequest
 ---
 ```
 type BurnRequest =
@@ -857,11 +920,3 @@ location field is missing - Embedded in the token contract
 
 
 
-## 🤑 Fees
-
-Implementations are encouraged not to charge any fees when an approved entity
-transfers NFTs on the user's behalf, as that entity might have no means for payment.
-If any fees needs to be taken for such a `transferFromDip721`, `safeTransferFromDip721`,
-`transferFromNotifyDip721`, `safeTransferFromNotifyDip721` call,
-then it is encouraged to be taken during the call to `approveDip721`, `setApprovalForAllDip721`
-from the caller's balance.
