@@ -550,11 +550,11 @@ URL location for the fully rendered asset content.
 {"location", TextContent(<asset URL of the NFT>)}
 ```
 
-#### content hash - **Optional**
+#### contentHash - **Optional**
 
 ---
 
-SHA256 hash fingerprint of the asset defined in location or asset.
+SHA-256 hash fingerprint of the asset defined in location or asset.
 
 ```
 {"contentHash", BlobContent(<hash of the content>)}
