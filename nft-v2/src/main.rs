@@ -14,7 +14,7 @@ struct InitArgs {
     name: Option<String>,
     logo: Option<String>,
     symbol: Option<String>,
-    owners: Option<Vec<Principal>>,
+    custodians: Option<HashSet<Principal>>,
 }
 
 #[derive(CandidType, Default, Deserialize, Clone)]
@@ -22,7 +22,7 @@ struct Metadata {
     name: Option<String>,
     logo: Option<String>,
     symbol: Option<String>,
-    owners: HashSet<Principal>,
+    custodians: HashSet<Principal>,
     created_at: u64,
     upgraded_at: u64,
 }
@@ -108,14 +108,14 @@ thread_local!(
 fn init(args: Option<InitArgs>) {
     METADATA.with(|metadata| {
         let mut metadata = metadata.borrow_mut();
-        metadata.owners.insert(caller()); // Default as caller
+        metadata.custodians.insert(caller()); // Default as caller
         if let Some(args) = args {
             metadata.name = args.name;
             metadata.logo = args.logo;
             metadata.symbol = args.symbol;
-            if let Some(owners) = args.owners {
-                for owner in owners {
-                    metadata.owners.insert(owner);
+            if let Some(custodians) = args.custodians {
+                for custodians in custodians {
+                    metadata.custodians.insert(custodians);
                 }
             }
         }
@@ -124,14 +124,14 @@ fn init(args: Option<InitArgs>) {
     });
 }
 
-fn is_canister_owner() -> Result<(), String> {
+fn is_canister_custodian() -> Result<(), String> {
     METADATA.with(|metadata| {
         metadata
             .borrow()
-            .owners
+            .custodians
             .contains(&caller())
             .then(|| ())
-            .ok_or_else(|| "Caller is not an owner of canister".into())
+            .ok_or_else(|| "Caller is not an custodian of canister".into())
     })
 }
 
@@ -147,7 +147,7 @@ fn name() -> Option<String> {
     METADATA.with(|metadata| metadata.borrow().name.clone())
 }
 
-#[update(name = "setName", guard = "is_canister_owner")]
+#[update(name = "setName", guard = "is_canister_custodian")]
 #[candid_method(update, rename = "setName")]
 fn set_name(name: String) {
     METADATA.with(|metadata| metadata.borrow_mut().name = Some(name));
@@ -159,7 +159,7 @@ fn logo() -> Option<String> {
     METADATA.with(|metadata| metadata.borrow().logo.clone())
 }
 
-#[update(name = "setLogo", guard = "is_canister_owner")]
+#[update(name = "setLogo", guard = "is_canister_custodian")]
 #[candid_method(update, rename = "setLogo")]
 fn set_logo(logo: String) {
     METADATA.with(|metadata| metadata.borrow_mut().logo = Some(logo));
@@ -171,22 +171,22 @@ fn symbol() -> Option<String> {
     METADATA.with(|metadata| metadata.borrow().symbol.clone())
 }
 
-#[update(name = "setSymbol", guard = "is_canister_owner")]
+#[update(name = "setSymbol", guard = "is_canister_custodian")]
 #[candid_method(update, rename = "setSymbol")]
 fn set_symbol(symbol: String) {
     METADATA.with(|metadata| metadata.borrow_mut().symbol = Some(symbol))
 }
 
-#[query(name = "owners")]
-#[candid_method(query, rename = "owners")]
-fn owners() -> Vec<Principal> {
-    METADATA.with(|metadata| metadata.borrow().owners.iter().cloned().collect())
+#[query(name = "custodians")]
+#[candid_method(query, rename = "custodians")]
+fn custodians() -> HashSet<Principal> {
+    METADATA.with(|metadata| metadata.borrow().custodians.iter().cloned().collect())
 }
 
-#[update(name = "setOwners", guard = "is_canister_owner")]
-#[candid_method(update, rename = "setOwners")]
-fn set_owners(owners: Vec<Principal>) {
-    METADATA.with(|metadata| metadata.borrow_mut().owners = HashSet::from_iter(owners))
+#[update(name = "setCustodians", guard = "is_canister_custodian")]
+#[candid_method(update, rename = "setCustodians")]
+fn set_custodians(custodians: HashSet<Principal>) {
+    METADATA.with(|metadata| metadata.borrow_mut().custodians = HashSet::from_iter(custodians))
 }
 
 // Returns the total current supply of NFT tokens.
@@ -644,7 +644,7 @@ fn transfer_from(
     })
 }
 
-#[update(name = "mint", guard = "is_canister_owner")]
+#[update(name = "mint", guard = "is_canister_custodian")]
 #[candid_method(update, rename = "mint")]
 fn mint(
     to: Principal,

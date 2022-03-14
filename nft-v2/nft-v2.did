@@ -15,17 +15,17 @@ type GenericValue = variant {
   TextContent : text;
 };
 type InitArgs = record {
-  owners : opt vec principal;
   logo : opt text;
   name : opt text;
+  custodians : opt vec principal;
   symbol : opt text;
 };
 type Metadata = record {
-  owners : vec principal;
   logo : opt text;
   name : opt text;
   created_at : nat64;
   upgraded_at : nat64;
+  custodians : vec principal;
   symbol : opt text;
 };
 type NftError = variant {
@@ -72,6 +72,7 @@ service : (opt InitArgs) -> {
   approve : (principal, nat) -> (Result);
   balanceOf : (principal) -> (Result) query;
   burn : (nat) -> (Result);
+  custodians : () -> (vec principal) query;
   isApprovedForAll : (principal, principal) -> (Result_1) query;
   logo : () -> (opt text) query;
   metadata : () -> (Metadata) query;
@@ -83,11 +84,10 @@ service : (opt InitArgs) -> {
   ownerOf : (nat) -> (Result_5) query;
   ownerTokenIds : (principal) -> (Result_3) query;
   ownerTokenMetadata : (principal) -> (Result_4) query;
-  owners : () -> (vec principal) query;
   setApprovalForAll : (principal, bool) -> (Result);
+  setCustodians : (vec principal) -> ();
   setLogo : (text) -> ();
   setName : (text) -> ();
-  setOwners : (vec principal) -> ();
   setSymbol : (text) -> ();
   supportedInterfaces : () -> (vec SupportedInterface) query;
   symbol : () -> (opt text) query;
