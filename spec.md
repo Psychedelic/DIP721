@@ -559,6 +559,67 @@ type Metadata = record {
 };
 ```
 
+### TokenMetadata
+
+```
+type TokenMetadata = record {
+  transferred_at : opt nat64;
+  transferred_by : opt principal;
+  owner : principal;
+  operator : opt principal;
+  properties : vec record { text; GenericValue };
+  token_identifier : nat;
+  minted_at : nat64;
+  minted_by : principal;
+};
+```
+
+### Reserved Metadata Properties
+
+All of the following are reserved by the spec to verify and display assets across all applications.
+
+#### location - **Required**
+
+---
+
+URL location for the fully rendered asset content.
+
+```
+{"location", TextContent(<asset URL of the NFT>)}
+```
+
+#### content hash - **Optional**
+
+---
+
+SHA256 hash fingerprint of the asset defined in location.
+
+```
+{"contentHash", BlobContent(<hash of the content>)}
+```
+
+#### contentType - **Optional**
+
+---
+
+MIME type of the asset defined in location
+
+```
+{"contentType", TextContent(<MIME type of the NFT>)}
+```
+
+#### thumbnail - **Optional**
+
+---
+
+URL location for the preview thumbnail for asset content
+
+```
+{"thumbnail", TextContent(<thumbnail URL of the NFT>)}
+```
+
+<br>
+
 ### NftError
 
 ```
@@ -662,67 +723,6 @@ type SupportedInterface = variant {
   Approval;
   TransactionHistory };
 ```
-
-### TokenMetadata
-
-```
-type TokenMetadata = record {
-  transferred_at : opt nat64;
-  transferred_by : opt principal;
-  owner : principal;
-  operator : opt principal;
-  properties : vec record { text; GenericValue };
-  token_identifier : nat;
-  minted_at : nat64;
-  minted_by : principal;
-};
-```
-
-### Reserved Metadata Properties
-
-All of the following are reserved by the spec to verify and display assets across all applications.
-
-#### location - **Required**
-
----
-
-URL location for the fully rendered asset content.
-
-```
-{"location", TextContent(<asset URL of the NFT>)}
-```
-
-#### content hash - **Optional**
-
----
-
-SHA256 hash fingerprint of the asset defined in location.
-
-```
-{"contentHash", BlobContent(<hash of the content>)}
-```
-
-#### contentType - **Optional**
-
----
-
-MIME type of the asset defined in location
-
-```
-{"contentType", TextContent(<MIME type of the NFT>)}
-```
-
-#### thumbnail - **Optional**
-
----
-
-URL location for the preview thumbnail for asset content
-
-```
-{"thumbnail", TextContent(<thumbnail URL of the NFT>)}
-```
-
-<br>
 
 ### TxEvent
 
