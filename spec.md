@@ -14,6 +14,7 @@ simple, non-ambiguous, extendable API for the transfer and tracking ownership of
 - [Interface Specification](#interface-specification)
   - [Basic Interface](#🚦-basic-interface)
   - [Approval Interface](#✅-approval-interface)
+  - [Transfer Interface](#🚀-transfer-interface)
   - [Mint Interface](#💠-mint-interface)
   - [Burn Interface](#🔥-burn-interface)
   - [History Interface](#📬-history-interface)
@@ -22,6 +23,7 @@ simple, non-ambiguous, extendable API for the transfer and tracking ownership of
 - [Deprecated Interface & Data Structure](#🗑-deprecated-interface--data-structure)
   - [Deprecated Data Structures](#deprecated-data-structure)
   - [Deprecated Methods](#deprecated-methods)
+  - [Migration example](#🏗-migration-example)
 
 <br>
 
@@ -63,90 +65,14 @@ Trapping (instead of returning an error) is allowed, but not encouraged.
 
 <br>
 
-#### balanceOf
+#### metadata
 
 ---
 
-Returns the count of NFTs owned by `user`.
-
-If the user does not own any NFTs, returns an error containing `NftError.OwnerNotFound`.
+Returns the `Metadata` of the NFT canister which includes `custodians`, `logo`, `name`, `symbol`.
 
 ```
-balanceOf: (user: principal) -> (Result) query;
-```
-
-<br>
-
-#### owners
-
----
-
-Returns a list of `principal`s that represents the owners (or admins) of the NFT canister.
-
-```
-owners: () -> (vec principal) query;
-```
-
-<br>
-
-#### ownerOf
-
----
-
-Returns the `Principal` of the owner of the NFT associated with `token_id`.
-
-Returns an error containing `NftError.TokenNotFound` if `token_id` is invalid.
-
-```
-ownerOf: (token_id: nat64) -> (Result_6) query;
-```
-
-<br>
-
-#### transfer
-
----
-
-Sends the callers nft `token_id` to `to` and returns a `Nat` that represents a transaction id that can be used at the `transaction` method.
-
-Returns an error containing `NftError.SelfTransfer` if the function caller and to are the same.
-
-Returns an error containing `NftError.Unautharized` if the caller is not the owner of `token_id`.
-
-```
-transfer: (to: principal, token_id: Nat) -> (Result);
-```
-
-<br>
-
-#### transferFrom
-
----
-
-Caller of this method is able to transfer the NFT `token_id` that is in `from`'s balance to `to`'s balance if the caller is an approved operator to do so.
-
-Returns an error containing `NftError.SelfTransfer` if the `from` and `to` are the same.
-
-Returns an error containing `NftError.Unauthorized` if the caller is not an approved operator of `token_id`.
-
-Returns an error containing `NftError.Unauthorized` if `from` does not own `token_id`.
-
-If the transfer goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
-
-```
-transferFrom: (from: principal, to: principal, token_id: nat64) -> (Result);
-```
-
-<br>
-
-#### supportedInterfaces
-
----
-
-Returns the interfaces supported by this NFT canister.
-
-```
-supportedInterfaces: () -> (vec SupportedInterface) query;
+metadata: () -> (Metadata) query;
 ```
 
 <br>
@@ -158,7 +84,7 @@ supportedInterfaces: () -> (vec SupportedInterface) query;
 Returns the logo of the NFT contract as Base64 encoded text.
 
 ```
-logo: () -> (opt text) query;
+logo : () -> (opt text) query;
 ```
 
 <br>
@@ -169,8 +95,10 @@ logo: () -> (opt text) query;
 
 Sets the logo of the NFT canister. Base64 encoded text is recommended.
 
+Caller must be the custodian of NFT canister.
+
 ```
-setLogo: (text) -> ();
+setLogo : (text) -> ();
 ```
 
 <br>
@@ -182,7 +110,7 @@ setLogo: (text) -> ();
 Returns the name of the NFT contract.
 
 ```
-name: () -> (opt text) query;
+name : () -> (opt text) query;
 ```
 
 <br>
@@ -193,8 +121,10 @@ name: () -> (opt text) query;
 
 Sets the name of the NFT canister.
 
+Caller must be the custodian of NFT canister.
+
 ```
-setName: (text) -> ();
+setName : (text) -> ();
 ```
 
 <br>
@@ -206,7 +136,7 @@ setName: (text) -> ();
 Returns the symbol of the NFT contract.
 
 ```
-symbol: () -> (opt text) query;
+symbol : () -> (opt text) query;
 ```
 
 <br>
@@ -217,22 +147,160 @@ symbol: () -> (opt text) query;
 
 Sets the symbol for the NFT canister.
 
-Caller must be the owner of NFT canister, else an error containing `NftError.Unauthorized` will be returned.
+Caller must be the custodian of NFT canister.
 
 ```
-setSymbol: () -> (opt text);
+setSymbol : (text) -> ();
 ```
 
 <br>
 
-#### setName
+#### custodians
 
 ---
 
-Sets the name of the NFT canister.
+Returns a list of `principal`s that represents the custodians (or admins) of the NFT canister.
 
 ```
-setName: (text) -> ();
+custodians : () -> (vec principal) query;
+```
+
+<br>
+
+#### setCustodians
+
+---
+
+Sets the list of custodians for the NFT canister.
+
+Caller must be the custodian of NFT canister.
+
+```
+setCustodians : (vec principal) -> ();
+```
+
+<br>
+
+#### tokenMetadata
+
+---
+
+Returns the `Metadata` for `token_identifier`.
+
+or Returns `NftError` when error.
+
+```
+tokenMetadata : (nat) -> (variant { Ok : vec TokenMetadata; Err : NftError }) query;
+```
+
+<br>
+
+#### balanceOf
+
+---
+
+Returns the count of NFTs owned by `user`.
+
+If the user does not own any NFTs, returns an error containing `NftError`.
+
+```
+balanceOf: (principal) -> (variant { Ok : nat; Err : NftError }) query;
+```
+
+<br>
+
+#### ownerOf
+
+---
+
+Returns the `Principal` of the owner of the NFT associated with `token_identifier`.
+
+Returns an error containing `NftError` if `token_identifier` is invalid.
+
+```
+ownerOf : (nat) -> (variant { Ok : principal; Err : NftError }) query;
+```
+
+<br>
+
+#### ownerTokenIds
+
+---
+
+Returns the list of the `token_identifier` of the NFT associated with owner.
+
+Returns an error containing `NftError` if `principal` is invalid.
+
+```
+ownerTokenIds : (principal) -> (variant { Ok : vec nat; Err : NftError }) query;
+```
+
+<br>
+
+#### ownerTokenMetadata
+
+---
+
+Returns the list of the `token_metadata` of the NFT associated with owner.
+
+Returns an error containing `NftError` if `principal` is invalid.
+
+```
+ownerTokenMetadata : (principal) -> (variant { Ok : vec TokenMetadata; Err : NftError }) query;
+```
+
+<br>
+
+#### operatorOf
+
+---
+
+Returns the `Principal` of the operator of the NFT associated with `token_identifier`.
+
+Returns an error containing `NftError` if `token_identifier` is invalid.
+
+```
+operatorOf : (nat) -> (variant { Ok : principal; Err : NftError }) query;
+```
+
+<br>
+
+#### operatorTokenIds
+
+---
+
+Returns the list of the `token_identifier` of the NFT associated with operator.
+
+Returns an error containing `NftError` if `principal` is invalid.
+
+```
+operatorTokenIds : (principal) -> (variant { Ok : vec nat; Err : NftError }) query;
+```
+
+<br>
+
+#### operatorTokenMetadata
+
+---
+
+Returns the list of the `token_metadata` of the NFT associated with operator.
+
+Returns an error containing `NftError` if `principal` is invalid.
+
+```
+operatorTokenMetadata : (principal) -> (variant { Ok : vec TokenMetadata; Err : NftError }) query;
+```
+
+<br>
+
+#### supportedInterfaces
+
+---
+
+Returns the interfaces supported by this NFT canister.
+
+```
+supportedInterfaces : () -> (vec SupportedInterface) query;
 ```
 
 <br>
@@ -243,84 +311,13 @@ setName: (text) -> ();
 
 Returns a `Nat` that represents the total current supply of NFT tokens.
 
-NFTs that are minted and later burned explictely or sent to the zero address should also count towards totalSupply.
+NFTs that are minted and later burned explicitly or sent to the zero address should also count towards totalSupply.
 
 ```
-totalSupply: () -> (nat) query;
-```
-
-<br>
-
-#### metadata
-
----
-
-Returns the `Metadata` of the NFT canister which includes `owners`, `logo`, `name`, `created_at`, `upgraded_at`, and `symbol`.
-
-```
-metadata: () -> (Metadata) query;
+totalSupply : () -> (nat) query;
 ```
 
 <br>
-
-#### tokenMetadata
-
----
-
-Returns the `Metadata` for `token_id`.
-
-Returns `NftError.TokenNotFound` if the `token_id`
-does not exist.
-
-```
-tokenMetadata: (token_id: nat64) -> (Result_1) query;
-```
-
-<br>
-
-#### ownerTokenIds
-
----
-
-Returns a list with all the token Ids of the tokens `user` owns.
-
-If there is no owner that matches `user`, then an error containing `NftError.OwnerNotFound` is returned.
-
-```
-ownerTokenIds: (user: principal) -> (Result_6) query;
-```
-
-<br>
-
-#### ownerTokenMetadata
-
----
-
-Returns a list with the token metadata for each token `user` owns.
-
-If there is no owner that matches `user`, then an error containing `NftError.OwnerNotFound` is returned.
-
-```
-ownerTokenMetadata: (user: principal) -> (Result_2) query;
-```
-
-<br>
-
-#### setOwners
-
----
-
-Sets the list of owners for the NFT canister.
-
-Caller must be the owner of NFT canister, else an error containing `NftError.Unauthorized` will be returned.
-
-```
-setOwners: (vec principal) -> ();
-```
-
-<br>
-
----
 
 ---
 
@@ -334,18 +331,14 @@ This interface adds approve functionality to DIP-721 tokens.
 
 ---
 
-Calling `approve` grants the `operator` the ability to make update calls to the specificied `token_id`.
+Calling `approve` grants the `operator` the ability to make update calls to the specificied `token_identifier`.
 
 Approvals given by the `approve` function are independent from approvals given by the `setApprovalForAll`.
-
-Returns an error that includes `NftError.SelfApprove` if the caller is also the `operator`.
-
-Returns an error that includes `NftError.Unauthorized` if the caller is not the owner of `token_id`.
 
 If the approval goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
 
 ```
-approve: (operator: principal, token_id: nat64) -> (Result);
+approve : (principal, nat) -> (variant { Ok : nat; Err : NftError });
 ```
 
 <br>
@@ -358,12 +351,10 @@ Enable or disable an `operator` to manage all of the tokens for the caller of th
 
 Approvals granted by the `approve` function are independent from the approvals granted by `setApprovalForAll` function.
 
-Returns an error containing `NftError.SelfApprove` if the operator is the same as the caller.
-
 If the approval goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
 
 ```
-setApprovalForAll: (operator: principal, isApproved: bool) -> (Result);
+setApprovalForAll : (principal, bool) -> (variant { Ok : nat; Err : NftError });
 ```
 
 <br>
@@ -374,57 +365,51 @@ setApprovalForAll: (operator: principal, isApproved: bool) -> (Result);
 
 Returns `true` if the given `operator` is an approved operator for all the tokens owned by the caller through the use of the `setApprovalForAll` method, returns `false` otherwise.
 
-Returns an error containing `NftError.OwnerNotFound` when `owner` does not exist.
-
 ```
-isApprovedForAll: (operator: principal, owner: principal) -> (Result_4) query;
+isApprovedForAll : (principal, principal) -> (variant { Ok : bool; Err : NftError }) query;
 ```
 
 <br>
 
-#### operatorOf
+---
+
+<br>
+
+### 🚀 Transfer Interface
+
+This interface adds transfer functionality to DIP-721 tokens.
+
+<br>
+
+#### transfer
 
 ---
 
-Returns the Principal for the operator of `token_id`, if one exists.
-
-Returns an error containing `NftError.TokenNotFound` if `token_id` does not exist.
+Sends the callers nft `token_identifier` to `to` and returns a `Nat` that represents a transaction id that can be used at the `transaction` method.
 
 ```
-operatorOf: (token_id: nat64) -> (Result_5) query;
+transfer : (principal, nat) -> (variant { Ok : nat; Err : NftError });
 ```
 
 <br>
 
-#### operatorTokenIds
+#### transferFrom
 
 ---
 
-Returns a list of the `token_id`'s that `operator` has been approved to transfer on behalf of the owner.
+Caller of this method is able to transfer the NFT `token_identifier` that is in `from`'s balance to `to`'s balance if the caller is an approved operator to do so.
 
-If no such `operator` exists, returns an error that contains `NftError::OperatorNotFound`.
+If the transfer goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
 
 ```
-operatorTokenIds: (operator: principal) -> (Result_3) query;
+transferFrom : (principal, principal, nat) -> (variant { Ok : nat; Err : NftError });
 ```
 
 <br>
 
-#### operatorTokenMetadata
-
 ---
 
-Returns a list that contains the `TokenMetadata` of the NFTs that `operator` has been approved to transfer on behalf of the owner.
-
-If no such `operator` exists, returns an error that contains `NftError::OperatorNotFound`.
-
-```
-operatorTokenMetadata: (operator: principal) -> (Result_2) query;
-```
-
----
-
----
+<br>
 
 ### 💠 Mint Interface
 
@@ -438,17 +423,11 @@ This interface adds mint functionality to DIP-721 tokens.
 
 Mint an NFT for principal `to` that has an ID of `token_id` and metadata akin to `properties`. Implementations are encouraged to only allow minting by the owner of the canister.
 
-Returns an error containing `NftError.ExistedNFT` if the `token_id` already exists.
-
-Returns an error containing `NftError.Aunauthorized` if the caller doesn't have permissions to mint an NFT.
-
 If the mint goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
 
 ```
-mint: (to: principal, token_id: nat64, properties: vec record { text; GenericValue }) -> (Result);
+mint : (principal, nat, vec record { text; GenericValue }) -> (variant { Ok : nat; Err : NftError });
 ```
-
----
 
 ---
 
@@ -464,17 +443,11 @@ This interface adds burn functionality to DIP-721 tokens.
 
 Burn an NFT identified by `token_id`. Calling burn on a token sets the owner to `None` and will no longer be useable. Burned tokens do still count towards `totalSupply`.
 
-Implementations are encouraged to only allow burning by the owner of the `token_id`.
-
-Returns an error containing `NftError.Unauthorized` if the caller doesn't have the permission to burn the NFT.
-
-Returns an error containing `NftError.InvalidTokenId` if the provided `token_id` doesn't exist.
+Implementations are encouraged to only allow burning by the owner of the `token_identifier`.
 
 ```
-burn: (token_id: nat) -> ();
+burn : (nat) -> (variant { Ok : nat; Err : NftError });
 ```
-
----
 
 ---
 
@@ -489,7 +462,7 @@ Returns the `TxEvent` that corresponds with `tx_id`.
 If there is no `TxEvent` that corresponds with the `tx_id` entered, returns a `NftError.TxNotFound`.
 
 ```
-transaction: (nat) -> (Result_8) query;
+transaction : (nat) -> (variant { Ok : TxEvent; Err : NftError }) query;
 ```
 
 <br>
@@ -501,12 +474,10 @@ transaction: (nat) -> (Result_8) query;
 Returns a `Nat` that represents the total number of transactions that have occured in the NFT canister.
 
 ```
-totalTransactions: () -> (nat) query;
+totalTransactions : () -> (nat) query;
 ```
 
 <br>
-
----
 
 ---
 
@@ -535,40 +506,19 @@ type GenericValue = variant {
 };
 ```
 
-### InitArgs
-
-```
-type InitArgs = record {
-  owners : opt vec principal;
-  logo : opt text;
-  name : opt text;
-  symbol : opt text;
-};
-```
-
-### Metadata
-
-```
-type Metadata = record {
-  owners : vec principal;
-  logo : opt text;
-  name : opt text;
-  created_at : nat64;
-  upgraded_at : nat64;
-  symbol : opt text;
-};
-```
-
 ### TokenMetadata
 
 ```
 type TokenMetadata = record {
   transferred_at : opt nat64;
   transferred_by : opt principal;
-  owner : principal;
+  owner : opt principal;
   operator : opt principal;
   properties : vec record { text; GenericValue };
+  is_burned : bool;
   token_identifier : nat;
+  burned_at : opt nat64;
+  burned_by : opt principal;
   minted_at : nat64;
   minted_by : principal;
 };
@@ -577,6 +527,18 @@ type TokenMetadata = record {
 ### Reserved Metadata Properties
 
 All of the following are reserved by the spec to verify and display assets across all applications.
+
+Noted that `data` and `location` are mutual exclusive, only one of them is required.
+
+#### data - **Required**
+
+---
+
+blob asset data.
+
+```
+{"data", BlobContent(<blob asset data of the NFT>)}
+```
 
 #### location - **Required**
 
@@ -592,7 +554,7 @@ URL location for the fully rendered asset content.
 
 ---
 
-SHA256 hash fingerprint of the asset defined in location.
+SHA256 hash fingerprint of the asset defined in location or asset.
 
 ```
 {"contentHash", BlobContent(<hash of the content>)}
@@ -627,6 +589,7 @@ type NftError = variant {
   SelfTransfer;
   TokenNotFound;
   TxNotFound;
+  BurnedNFT;
   SelfApprove;
   OperatorNotFound;
   Unauthorized;
@@ -634,82 +597,6 @@ type NftError = variant {
   OwnerNotFound;
   Other : text;
 };
-```
-
-### Result Types
-
-Result types are primarly used as the return types for DIP721 methods.
-
-#### Result
-
----
-
-```
-type Result = variant { Ok : nat; Err : NftError };
-```
-
-#### Result_1
-
----
-
-```
-type Result_1 = variant { Ok : TokenMetadata; Err : NftError };
-```
-
-#### Result_2
-
----
-
-```
-type Result_2 = variant { Ok : vec TokenMetadata; Err : NftError };
-```
-
-#### Result_3
-
----
-
-```
-type Result_3 = variant { Ok : vec text; Err : NftError };
-```
-
-#### Result_4
-
----
-
-```
-type Result_4 = variant { Ok : bool; Err : NftError };
-```
-
-#### Result_5
-
----
-
-```
-type Result_5 = variant { Ok : opt principal; Err : NftError };
-```
-
-#### Result_6
-
----
-
-```
-type Result_6 = variant { Ok : vec nat; Err : NftError };
-```
-
-#### Result_7
-
----
-
-```
-type Result_7 = variant { Ok : principal; Err : NftError };
-```
-
-#### Result_8
-
----
-
-```
-type Result_8 = variant { Ok : TxEvent; Err : NftError };
 ```
 
 <br>
@@ -721,7 +608,8 @@ type SupportedInterface = variant {
   Burn;
   Mint;
   Approval;
-  TransactionHistory };
+  TransactionHistory
+};
 ```
 
 ### TxEvent
@@ -739,20 +627,15 @@ type TxEvent = record {
 
 ---
 
----
-
 ## 🤑 Fees
 
 Implementations are encouraged not to charge any fees when an approved entity
 transfers NFTs on the user's behalf, as that entity might have no means for payment.
-If any fees needs to be taken for such a `transferFromDip721`, `safeTransferFromDip721`,
-`transferFromNotifyDip721`, `safeTransferFromNotifyDip721` call,
-then it is encouraged to be taken during the call to `approveDip721`, `setApprovalForAllDip721`
+If any fees needs to be taken for such a `transferFrom` call,
+then it is encouraged to be taken during the call to `approve`, `setApprovalForAll`
 from the caller's balance.
 
 <br>
-
----
 
 ---
 
@@ -1012,8 +895,6 @@ type BurnRequest =
 
 ---
 
----
-
 ### Predefined key value pairs
 
 #### content hash
@@ -1055,3 +936,20 @@ TextContent(<PrincipalId of the asset canister>) - Asset canister
 TextContent(<URI of the NFT location on the Web>) - URI
 location field is missing - Embedded in the token contract
 ```
+<br>
+
+---
+
+## 🏗  Migration example
+
+Method 1:
+- `pre_upgrade` and `post_upgrade`, check our [example implememtation](./nft-v2/src/migration_example.rs).
+
+<br>
+
+Method 2:
+- stop canister, backup / download state
+- migrate data offline
+- manual import/restore canister state
+
+---
