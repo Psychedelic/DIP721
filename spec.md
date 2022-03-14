@@ -1,6 +1,5 @@
 # DIP721 - Spec
 
-
 DIP721 is an ERC-721 style non-fungible token standard built mirroring its Ethereum counterpart and adapting it to the Internet Computer, maintaining the same interface.
 
 This standard aims to adopt the EIP-721 to the Internet Computer; providing a
@@ -9,20 +8,20 @@ simple, non-ambiguous, extendable API for the transfer and tracking ownership of
 ---
 
 ## Table Of Contents
+
 - [Our Motivation](#motivation)
 - [V1 to V2 -- What's Changed?](#v1-to-v2----whats-changed)
 - [Interface Specification](#interface-specification)
-    - [Basic Interface](#🚦-basic-interface)
-    - [Approval Interface](#✅-approval-interface)
-    - [Mint Interface](#💠-mint-interface)
-    - [Burn Interface](#🔥-burn-interface)
-    - [History Interface](#📬-history-interface)
+  - [Basic Interface](#🚦-basic-interface)
+  - [Approval Interface](#✅-approval-interface)
+  - [Mint Interface](#💠-mint-interface)
+  - [Burn Interface](#🔥-burn-interface)
+  - [History Interface](#📬-history-interface)
 - [Data Structure Specification](#data-structure-specification)
 - [Fees](#🤑-fees)
 - [Deprecated Interface & Data Structure](#🗑-deprecated-interface--data-structure)
   - [Deprecated Data Structures](#deprecated-data-structure)
   - [Deprecated Methods](#deprecated-methods)
-
 
 <br>
 
@@ -44,7 +43,7 @@ DIP-721 tries to improve on existing Internet Computer standards in the followin
 
 <br>
 
-## V1 to V2 -- What's Changed? 
+## V1 to V2 -- What's Changed?
 
 - Removed the `Dip721` suffix from methods.
 - Token Identifier is now a `Nat` instead of `String` type.
@@ -54,6 +53,7 @@ DIP-721 tries to improve on existing Internet Computer standards in the followin
 <br>
 
 ---
+
 ## Interface Specification
 
 ### 🚦 Basic interface
@@ -64,6 +64,7 @@ Trapping (instead of returning an error) is allowed, but not encouraged.
 <br>
 
 #### balanceOf
+
 ---
 
 Returns the count of NFTs owned by `user`.
@@ -77,20 +78,22 @@ balanceOf: (user: principal) -> (Result) query;
 <br>
 
 #### owners
+
 ---
+
 Returns a list of `principal`s that represents the owners (or admins) of the NFT canister.
 
 ```
 owners: () -> (vec principal) query;
 ```
 
-
 <br>
 
 #### ownerOf
+
 ---
 
-Returns the `Principal` of the owner of the NFT associated with `token_id`. 
+Returns the `Principal` of the owner of the NFT associated with `token_id`.
 
 Returns an error containing `NftError.TokenNotFound` if `token_id` is invalid.
 
@@ -101,7 +104,9 @@ ownerOf: (token_id: nat64) -> (Result_6) query;
 <br>
 
 #### transfer
+
 ---
+
 Sends the callers nft `token_id` to `to` and returns a `Nat` that represents a transaction id that can be used at the `transaction` method.
 
 Returns an error containing `NftError.SelfTransfer` if the function caller and to are the same.
@@ -115,7 +120,9 @@ transfer: (to: principal, token_id: Nat) -> (Result);
 <br>
 
 #### transferFrom
+
 ---
+
 Caller of this method is able to transfer the NFT `token_id` that is in `from`'s balance to `to`'s balance if the caller is an approved operator to do so.
 
 Returns an error containing `NftError.SelfTransfer` if the `from` and `to` are the same.
@@ -133,6 +140,7 @@ transferFrom: (from: principal, to: principal, token_id: nat64) -> (Result);
 <br>
 
 #### supportedInterfaces
+
 ---
 
 Returns the interfaces supported by this NFT canister.
@@ -144,6 +152,7 @@ supportedInterfaces: () -> (vec SupportedInterface) query;
 <br>
 
 #### logo
+
 ---
 
 Returns the logo of the NFT contract as Base64 encoded text.
@@ -155,7 +164,9 @@ logo: () -> (opt text) query;
 <br>
 
 #### setLogo
+
 ---
+
 Sets the logo of the NFT canister. Base64 encoded text is recommended.
 
 ```
@@ -165,6 +176,7 @@ setLogo: (text) -> ();
 <br>
 
 #### name
+
 ---
 
 Returns the name of the NFT contract.
@@ -176,8 +188,10 @@ name: () -> (opt text) query;
 <br>
 
 #### setName
+
 ---
-Sets the name of the NFT canister. 
+
+Sets the name of the NFT canister.
 
 ```
 setName: (text) -> ();
@@ -186,6 +200,7 @@ setName: (text) -> ();
 <br>
 
 #### symbol
+
 ---
 
 Returns the symbol of the NFT contract.
@@ -197,7 +212,9 @@ symbol: () -> (opt text) query;
 <br>
 
 #### setSymbol
+
 ---
+
 Sets the symbol for the NFT canister.
 
 Caller must be the owner of NFT canister, else an error containing `NftError.Unauthorized` will be returned.
@@ -209,8 +226,10 @@ setSymbol: () -> (opt text);
 <br>
 
 #### setName
+
 ---
-Sets the name of the NFT canister. 
+
+Sets the name of the NFT canister.
 
 ```
 setName: (text) -> ();
@@ -219,9 +238,10 @@ setName: (text) -> ();
 <br>
 
 #### totalSupply
+
 ---
 
-Returns a `Nat` that represents the total current supply of NFT tokens. 
+Returns a `Nat` that represents the total current supply of NFT tokens.
 
 NFTs that are minted and later burned explictely or sent to the zero address should also count towards totalSupply.
 
@@ -232,6 +252,7 @@ totalSupply: () -> (nat) query;
 <br>
 
 #### metadata
+
 ---
 
 Returns the `Metadata` of the NFT canister which includes `owners`, `logo`, `name`, `created_at`, `upgraded_at`, and `symbol`.
@@ -243,9 +264,10 @@ metadata: () -> (Metadata) query;
 <br>
 
 #### tokenMetadata
+
 ---
 
-Returns the `Metadata` for `token_id`. 
+Returns the `Metadata` for `token_id`.
 
 Returns `NftError.TokenNotFound` if the `token_id`
 does not exist.
@@ -257,6 +279,7 @@ tokenMetadata: (token_id: nat64) -> (Result_1) query;
 <br>
 
 #### ownerTokenIds
+
 ---
 
 Returns a list with all the token Ids of the tokens `user` owns.
@@ -270,9 +293,10 @@ ownerTokenIds: (user: principal) -> (Result_6) query;
 <br>
 
 #### ownerTokenMetadata
+
 ---
 
-Returns a list with the token metadata for each token  `user` owns.
+Returns a list with the token metadata for each token `user` owns.
 
 If there is no owner that matches `user`, then an error containing `NftError.OwnerNotFound` is returned.
 
@@ -283,11 +307,12 @@ ownerTokenMetadata: (user: principal) -> (Result_2) query;
 <br>
 
 #### setOwners
+
 ---
+
 Sets the list of owners for the NFT canister.
 
 Caller must be the owner of NFT canister, else an error containing `NftError.Unauthorized` will be returned.
-
 
 ```
 setOwners: (vec principal) -> ();
@@ -296,8 +321,8 @@ setOwners: (vec principal) -> ();
 <br>
 
 ---
----
 
+---
 
 ### ✅ Approval Interface
 
@@ -306,6 +331,7 @@ This interface adds approve functionality to DIP-721 tokens.
 <br>
 
 #### approve
+
 ---
 
 Calling `approve` grants the `operator` the ability to make update calls to the specificied `token_id`.
@@ -325,6 +351,7 @@ approve: (operator: principal, token_id: nat64) -> (Result);
 <br>
 
 #### setApprovalForAll
+
 ---
 
 Enable or disable an `operator` to manage all of the tokens for the caller of this function. The contract allows multiple operators per owner.
@@ -341,8 +368,8 @@ setApprovalForAll: (operator: principal, isApproved: bool) -> (Result);
 
 <br>
 
-
 #### isApprovedForAll
+
 ---
 
 Returns `true` if the given `operator` is an approved operator for all the tokens owned by the caller through the use of the `setApprovalForAll` method, returns `false` otherwise.
@@ -356,7 +383,9 @@ isApprovedForAll: (operator: principal, owner: principal) -> (Result_4) query;
 <br>
 
 #### operatorOf
+
 ---
+
 Returns the Principal for the operator of `token_id`, if one exists.
 
 Returns an error containing `NftError.TokenNotFound` if `token_id` does not exist.
@@ -368,7 +397,9 @@ operatorOf: (token_id: nat64) -> (Result_5) query;
 <br>
 
 #### operatorTokenIds
+
 ---
+
 Returns a list of the `token_id`'s that `operator` has been approved to transfer on behalf of the owner.
 
 If no such `operator` exists, returns an error that contains `NftError::OperatorNotFound`.
@@ -380,7 +411,9 @@ operatorTokenIds: (operator: principal) -> (Result_3) query;
 <br>
 
 #### operatorTokenMetadata
+
 ---
+
 Returns a list that contains the `TokenMetadata` of the NFTs that `operator` has been approved to transfer on behalf of the owner.
 
 If no such `operator` exists, returns an error that contains `NftError::OperatorNotFound`.
@@ -390,6 +423,7 @@ operatorTokenMetadata: (operator: principal) -> (Result_2) query;
 ```
 
 ---
+
 ---
 
 ### 💠 Mint Interface
@@ -399,6 +433,7 @@ This interface adds mint functionality to DIP-721 tokens.
 <br>
 
 #### mint
+
 ---
 
 Mint an NFT for principal `to` that has an ID of `token_id` and metadata akin to `properties`. Implementations are encouraged to only allow minting by the owner of the canister.
@@ -414,6 +449,7 @@ mint: (to: principal, token_id: nat64, properties: vec record { text; GenericVal
 ```
 
 ---
+
 ---
 
 ### 🔥 Burn Interface
@@ -423,13 +459,14 @@ This interface adds burn functionality to DIP-721 tokens.
 <br>
 
 #### burn
+
 ---
 
 Burn an NFT identified by `token_id`. Calling burn on a token sets the owner to `None` and will no longer be useable. Burned tokens do still count towards `totalSupply`.
 
-Implementations are encouraged to only allow burning by the owner of the `token_id`. 
+Implementations are encouraged to only allow burning by the owner of the `token_id`.
 
-Returns an error containing `NftError.Unauthorized` if the caller doesn't have the permission to burn the NFT. 
+Returns an error containing `NftError.Unauthorized` if the caller doesn't have the permission to burn the NFT.
 
 Returns an error containing `NftError.InvalidTokenId` if the provided `token_id` doesn't exist.
 
@@ -438,12 +475,15 @@ burn: (token_id: nat) -> ();
 ```
 
 ---
+
 ---
 
 ### 📬 History Interface
 
-#### transaction 
+#### transaction
+
 ---
+
 Returns the `TxEvent` that corresponds with `tx_id`.
 
 If there is no `TxEvent` that corresponds with the `tx_id` entered, returns a `NftError.TxNotFound`.
@@ -455,21 +495,27 @@ transaction: (nat) -> (Result_8) query;
 <br>
 
 #### totalTransactions
+
 ---
+
 Returns a `Nat` that represents the total number of transactions that have occured in the NFT canister.
 
 ```
 totalTransactions: () -> (nat) query;
 ```
+
 <br>
 
 ---
+
 ---
+
 ## Data Structure Specification
 
-These are the data structures that must be used when interacting with a DIP721 canister. 
+These are the data structures that must be used when interacting with a DIP721 canister.
 
 ### Generic Value
+
 ```
 type GenericValue = variant {
   Nat64Content : nat64;
@@ -490,6 +536,7 @@ type GenericValue = variant {
 ```
 
 ### InitArgs
+
 ```
 type InitArgs = record {
   owners : opt vec principal;
@@ -500,6 +547,7 @@ type InitArgs = record {
 ```
 
 ### Metadata
+
 ```
 type Metadata = record {
   owners : vec principal;
@@ -512,6 +560,7 @@ type Metadata = record {
 ```
 
 ### NftError
+
 ```
 type NftError = variant {
   SelfTransfer;
@@ -527,58 +576,77 @@ type NftError = variant {
 ```
 
 ### Result Types
+
 Result types are primarly used as the return types for DIP721 methods.
 
 #### Result
+
 ---
+
 ```
 type Result = variant { Ok : nat; Err : NftError };
 ```
 
 #### Result_1
+
 ---
+
 ```
 type Result_1 = variant { Ok : TokenMetadata; Err : NftError };
 ```
 
 #### Result_2
+
 ---
+
 ```
 type Result_2 = variant { Ok : vec TokenMetadata; Err : NftError };
 ```
 
 #### Result_3
+
 ---
+
 ```
 type Result_3 = variant { Ok : vec text; Err : NftError };
 ```
 
 #### Result_4
+
 ---
+
 ```
 type Result_4 = variant { Ok : bool; Err : NftError };
 ```
 
 #### Result_5
+
 ---
+
 ```
 type Result_5 = variant { Ok : opt principal; Err : NftError };
 ```
 
 #### Result_6
+
 ---
+
 ```
 type Result_6 = variant { Ok : vec nat; Err : NftError };
 ```
 
 #### Result_7
+
 ---
+
 ```
 type Result_7 = variant { Ok : principal; Err : NftError };
 ```
 
 #### Result_8
+
 ---
+
 ```
 type Result_8 = variant { Ok : TxEvent; Err : NftError };
 ```
@@ -586,15 +654,17 @@ type Result_8 = variant { Ok : TxEvent; Err : NftError };
 <br>
 
 ### SupportedInterface
+
 ```
-type SupportedInterface = variant { 
-  Burn; 
-  Mint; 
-  Approval; 
+type SupportedInterface = variant {
+  Burn;
+  Mint;
+  Approval;
   TransactionHistory };
 ```
 
 ### TokenMetadata
+
 ```
 type TokenMetadata = record {
   transferred_at : opt nat64;
@@ -608,7 +678,54 @@ type TokenMetadata = record {
 };
 ```
 
+### Reserved Metadata Properties
+
+All of the following are reserved by the spec to verify and display assets across all applications.
+
+#### location - **Required**
+
+---
+
+URL location for the fully rendered asset content.
+
+```
+{"location", TextContent(<asset URL of the NFT>)}
+```
+
+#### content hash - **Optional**
+
+---
+
+SHA256 hash fingerprint of the asset defined in location.
+
+```
+{"contentHash", BlobContent(<hash of the content>)}
+```
+
+#### contentType - **Optional**
+
+---
+
+MIME type of the asset defined in location
+
+```
+{"contentType", TextContent(<MIME type of the NFT>)}
+```
+
+#### thumbnail - **Optional**
+
+---
+
+URL location for the preview thumbnail for asset content
+
+```
+{"thumbnail", TextContent(<thumbnail URL of the NFT>)}
+```
+
+<br>
+
 ### TxEvent
+
 ```
 type TxEvent = record {
   time : nat64;
@@ -621,6 +738,7 @@ type TxEvent = record {
 <br>
 
 ---
+
 ---
 
 ## 🤑 Fees
@@ -634,15 +752,18 @@ from the caller's balance.
 
 <br>
 
-----
+---
+
 ---
 
 ## 🗑 Deprecated Interface & Data Structure
+
 This section encompases the data structures and interface methods that we deprecated when going from v1 --> v2 of DIP721.
 
 If you are currently using deprecated methods or data structures, we strongly suggest you migrate to the current implementations to ensure interoperability between your canisters and other canisters interacting with DIP721.
 
 ### Deprecated Methods
+
 ```
 approveDip721: (spender: principal, token_id: nat64) -> (ApproveResult);
 
@@ -674,8 +795,11 @@ getMetadataForUserDip721: (user: principal) -> (vec ExtendedMetadataResult);
 
 getTokenIdsForUserDip721: (user: principal) -> (vec nat64) query;
 ```
+
 ### Deprecated Data Structure
+
 #### OwnerResult
+
 ---
 
 ```
@@ -699,7 +823,9 @@ variant {
 <br>
 
 #### TxReceipt
+
 ---
+
 ```
 type TxReceipt =
 variant {
@@ -711,6 +837,7 @@ variant {
 <br>
 
 #### InterfaceId
+
 ---
 
 ```
@@ -727,7 +854,9 @@ type InterfaceId =
 <br>
 
 #### LogoResult
+
 ---
+
 ```
 type LogoResult =
  record {
@@ -747,7 +876,9 @@ type LogoResult =
 <br>
 
 #### MetadataResult
+
 ---
+
 ```
 type MetadataResult =
  variant {
@@ -801,7 +932,9 @@ type MetadataVal =
 <br>
 
 #### TxResult
+
 ---
+
 ```
 type TxResult =
  record {
@@ -848,7 +981,9 @@ type TransactionType =
 <br>
 
 #### MintReceipt
+
 ---
+
 ```
 type MintReceipt =
  variant {
@@ -865,7 +1000,9 @@ type MintReceipt =
 <br>
 
 #### BurnRequest
+
 ---
+
 ```
 type BurnRequest =
  record {
@@ -874,6 +1011,7 @@ type BurnRequest =
 ```
 
 ---
+
 ---
 
 ### Predefined key value pairs
@@ -917,6 +1055,3 @@ TextContent(<PrincipalId of the asset canister>) - Asset canister
 TextContent(<URI of the NFT location on the Web>) - URI
 location field is missing - Embedded in the token contract
 ```
-
-
-
