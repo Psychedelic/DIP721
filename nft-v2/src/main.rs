@@ -1,5 +1,3 @@
-mod legacy;
-
 // TODO: use MutualReply when new ic_cdk version release
 // https://github.com/dfinity/cdk-rs/pull/210/files
 use ic_cdk::api::{caller, time, trap};
@@ -49,10 +47,13 @@ enum GenericValue {
     Int64Content(i64),
 }
 
+// Please notice that the example of internal data structure as below doesn't represent your final storage, please use with caution.
+// Feel free to change the storage and behavior that align with your expected business.
+// The canister should match with the signature defined in `spec.md` in order to be considered as a DIP721 contract.
 #[derive(CandidType, Deserialize, Clone)]
 struct TokenMetadata {
     token_identifier: TokenIdentifier,
-    owner: Principal,
+    owner: Option<Principal>,
     operator: Option<Principal>,
     properties: Vec<(String, GenericValue)>,
     minted_at: u64,
@@ -84,7 +85,6 @@ impl Ledger {
         operation: String,
         details: Vec<(String, GenericValue)>,
     ) -> Nat {
-        // NOTE: integrate with cap dip721 standard, or skip it for now ?????
         self.tx_records.push(TxEvent {
             time: time(),
             operation,
@@ -218,6 +218,7 @@ enum NftError {
     OperatorNotFound,
     TokenNotFound,
     ExistedNFT,
+    BurnedNFT,
     SelfApprove,
     SelfTransfer,
     TxNotFound,
@@ -680,9 +681,9 @@ fn mint(
     })
 }
 
-#[update(name = "burn", guard = "is_canister_owner")]
+#[update(name = "burn")]
 #[candid_method(update, rename = "burn")]
-fn burn(_token_identifier: TokenIdentifier) {
+fn burn(token_identifier: TokenIdentifier) {
     trap("Not supported")
 }
 
