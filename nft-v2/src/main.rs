@@ -55,11 +55,14 @@ struct TokenMetadata {
     token_identifier: TokenIdentifier,
     owner: Option<Principal>,
     operator: Option<Principal>,
+    is_burned: bool,
     properties: Vec<(String, GenericValue)>,
     minted_at: u64,
     minted_by: Principal,
     transferred_at: Option<u64>,
     transferred_by: Option<Principal>,
+    burned_at: Option<u64>,
+    burned_by: Option<Principal>,
 }
 
 #[derive(CandidType, Default, Deserialize, Clone)]
@@ -248,8 +251,9 @@ fn owner_of(token_identifier: TokenIdentifier) -> Result<Principal, NftError> {
             .borrow()
             .tokens
             .get(&token_identifier)
-            .map(|token_metadata| token_metadata.owner)
-            .ok_or(NftError::TokenNotFound)
+            .ok_or(NftError::TokenNotFound)?
+            .owner
+            .ok_or(NftError::BurnedNFT)
     })
 }
 
@@ -257,12 +261,13 @@ fn owner_of(token_identifier: TokenIdentifier) -> Result<Principal, NftError> {
 #[candid_method(query, rename = "operatorOf")]
 fn operator_of(token_identifier: TokenIdentifier) -> Result<Option<Principal>, NftError> {
     LEDGER.with(|ledger| {
-        ledger
-            .borrow()
+        let ledger = ledger.borrow();
+        let token_metadata = ledger
             .tokens
             .get(&token_identifier)
-            .map(|token_metadata| token_metadata.operator)
-            .ok_or(NftError::TokenNotFound)
+            .ok_or(NftError::TokenNotFound)?;
+        token_metadata.owner.ok_or(NftError::BurnedNFT)?;
+        Ok(token_metadata.operator)
     })
 }
 
@@ -435,7 +440,7 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
     // check valid owner
     token_metadata
         .owner
-        .eq(&caller())
+        .eq(&Some(caller()))
         .then(|| ())
         .ok_or(NftError::Unauthorized)?;
 
@@ -492,7 +497,7 @@ fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, Nft
     // check valid owner
     token_metadata
         .owner
-        .eq(&caller())
+        .eq(&Some(caller()))
         .then(|| ())
         .ok_or(NftError::Unauthorized)?;
 
@@ -503,11 +508,13 @@ fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, Nft
         let mut ledger = ledger.borrow_mut();
 
         // remove cache
-        if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
-            tokens.remove(&token_identifier);
-            // remove key when empty cache
-            if tokens.is_empty() {
-                ledger.owners.remove(&old_owner);
+        if let Some(old_owner) = old_owner {
+            if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
+                tokens.remove(&token_identifier);
+                // remove key when empty cache
+                if tokens.is_empty() {
+                    ledger.owners.remove(&old_owner);
+                }
             }
         }
         if let Some(old_operator) = old_operator {
@@ -522,7 +529,7 @@ fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, Nft
 
         // update owner
         let token = ledger.tokens.get_mut(&token_identifier).unwrap();
-        token.owner = to;
+        token.owner = Some(to);
         token.transferred_at = Some(time());
         token.transferred_by = Some(caller());
 
@@ -568,7 +575,7 @@ fn transfer_from(
     // check valid owner
     token_metadata
         .owner
-        .eq(&owner)
+        .eq(&Some(owner))
         .then(|| ())
         .ok_or(NftError::Unauthorized)?;
 
@@ -580,30 +587,34 @@ fn transfer_from(
         .ok_or(NftError::Unauthorized)?;
 
     let old_owner = token_metadata.owner;
-    let old_operator = token_metadata.operator.unwrap();
+    let old_operator = token_metadata.operator;
 
     LEDGER.with(|ledger| {
         let mut ledger = ledger.borrow_mut();
 
         // remove cache
-        if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
-            tokens.remove(&token_identifier);
-            // remove key when empty cache
-            if tokens.is_empty() {
-                ledger.owners.remove(&old_owner);
+        if let Some(old_owner) = old_owner {
+            if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
+                tokens.remove(&token_identifier);
+                // remove key when empty cache
+                if tokens.is_empty() {
+                    ledger.owners.remove(&old_owner);
+                }
             }
         }
-        if let Some(tokens) = ledger.operators.get_mut(&old_operator) {
-            tokens.remove(&token_identifier);
-            // remove key when empty cache
-            if tokens.is_empty() {
-                ledger.operators.remove(&old_operator);
+        if let Some(old_operator) = old_operator {
+            if let Some(tokens) = ledger.operators.get_mut(&old_operator) {
+                tokens.remove(&token_identifier);
+                // remove key when empty cache
+                if tokens.is_empty() {
+                    ledger.operators.remove(&old_operator);
+                }
             }
         }
 
         // update owner
         let token = ledger.tokens.get_mut(&token_identifier).unwrap();
-        token.owner = to;
+        token.owner = Some(to);
         token.transferred_at = Some(time());
         token.transferred_by = Some(caller());
 
@@ -651,13 +662,16 @@ fn mint(
             token_identifier.clone(),
             TokenMetadata {
                 token_identifier: token_identifier.clone(),
-                owner: to,
+                owner: Some(to),
                 operator: None,
                 properties,
+                is_burned: false,
                 minted_at: time(),
                 minted_by: caller(),
                 transferred_at: None,
                 transferred_by: None,
+                burned_at: None,
+                burned_by: None,
             },
         );
 
@@ -685,8 +699,59 @@ fn mint(
 
 #[update(name = "burn")]
 #[candid_method(update, rename = "burn")]
-fn burn(token_identifier: TokenIdentifier) {
-    trap("Not supported")
+fn burn(token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
+    let token_metadata = token_metadata(token_identifier.clone())?;
+
+    // check valid owner
+    token_metadata
+        .owner
+        .eq(&Some(caller()))
+        .then(|| ())
+        .ok_or(NftError::Unauthorized)?;
+
+    let old_owner = token_metadata.owner;
+    let old_operator = token_metadata.operator;
+
+    LEDGER.with(|ledger| {
+        let mut ledger = ledger.borrow_mut();
+
+        // remove cache
+        if let Some(old_owner) = old_owner {
+            if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
+                tokens.remove(&token_identifier);
+                // remove key when empty cache
+                if tokens.is_empty() {
+                    ledger.owners.remove(&old_owner);
+                }
+            }
+        }
+        if let Some(old_operator) = old_operator {
+            if let Some(tokens) = ledger.operators.get_mut(&old_operator) {
+                tokens.remove(&token_identifier);
+                // remove key when empty cache
+                if tokens.is_empty() {
+                    ledger.operators.remove(&old_operator);
+                }
+            }
+        }
+
+        let token = ledger.tokens.get_mut(&token_identifier).unwrap();
+        token.owner = None;
+        token.operator = None;
+        token.is_burned = true;
+        token.burned_at = Some(time());
+        token.burned_by = Some(caller());
+
+        // history
+        Ok(ledger.add_tx(
+            caller(),
+            "burn".into(),
+            vec![(
+                "token_identifier".into(),
+                GenericValue::NatContent(token_identifier),
+            )],
+        ))
+    })
 }
 
 #[query(name = "transaction")]
