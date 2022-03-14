@@ -421,7 +421,7 @@ This interface adds mint functionality to DIP-721 tokens.
 
 ---
 
-Mint an NFT for principal `to` that has an ID of `token_id` and metadata akin to `properties`. Implementations are encouraged to only allow minting by the owner of the canister.
+Mint an NFT for principal `to` that has an ID of `token_identifier` and metadata akin to `properties`. Implementations are encouraged to only allow minting by the owner of the canister.
 
 If the mint goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
 
@@ -441,7 +441,7 @@ This interface adds burn functionality to DIP-721 tokens.
 
 ---
 
-Burn an NFT identified by `token_id`. Calling burn on a token sets the owner to `None` and will no longer be useable. Burned tokens do still count towards `totalSupply`.
+Burn an NFT identified by `token_identifier`. Calling burn on a token sets the owner to `None` and will no longer be useable. Burned tokens do still count towards `totalSupply`.
 
 Implementations are encouraged to only allow burning by the owner of the `token_identifier`.
 
