@@ -186,6 +186,8 @@ fn set_owners(owners: Vec<Principal>) {
     METADATA.with(|metadata| metadata.borrow_mut().owners = HashSet::from_iter(owners))
 }
 
+// Returns the total current supply of NFT tokens.
+// NFTs that are minted and later burned explicitly or sent to the zero address should also count towards totalSupply.
 #[query(name = "totalSupply")]
 #[candid_method(query, rename = "totalSupply")]
 fn total_supply() -> Nat {
