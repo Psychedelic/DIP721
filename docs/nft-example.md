@@ -1,12 +1,12 @@
 # 👩‍🎤 NFT Implementation example
 
-An NFT (non-fungible token) implementation which follows the [DIP-721](spec.md) specification is available and can be used as a base for your projects.
+An NFT (non-fungible token) implementation which follows the [DIP-721](/spec.md) specification is available and can be used as a base for your projects.
 
 ### ⚙️ Requirements
 
-TLDR; We're providing implementation examples and related test or use-cases for your convinence, if you are just interested in the specifications find it [here](spec.md).
+TLDR; We're providing implementation examples and related test or use-cases for your convinence, if you are just interested in the specifications find it [here](/spec.md).
 
-The requirements listed here are for running the [DIP-721](spec.md) example implementations that are available in this repository. If you are just interested in the specification for [DIP-721](spec.md) followed the link [here](spec.md).
+The requirements listed here are for running the [DIP-721](/spec.md) example implementations that are available in this repository. If you are just interested in the specification for [DIP-721](/spec.md) followed the link [here](/spec.md).
 
 -   Nodejs
 -   Yarn or NPM
