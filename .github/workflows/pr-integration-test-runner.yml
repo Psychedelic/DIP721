@@ -17,7 +17,7 @@ jobs:
       CI: 1
       DEBUG: 0
       DFX_VERSION: 0.8.4
-      DFX_WARNING: -version_check 
+      DFX_WARNING: -version_check
       NODE_ENV: ci
       DFX_CANDID_RELEASE: 2022-01-06
 
@@ -84,4 +84,4 @@ jobs:
           ln -s "$(pwd)/didc-linux64" /usr/local/bin/didc
 
       - name: Integration tests
-        run: cd nft-v2 && make test
+        run: cd nft-v2 && make lint && make test
