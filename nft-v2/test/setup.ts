@@ -11,8 +11,8 @@ export const johnIdentity = Ed25519KeyIdentity.generate();
 
 // for testing only
 // principal id = "xxzsj-nukpm-lgp77-ogouk-7u72u-qvpnj-ppjgn-o736o-z4ezi-jvegq-uae"
-const secretKey = readFileSync("./canister-owner-test-secret", {encoding: "utf8"});
-export const canisterOwnerIdentity = Ed25519KeyIdentity.fromSecretKey(Buffer.from(secretKey, "hex"));
+const secretKey = readFileSync("./custodian-test-secret", {encoding: "utf8"});
+export const custodianIdentity = Ed25519KeyIdentity.fromSecretKey(Buffer.from(secretKey, "hex"));
 
 const canisterIds = JSON.parse(readFileSync("../canister_ids.json", {encoding: "utf8"}));
 
@@ -36,4 +36,4 @@ const createActor = async (identity: Identity): Promise<Service> => {
 export const aliceActor = await createActor(aliceIdentity);
 export const bobActor = await createActor(bobIdentity);
 export const johnActor = await createActor(johnIdentity);
-export const canisterOwnerActor = await createActor(canisterOwnerIdentity);
+export const custodianActor = await createActor(custodianIdentity);

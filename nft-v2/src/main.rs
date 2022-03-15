@@ -1,5 +1,3 @@
-mod legacy;
-
 // TODO: use MutualReply when new ic_cdk version release
 // https://github.com/dfinity/cdk-rs/pull/210/files
 use ic_cdk::api::{caller, time, trap};
@@ -16,7 +14,7 @@ struct InitArgs {
     name: Option<String>,
     logo: Option<String>,
     symbol: Option<String>,
-    owners: Option<Vec<Principal>>,
+    custodians: Option<HashSet<Principal>>,
 }
 
 #[derive(CandidType, Default, Deserialize, Clone)]
@@ -24,7 +22,7 @@ struct Metadata {
     name: Option<String>,
     logo: Option<String>,
     symbol: Option<String>,
-    owners: HashSet<Principal>,
+    custodians: HashSet<Principal>,
     created_at: u64,
     upgraded_at: u64,
 }
@@ -49,16 +47,22 @@ enum GenericValue {
     Int64Content(i64),
 }
 
+// Please notice that the example of internal data structure as below doesn't represent your final storage, please use with caution.
+// Feel free to change the storage and behavior that align with your expected business.
+// The canister should match with the signature defined in `spec.md` in order to be considered as a DIP721 contract.
 #[derive(CandidType, Deserialize, Clone)]
 struct TokenMetadata {
     token_identifier: TokenIdentifier,
-    owner: Principal,
+    owner: Option<Principal>,
     operator: Option<Principal>,
+    is_burned: bool,
     properties: Vec<(String, GenericValue)>,
     minted_at: u64,
     minted_by: Principal,
     transferred_at: Option<u64>,
     transferred_by: Option<Principal>,
+    burned_at: Option<u64>,
+    burned_by: Option<Principal>,
 }
 
 #[derive(CandidType, Default, Deserialize, Clone)]
@@ -84,7 +88,6 @@ impl Ledger {
         operation: String,
         details: Vec<(String, GenericValue)>,
     ) -> Nat {
-        // NOTE: integrate with cap dip721 standard, or skip it for now ?????
         self.tx_records.push(TxEvent {
             time: time(),
             operation,
@@ -105,14 +108,14 @@ thread_local!(
 fn init(args: Option<InitArgs>) {
     METADATA.with(|metadata| {
         let mut metadata = metadata.borrow_mut();
-        metadata.owners.insert(caller()); // Default as caller
+        metadata.custodians.insert(caller()); // Default as caller
         if let Some(args) = args {
             metadata.name = args.name;
             metadata.logo = args.logo;
             metadata.symbol = args.symbol;
-            if let Some(owners) = args.owners {
-                for owner in owners {
-                    metadata.owners.insert(owner);
+            if let Some(custodians) = args.custodians {
+                for custodians in custodians {
+                    metadata.custodians.insert(custodians);
                 }
             }
         }
@@ -121,14 +124,14 @@ fn init(args: Option<InitArgs>) {
     });
 }
 
-fn is_canister_owner() -> Result<(), String> {
+fn is_canister_custodian() -> Result<(), String> {
     METADATA.with(|metadata| {
         metadata
             .borrow()
-            .owners
+            .custodians
             .contains(&caller())
             .then(|| ())
-            .ok_or_else(|| "Caller is not an owner of canister".into())
+            .ok_or_else(|| "Caller is not an custodian of canister".into())
     })
 }
 
@@ -144,7 +147,7 @@ fn name() -> Option<String> {
     METADATA.with(|metadata| metadata.borrow().name.clone())
 }
 
-#[update(name = "setName", guard = "is_canister_owner")]
+#[update(name = "setName", guard = "is_canister_custodian")]
 #[candid_method(update, rename = "setName")]
 fn set_name(name: String) {
     METADATA.with(|metadata| metadata.borrow_mut().name = Some(name));
@@ -156,7 +159,7 @@ fn logo() -> Option<String> {
     METADATA.with(|metadata| metadata.borrow().logo.clone())
 }
 
-#[update(name = "setLogo", guard = "is_canister_owner")]
+#[update(name = "setLogo", guard = "is_canister_custodian")]
 #[candid_method(update, rename = "setLogo")]
 fn set_logo(logo: String) {
     METADATA.with(|metadata| metadata.borrow_mut().logo = Some(logo));
@@ -168,24 +171,26 @@ fn symbol() -> Option<String> {
     METADATA.with(|metadata| metadata.borrow().symbol.clone())
 }
 
-#[update(name = "setSymbol", guard = "is_canister_owner")]
+#[update(name = "setSymbol", guard = "is_canister_custodian")]
 #[candid_method(update, rename = "setSymbol")]
 fn set_symbol(symbol: String) {
     METADATA.with(|metadata| metadata.borrow_mut().symbol = Some(symbol))
 }
 
-#[query(name = "owners")]
-#[candid_method(query, rename = "owners")]
-fn owners() -> Vec<Principal> {
-    METADATA.with(|metadata| metadata.borrow().owners.iter().cloned().collect())
+#[query(name = "custodians")]
+#[candid_method(query, rename = "custodians")]
+fn custodians() -> HashSet<Principal> {
+    METADATA.with(|metadata| metadata.borrow().custodians.iter().cloned().collect())
 }
 
-#[update(name = "setOwners", guard = "is_canister_owner")]
-#[candid_method(update, rename = "setOwners")]
-fn set_owners(owners: Vec<Principal>) {
-    METADATA.with(|metadata| metadata.borrow_mut().owners = HashSet::from_iter(owners))
+#[update(name = "setCustodians", guard = "is_canister_custodian")]
+#[candid_method(update, rename = "setCustodians")]
+fn set_custodians(custodians: HashSet<Principal>) {
+    METADATA.with(|metadata| metadata.borrow_mut().custodians = HashSet::from_iter(custodians))
 }
 
+// Returns the total current supply of NFT tokens.
+// NFTs that are minted and later burned explicitly or sent to the zero address should also count towards totalSupply.
 #[query(name = "totalSupply")]
 #[candid_method(query, rename = "totalSupply")]
 fn total_supply() -> Nat {
@@ -218,6 +223,7 @@ enum NftError {
     OperatorNotFound,
     TokenNotFound,
     ExistedNFT,
+    BurnedNFT,
     SelfApprove,
     SelfTransfer,
     TxNotFound,
@@ -245,8 +251,9 @@ fn owner_of(token_identifier: TokenIdentifier) -> Result<Principal, NftError> {
             .borrow()
             .tokens
             .get(&token_identifier)
-            .map(|token_metadata| token_metadata.owner)
-            .ok_or(NftError::TokenNotFound)
+            .ok_or(NftError::TokenNotFound)?
+            .owner
+            .ok_or(NftError::BurnedNFT)
     })
 }
 
@@ -254,12 +261,13 @@ fn owner_of(token_identifier: TokenIdentifier) -> Result<Principal, NftError> {
 #[candid_method(query, rename = "operatorOf")]
 fn operator_of(token_identifier: TokenIdentifier) -> Result<Option<Principal>, NftError> {
     LEDGER.with(|ledger| {
-        ledger
-            .borrow()
+        let ledger = ledger.borrow();
+        let token_metadata = ledger
             .tokens
             .get(&token_identifier)
-            .map(|token_metadata| token_metadata.operator)
-            .ok_or(NftError::TokenNotFound)
+            .ok_or(NftError::TokenNotFound)?;
+        token_metadata.owner.ok_or(NftError::BurnedNFT)?;
+        Ok(token_metadata.operator)
     })
 }
 
@@ -432,7 +440,7 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
     // check valid owner
     token_metadata
         .owner
-        .eq(&caller())
+        .eq(&Some(caller()))
         .then(|| ())
         .ok_or(NftError::Unauthorized)?;
 
@@ -489,7 +497,7 @@ fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, Nft
     // check valid owner
     token_metadata
         .owner
-        .eq(&caller())
+        .eq(&Some(caller()))
         .then(|| ())
         .ok_or(NftError::Unauthorized)?;
 
@@ -500,11 +508,13 @@ fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, Nft
         let mut ledger = ledger.borrow_mut();
 
         // remove cache
-        if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
-            tokens.remove(&token_identifier);
-            // remove key when empty cache
-            if tokens.is_empty() {
-                ledger.owners.remove(&old_owner);
+        if let Some(old_owner) = old_owner {
+            if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
+                tokens.remove(&token_identifier);
+                // remove key when empty cache
+                if tokens.is_empty() {
+                    ledger.owners.remove(&old_owner);
+                }
             }
         }
         if let Some(old_operator) = old_operator {
@@ -519,7 +529,7 @@ fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, Nft
 
         // update owner
         let token = ledger.tokens.get_mut(&token_identifier).unwrap();
-        token.owner = to;
+        token.owner = Some(to);
         token.transferred_at = Some(time());
         token.transferred_by = Some(caller());
 
@@ -565,7 +575,7 @@ fn transfer_from(
     // check valid owner
     token_metadata
         .owner
-        .eq(&owner)
+        .eq(&Some(owner))
         .then(|| ())
         .ok_or(NftError::Unauthorized)?;
 
@@ -577,30 +587,34 @@ fn transfer_from(
         .ok_or(NftError::Unauthorized)?;
 
     let old_owner = token_metadata.owner;
-    let old_operator = token_metadata.operator.unwrap();
+    let old_operator = token_metadata.operator;
 
     LEDGER.with(|ledger| {
         let mut ledger = ledger.borrow_mut();
 
         // remove cache
-        if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
-            tokens.remove(&token_identifier);
-            // remove key when empty cache
-            if tokens.is_empty() {
-                ledger.owners.remove(&old_owner);
+        if let Some(old_owner) = old_owner {
+            if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
+                tokens.remove(&token_identifier);
+                // remove key when empty cache
+                if tokens.is_empty() {
+                    ledger.owners.remove(&old_owner);
+                }
             }
         }
-        if let Some(tokens) = ledger.operators.get_mut(&old_operator) {
-            tokens.remove(&token_identifier);
-            // remove key when empty cache
-            if tokens.is_empty() {
-                ledger.operators.remove(&old_operator);
+        if let Some(old_operator) = old_operator {
+            if let Some(tokens) = ledger.operators.get_mut(&old_operator) {
+                tokens.remove(&token_identifier);
+                // remove key when empty cache
+                if tokens.is_empty() {
+                    ledger.operators.remove(&old_operator);
+                }
             }
         }
 
         // update owner
         let token = ledger.tokens.get_mut(&token_identifier).unwrap();
-        token.owner = to;
+        token.owner = Some(to);
         token.transferred_at = Some(time());
         token.transferred_by = Some(caller());
 
@@ -630,7 +644,7 @@ fn transfer_from(
     })
 }
 
-#[update(name = "mint", guard = "is_canister_owner")]
+#[update(name = "mint", guard = "is_canister_custodian")]
 #[candid_method(update, rename = "mint")]
 fn mint(
     to: Principal,
@@ -648,13 +662,16 @@ fn mint(
             token_identifier.clone(),
             TokenMetadata {
                 token_identifier: token_identifier.clone(),
-                owner: to,
+                owner: Some(to),
                 operator: None,
                 properties,
+                is_burned: false,
                 minted_at: time(),
                 minted_by: caller(),
                 transferred_at: None,
                 transferred_by: None,
+                burned_at: None,
+                burned_by: None,
             },
         );
 
@@ -680,10 +697,61 @@ fn mint(
     })
 }
 
-#[update(name = "burn", guard = "is_canister_owner")]
+#[update(name = "burn")]
 #[candid_method(update, rename = "burn")]
-fn burn(_token_identifier: TokenIdentifier) {
-    trap("Not supported")
+fn burn(token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
+    let token_metadata = token_metadata(token_identifier.clone())?;
+
+    // check valid owner
+    token_metadata
+        .owner
+        .eq(&Some(caller()))
+        .then(|| ())
+        .ok_or(NftError::Unauthorized)?;
+
+    let old_owner = token_metadata.owner;
+    let old_operator = token_metadata.operator;
+
+    LEDGER.with(|ledger| {
+        let mut ledger = ledger.borrow_mut();
+
+        // remove cache
+        if let Some(old_owner) = old_owner {
+            if let Some(tokens) = ledger.owners.get_mut(&old_owner) {
+                tokens.remove(&token_identifier);
+                // remove key when empty cache
+                if tokens.is_empty() {
+                    ledger.owners.remove(&old_owner);
+                }
+            }
+        }
+        if let Some(old_operator) = old_operator {
+            if let Some(tokens) = ledger.operators.get_mut(&old_operator) {
+                tokens.remove(&token_identifier);
+                // remove key when empty cache
+                if tokens.is_empty() {
+                    ledger.operators.remove(&old_operator);
+                }
+            }
+        }
+
+        let token = ledger.tokens.get_mut(&token_identifier).unwrap();
+        token.owner = None;
+        token.operator = None;
+        token.is_burned = true;
+        token.burned_at = Some(time());
+        token.burned_by = Some(caller());
+
+        // history
+        Ok(ledger.add_tx(
+            caller(),
+            "burn".into(),
+            vec![(
+                "token_identifier".into(),
+                GenericValue::NatContent(token_identifier),
+            )],
+        ))
+    })
 }
 
 #[query(name = "transaction")]

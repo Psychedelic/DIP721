@@ -13,7 +13,7 @@
     "prebuild": "npm run prettier:check && npm run lint:check",
     "build": "rm -rf dist && tsc && node fileExtReplacer.js dist",
     "clean": "rm -rf node_modules build public dist package-lock.json",
-    "test": "npm run build && ava -s -T 30s"
+    "test": "npm run build && ava -s -T 30s --fail-fast"
   },
   "engines": {
     "node": ">=14.18.2"

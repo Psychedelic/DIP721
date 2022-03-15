@@ -3,8 +3,8 @@ import {
   aliceIdentity,
   bobActor,
   bobIdentity,
-  canisterOwnerActor,
-  canisterOwnerIdentity,
+  custodianActor,
+  custodianIdentity,
   johnActor,
   johnIdentity
 } from "../setup";
@@ -12,12 +12,12 @@ import {TokenMetadata} from "../factory/idl.d";
 import test from "ava";
 
 const normalActors = [aliceActor, bobActor, johnActor];
-const allActors = [...normalActors, canisterOwnerActor];
+const allActors = [...normalActors, custodianActor];
 
 test.serial("simple mint NFT and verify information.", async t => {
   // mint
   t.deepEqual(
-    await canisterOwnerActor.mint(aliceIdentity.getPrincipal(), BigInt(1), [["A", {Nat64Content: BigInt(9999)}]]),
+    await custodianActor.mint(aliceIdentity.getPrincipal(), BigInt(1), [["A", {Nat64Content: BigInt(9999)}]]),
     {Ok: BigInt(1)}
   );
 
@@ -26,7 +26,7 @@ test.serial("simple mint NFT and verify information.", async t => {
     t.like(result, {
       Ok: {
         operation: "mint",
-        caller: canisterOwnerIdentity.getPrincipal(),
+        caller: custodianIdentity.getPrincipal(),
         details: [
           ["to", {Principal: aliceIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(1)}]
@@ -44,11 +44,13 @@ test.serial("simple mint NFT and verify information.", async t => {
       Ok: {
         transferred_at: [],
         transferred_by: [],
-        owner: aliceIdentity.getPrincipal(),
+        owner: [aliceIdentity.getPrincipal()],
         operator: [],
         properties: [["A", {Nat64Content: BigInt(9999)}]],
+        is_burned: false,
         token_identifier: BigInt(1),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal(),
+        burned_by: []
       }
     });
   });
@@ -76,11 +78,13 @@ test.serial("simple mint NFT and verify information.", async t => {
       t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
         transferred_at: [],
         transferred_by: [],
-        owner: aliceIdentity.getPrincipal(),
+        owner: [aliceIdentity.getPrincipal()],
         operator: [],
         properties: [["A", {Nat64Content: BigInt(9999)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(1),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       });
     }
   );
@@ -107,14 +111,11 @@ test.serial("error on query non-existed information.", async t => {
   ).forEach(promise => t.is(promise.status, "rejected"));
 
   // mint error when existed nft
-  t.deepEqual(
-    await canisterOwnerActor.mint(bobIdentity.getPrincipal(), BigInt(1), [["Z", {Int64Content: BigInt(-1)}]]),
-    {
-      Err: {
-        ExistedNFT: null
-      }
+  t.deepEqual(await custodianActor.mint(bobIdentity.getPrincipal(), BigInt(1), [["Z", {Int64Content: BigInt(-1)}]]), {
+    Err: {
+      ExistedNFT: null
     }
-  );
+  });
 
   // transaction error when non-exist tx_id
   (await Promise.all(allActors.map(actor => actor.transaction(BigInt(0))))).forEach(result => {
@@ -150,7 +151,7 @@ test.serial("error on query non-existed information.", async t => {
   });
 
   // ownerTokenMetadata error when non-exist owner
-  (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(canisterOwnerIdentity.getPrincipal())))).forEach(
+  (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(custodianIdentity.getPrincipal())))).forEach(
     result => {
       t.deepEqual(result, {Err: {OwnerNotFound: null}});
     }
@@ -164,13 +165,13 @@ test.serial("error on query non-existed information.", async t => {
 
 test.serial("mint NFTs.", async t => {
   t.deepEqual(
-    await canisterOwnerActor.mint(aliceIdentity.getPrincipal(), BigInt(2), [["B", {Int64Content: BigInt(1234)}]]),
+    await custodianActor.mint(aliceIdentity.getPrincipal(), BigInt(2), [["B", {Int64Content: BigInt(1234)}]]),
     {Ok: BigInt(2)}
   );
-  t.deepEqual(await canisterOwnerActor.mint(bobIdentity.getPrincipal(), BigInt(3), [["C", {Int32Content: 5678}]]), {
+  t.deepEqual(await custodianActor.mint(bobIdentity.getPrincipal(), BigInt(3), [["C", {Int32Content: 5678}]]), {
     Ok: BigInt(3)
   });
-  t.deepEqual(await canisterOwnerActor.mint(johnIdentity.getPrincipal(), BigInt(4), [["D", {TextContent: "∆≈ç√∫"}]]), {
+  t.deepEqual(await custodianActor.mint(johnIdentity.getPrincipal(), BigInt(4), [["D", {TextContent: "∆≈ç√∫"}]]), {
     Ok: BigInt(4)
   });
 });
@@ -181,7 +182,7 @@ test.serial("verify mint information.", async t => {
     t.like(result, {
       Ok: {
         operation: "mint",
-        caller: canisterOwnerIdentity.getPrincipal(),
+        caller: custodianIdentity.getPrincipal(),
         details: [
           ["to", {Principal: aliceIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(2)}]
@@ -193,7 +194,7 @@ test.serial("verify mint information.", async t => {
     t.like(result, {
       Ok: {
         operation: "mint",
-        caller: canisterOwnerIdentity.getPrincipal(),
+        caller: custodianIdentity.getPrincipal(),
         details: [
           ["to", {Principal: bobIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(3)}]
@@ -205,7 +206,7 @@ test.serial("verify mint information.", async t => {
     t.like(result, {
       Ok: {
         operation: "mint",
-        caller: canisterOwnerIdentity.getPrincipal(),
+        caller: custodianIdentity.getPrincipal(),
         details: [
           ["to", {Principal: johnIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(4)}]
@@ -223,11 +224,13 @@ test.serial("verify mint information.", async t => {
       Ok: {
         transferred_at: [],
         transferred_by: [],
-        owner: aliceIdentity.getPrincipal(),
+        owner: [aliceIdentity.getPrincipal()],
         operator: [],
         properties: [["B", {Int64Content: BigInt(1234)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(2),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       }
     });
   });
@@ -236,11 +239,13 @@ test.serial("verify mint information.", async t => {
       Ok: {
         transferred_at: [],
         transferred_by: [],
-        owner: bobIdentity.getPrincipal(),
+        owner: [bobIdentity.getPrincipal()],
         operator: [],
         properties: [["C", {Int32Content: 5678}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(3),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       }
     });
   });
@@ -249,11 +254,13 @@ test.serial("verify mint information.", async t => {
       Ok: {
         transferred_at: [],
         transferred_by: [],
-        owner: johnIdentity.getPrincipal(),
+        owner: [johnIdentity.getPrincipal()],
         operator: [],
         properties: [["D", {TextContent: "∆≈ç√∫"}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(4),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       }
     });
   });
@@ -302,11 +309,13 @@ test.serial("verify mint information.", async t => {
         {
           transferred_at: [],
           transferred_by: [],
-          owner: aliceIdentity.getPrincipal(),
+          owner: [aliceIdentity.getPrincipal()],
           operator: [],
           properties: [["A", {Nat64Content: BigInt(9999)}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(1),
-          minted_by: canisterOwnerIdentity.getPrincipal()
+          minted_by: custodianIdentity.getPrincipal()
         }
       );
       t.like(
@@ -314,11 +323,13 @@ test.serial("verify mint information.", async t => {
         {
           transferred_at: [],
           transferred_by: [],
-          owner: aliceIdentity.getPrincipal(),
+          owner: [aliceIdentity.getPrincipal()],
           operator: [],
           properties: [["B", {Int64Content: BigInt(1234)}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(2),
-          minted_by: canisterOwnerIdentity.getPrincipal()
+          minted_by: custodianIdentity.getPrincipal()
         }
       );
     }
@@ -329,11 +340,13 @@ test.serial("verify mint information.", async t => {
     t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
       transferred_at: [],
       transferred_by: [],
-      owner: bobIdentity.getPrincipal(),
+      owner: [bobIdentity.getPrincipal()],
       operator: [],
       properties: [["C", {Int32Content: 5678}]],
+      is_burned: false,
+      burned_by: [],
       token_identifier: BigInt(3),
-      minted_by: canisterOwnerIdentity.getPrincipal()
+      minted_by: custodianIdentity.getPrincipal()
     });
   });
   (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(johnIdentity.getPrincipal())))).forEach(result => {
@@ -342,11 +355,13 @@ test.serial("verify mint information.", async t => {
     t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
       transferred_at: [],
       transferred_by: [],
-      owner: johnIdentity.getPrincipal(),
+      owner: [johnIdentity.getPrincipal()],
       operator: [],
       properties: [["D", {TextContent: "∆≈ç√∫"}]],
+      is_burned: false,
+      burned_by: [],
       token_identifier: BigInt(4),
-      minted_by: canisterOwnerIdentity.getPrincipal()
+      minted_by: custodianIdentity.getPrincipal()
     });
   });
 
@@ -492,11 +507,13 @@ test.serial("verify approve information.", async t => {
       Ok: {
         transferred_at: [],
         transferred_by: [],
-        owner: aliceIdentity.getPrincipal(),
+        owner: [aliceIdentity.getPrincipal()],
         operator: [bobIdentity.getPrincipal()],
         properties: [["A", {Nat64Content: BigInt(9999)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(1),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       }
     });
   });
@@ -505,11 +522,13 @@ test.serial("verify approve information.", async t => {
       Ok: {
         transferred_at: [],
         transferred_by: [],
-        owner: aliceIdentity.getPrincipal(),
+        owner: [aliceIdentity.getPrincipal()],
         operator: [johnIdentity.getPrincipal()],
         properties: [["B", {Int64Content: BigInt(1234)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(2),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       }
     });
   });
@@ -518,11 +537,13 @@ test.serial("verify approve information.", async t => {
       Ok: {
         transferred_at: [],
         transferred_by: [],
-        owner: bobIdentity.getPrincipal(),
+        owner: [bobIdentity.getPrincipal()],
         operator: [aliceIdentity.getPrincipal()],
         properties: [["C", {Int32Content: 5678}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(3),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       }
     });
   });
@@ -531,11 +552,13 @@ test.serial("verify approve information.", async t => {
       Ok: {
         transferred_at: [],
         transferred_by: [],
-        owner: johnIdentity.getPrincipal(),
+        owner: [johnIdentity.getPrincipal()],
         operator: [aliceIdentity.getPrincipal()],
         properties: [["D", {TextContent: "∆≈ç√∫"}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(4),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       }
     });
   });
@@ -550,11 +573,13 @@ test.serial("verify approve information.", async t => {
         {
           transferred_at: [],
           transferred_by: [],
-          owner: aliceIdentity.getPrincipal(),
+          owner: [aliceIdentity.getPrincipal()],
           operator: [bobIdentity.getPrincipal()],
           properties: [["A", {Nat64Content: BigInt(9999)}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(1),
-          minted_by: canisterOwnerIdentity.getPrincipal()
+          minted_by: custodianIdentity.getPrincipal()
         }
       );
       t.like(
@@ -562,11 +587,13 @@ test.serial("verify approve information.", async t => {
         {
           transferred_at: [],
           transferred_by: [],
-          owner: aliceIdentity.getPrincipal(),
+          owner: [aliceIdentity.getPrincipal()],
           operator: [johnIdentity.getPrincipal()],
           properties: [["B", {Int64Content: BigInt(1234)}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(2),
-          minted_by: canisterOwnerIdentity.getPrincipal()
+          minted_by: custodianIdentity.getPrincipal()
         }
       );
     }
@@ -577,11 +604,13 @@ test.serial("verify approve information.", async t => {
     t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
       transferred_at: [],
       transferred_by: [],
-      owner: bobIdentity.getPrincipal(),
+      owner: [bobIdentity.getPrincipal()],
       operator: [aliceIdentity.getPrincipal()],
       properties: [["C", {Int32Content: 5678}]],
+      is_burned: false,
+      burned_by: [],
       token_identifier: BigInt(3),
-      minted_by: canisterOwnerIdentity.getPrincipal()
+      minted_by: custodianIdentity.getPrincipal()
     });
   });
   (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(johnIdentity.getPrincipal())))).forEach(result => {
@@ -590,11 +619,13 @@ test.serial("verify approve information.", async t => {
     t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
       transferred_at: [],
       transferred_by: [],
-      owner: johnIdentity.getPrincipal(),
+      owner: [johnIdentity.getPrincipal()],
       operator: [aliceIdentity.getPrincipal()],
       properties: [["D", {TextContent: "∆≈ç√∫"}]],
+      is_burned: false,
+      burned_by: [],
       token_identifier: BigInt(4),
-      minted_by: canisterOwnerIdentity.getPrincipal()
+      minted_by: custodianIdentity.getPrincipal()
     });
   });
 
@@ -608,11 +639,13 @@ test.serial("verify approve information.", async t => {
         {
           transferred_at: [],
           transferred_by: [],
-          owner: bobIdentity.getPrincipal(),
+          owner: [bobIdentity.getPrincipal()],
           operator: [aliceIdentity.getPrincipal()],
           properties: [["C", {Int32Content: 5678}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(3),
-          minted_by: canisterOwnerIdentity.getPrincipal()
+          minted_by: custodianIdentity.getPrincipal()
         }
       );
       t.like(
@@ -620,11 +653,13 @@ test.serial("verify approve information.", async t => {
         {
           transferred_at: [],
           transferred_by: [],
-          owner: johnIdentity.getPrincipal(),
+          owner: [johnIdentity.getPrincipal()],
           operator: [aliceIdentity.getPrincipal()],
           properties: [["D", {TextContent: "∆≈ç√∫"}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(4),
-          minted_by: canisterOwnerIdentity.getPrincipal()
+          minted_by: custodianIdentity.getPrincipal()
         }
       );
     }
@@ -636,11 +671,13 @@ test.serial("verify approve information.", async t => {
       t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
         transferred_at: [],
         transferred_by: [],
-        owner: aliceIdentity.getPrincipal(),
+        owner: [aliceIdentity.getPrincipal()],
         operator: [bobIdentity.getPrincipal()],
         properties: [["A", {Nat64Content: BigInt(9999)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(1),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       });
     }
   );
@@ -651,11 +688,13 @@ test.serial("verify approve information.", async t => {
       t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
         transferred_at: [],
         transferred_by: [],
-        owner: aliceIdentity.getPrincipal(),
+        owner: [aliceIdentity.getPrincipal()],
         operator: [johnIdentity.getPrincipal()],
         properties: [["B", {Int64Content: BigInt(1234)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(2),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       });
     }
   );
@@ -680,14 +719,14 @@ test.serial("error on self approve or approve non-existed operator.", async t =>
   t.deepEqual(await johnActor.approve(johnIdentity.getPrincipal(), BigInt(4)), {Err: {SelfApprove: null}});
 
   // operatorTokenMetadata error when non-existed operator
-  (
-    await Promise.all(allActors.map(actor => actor.operatorTokenMetadata(canisterOwnerIdentity.getPrincipal())))
-  ).forEach(result => {
-    t.deepEqual(result, {Err: {OperatorNotFound: null}});
-  });
+  (await Promise.all(allActors.map(actor => actor.operatorTokenMetadata(custodianIdentity.getPrincipal())))).forEach(
+    result => {
+      t.deepEqual(result, {Err: {OperatorNotFound: null}});
+    }
+  );
 
   // operatorTokenIds error when non-existed operator
-  (await Promise.all(allActors.map(actor => actor.operatorTokenIds(canisterOwnerIdentity.getPrincipal())))).forEach(
+  (await Promise.all(allActors.map(actor => actor.operatorTokenIds(custodianIdentity.getPrincipal())))).forEach(
     result => {
       t.deepEqual(result, {Err: {OperatorNotFound: null}});
     }
@@ -695,17 +734,17 @@ test.serial("error on self approve or approve non-existed operator.", async t =>
 });
 
 test.serial("error on unauthorize owner when approve.", async t => {
-  t.deepEqual(await canisterOwnerActor.approve(aliceIdentity.getPrincipal(), BigInt(1)), {Err: {Unauthorized: null}});
-  t.deepEqual(await canisterOwnerActor.approve(aliceIdentity.getPrincipal(), BigInt(2)), {Err: {Unauthorized: null}});
-  t.deepEqual(await canisterOwnerActor.approve(aliceIdentity.getPrincipal(), BigInt(3)), {Err: {Unauthorized: null}});
-  t.deepEqual(await canisterOwnerActor.approve(aliceIdentity.getPrincipal(), BigInt(4)), {Err: {Unauthorized: null}});
+  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(1)), {Err: {Unauthorized: null}});
+  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(2)), {Err: {Unauthorized: null}});
+  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(3)), {Err: {Unauthorized: null}});
+  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(4)), {Err: {Unauthorized: null}});
 });
 
 test.serial("approve NFTs (new operator).", async t => {
-  t.deepEqual(await aliceActor.approve(canisterOwnerIdentity.getPrincipal(), BigInt(1)), {Ok: BigInt(9)});
-  t.deepEqual(await aliceActor.approve(canisterOwnerIdentity.getPrincipal(), BigInt(2)), {Ok: BigInt(10)});
-  t.deepEqual(await bobActor.approve(canisterOwnerIdentity.getPrincipal(), BigInt(3)), {Ok: BigInt(11)});
-  t.deepEqual(await johnActor.approve(canisterOwnerIdentity.getPrincipal(), BigInt(4)), {Ok: BigInt(12)});
+  t.deepEqual(await aliceActor.approve(custodianIdentity.getPrincipal(), BigInt(1)), {Ok: BigInt(9)});
+  t.deepEqual(await aliceActor.approve(custodianIdentity.getPrincipal(), BigInt(2)), {Ok: BigInt(10)});
+  t.deepEqual(await bobActor.approve(custodianIdentity.getPrincipal(), BigInt(3)), {Ok: BigInt(11)});
+  t.deepEqual(await johnActor.approve(custodianIdentity.getPrincipal(), BigInt(4)), {Ok: BigInt(12)});
 });
 
 test.serial("verify approve transactions after updated to new operator.", async t => {
@@ -716,7 +755,7 @@ test.serial("verify approve transactions after updated to new operator.", async 
         operation: "approve",
         caller: aliceIdentity.getPrincipal(),
         details: [
-          ["operator", {Principal: canisterOwnerIdentity.getPrincipal()}],
+          ["operator", {Principal: custodianIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(1)}]
         ]
       }
@@ -728,7 +767,7 @@ test.serial("verify approve transactions after updated to new operator.", async 
         operation: "approve",
         caller: aliceIdentity.getPrincipal(),
         details: [
-          ["operator", {Principal: canisterOwnerIdentity.getPrincipal()}],
+          ["operator", {Principal: custodianIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(2)}]
         ]
       }
@@ -740,7 +779,7 @@ test.serial("verify approve transactions after updated to new operator.", async 
         operation: "approve",
         caller: bobIdentity.getPrincipal(),
         details: [
-          ["operator", {Principal: canisterOwnerIdentity.getPrincipal()}],
+          ["operator", {Principal: custodianIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(3)}]
         ]
       }
@@ -752,7 +791,7 @@ test.serial("verify approve transactions after updated to new operator.", async 
         operation: "approve",
         caller: johnIdentity.getPrincipal(),
         details: [
-          ["operator", {Principal: canisterOwnerIdentity.getPrincipal()}],
+          ["operator", {Principal: custodianIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(4)}]
         ]
       }
@@ -766,16 +805,16 @@ test.serial("verify approve transactions after updated to new operator.", async 
 test.serial("verify approve information after updated to new operator.", async t => {
   // verify operatorOf
   (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(1))))).forEach(result => {
-    t.deepEqual(result, {Ok: [canisterOwnerIdentity.getPrincipal()]});
+    t.deepEqual(result, {Ok: [custodianIdentity.getPrincipal()]});
   });
   (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(2))))).forEach(result => {
-    t.deepEqual(result, {Ok: [canisterOwnerIdentity.getPrincipal()]});
+    t.deepEqual(result, {Ok: [custodianIdentity.getPrincipal()]});
   });
   (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(3))))).forEach(result => {
-    t.deepEqual(result, {Ok: [canisterOwnerIdentity.getPrincipal()]});
+    t.deepEqual(result, {Ok: [custodianIdentity.getPrincipal()]});
   });
   (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(4))))).forEach(result => {
-    t.deepEqual(result, {Ok: [canisterOwnerIdentity.getPrincipal()]});
+    t.deepEqual(result, {Ok: [custodianIdentity.getPrincipal()]});
   });
 
   // verify token
@@ -784,11 +823,13 @@ test.serial("verify approve information after updated to new operator.", async t
       Ok: {
         transferred_at: [],
         transferred_by: [],
-        owner: aliceIdentity.getPrincipal(),
-        operator: [canisterOwnerIdentity.getPrincipal()],
+        owner: [aliceIdentity.getPrincipal()],
+        operator: [custodianIdentity.getPrincipal()],
         properties: [["A", {Nat64Content: BigInt(9999)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(1),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       }
     });
   });
@@ -797,11 +838,13 @@ test.serial("verify approve information after updated to new operator.", async t
       Ok: {
         transferred_at: [],
         transferred_by: [],
-        owner: aliceIdentity.getPrincipal(),
-        operator: [canisterOwnerIdentity.getPrincipal()],
+        owner: [aliceIdentity.getPrincipal()],
+        operator: [custodianIdentity.getPrincipal()],
         properties: [["B", {Int64Content: BigInt(1234)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(2),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       }
     });
   });
@@ -810,11 +853,13 @@ test.serial("verify approve information after updated to new operator.", async t
       Ok: {
         transferred_at: [],
         transferred_by: [],
-        owner: bobIdentity.getPrincipal(),
-        operator: [canisterOwnerIdentity.getPrincipal()],
+        owner: [bobIdentity.getPrincipal()],
+        operator: [custodianIdentity.getPrincipal()],
         properties: [["C", {Int32Content: 5678}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(3),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       }
     });
   });
@@ -823,11 +868,13 @@ test.serial("verify approve information after updated to new operator.", async t
       Ok: {
         transferred_at: [],
         transferred_by: [],
-        owner: johnIdentity.getPrincipal(),
-        operator: [canisterOwnerIdentity.getPrincipal()],
+        owner: [johnIdentity.getPrincipal()],
+        operator: [custodianIdentity.getPrincipal()],
         properties: [["D", {TextContent: "∆≈ç√∫"}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(4),
-        minted_by: canisterOwnerIdentity.getPrincipal()
+        minted_by: custodianIdentity.getPrincipal()
       }
     });
   });
@@ -842,11 +889,13 @@ test.serial("verify approve information after updated to new operator.", async t
         {
           transferred_at: [],
           transferred_by: [],
-          owner: aliceIdentity.getPrincipal(),
-          operator: [canisterOwnerIdentity.getPrincipal()],
+          owner: [aliceIdentity.getPrincipal()],
+          operator: [custodianIdentity.getPrincipal()],
           properties: [["A", {Nat64Content: BigInt(9999)}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(1),
-          minted_by: canisterOwnerIdentity.getPrincipal()
+          minted_by: custodianIdentity.getPrincipal()
         }
       );
       t.like(
@@ -854,11 +903,13 @@ test.serial("verify approve information after updated to new operator.", async t
         {
           transferred_at: [],
           transferred_by: [],
-          owner: aliceIdentity.getPrincipal(),
-          operator: [canisterOwnerIdentity.getPrincipal()],
+          owner: [aliceIdentity.getPrincipal()],
+          operator: [custodianIdentity.getPrincipal()],
           properties: [["B", {Int64Content: BigInt(1234)}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(2),
-          minted_by: canisterOwnerIdentity.getPrincipal()
+          minted_by: custodianIdentity.getPrincipal()
         }
       );
     }
@@ -869,11 +920,13 @@ test.serial("verify approve information after updated to new operator.", async t
     t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
       transferred_at: [],
       transferred_by: [],
-      owner: bobIdentity.getPrincipal(),
-      operator: [canisterOwnerIdentity.getPrincipal()],
+      owner: [bobIdentity.getPrincipal()],
+      operator: [custodianIdentity.getPrincipal()],
       properties: [["C", {Int32Content: 5678}]],
+      is_burned: false,
+      burned_by: [],
       token_identifier: BigInt(3),
-      minted_by: canisterOwnerIdentity.getPrincipal()
+      minted_by: custodianIdentity.getPrincipal()
     });
   });
   (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(johnIdentity.getPrincipal())))).forEach(result => {
@@ -882,72 +935,82 @@ test.serial("verify approve information after updated to new operator.", async t
     t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
       transferred_at: [],
       transferred_by: [],
-      owner: johnIdentity.getPrincipal(),
-      operator: [canisterOwnerIdentity.getPrincipal()],
+      owner: [johnIdentity.getPrincipal()],
+      operator: [custodianIdentity.getPrincipal()],
       properties: [["D", {TextContent: "∆≈ç√∫"}]],
+      is_burned: false,
+      burned_by: [],
       token_identifier: BigInt(4),
-      minted_by: canisterOwnerIdentity.getPrincipal()
+      minted_by: custodianIdentity.getPrincipal()
     });
   });
 
   // verify operatorTokenMetadata
-  (
-    await Promise.all(allActors.map(actor => actor.operatorTokenMetadata(canisterOwnerIdentity.getPrincipal())))
-  ).forEach(result => {
-    t.true("Ok" in result);
-    t.is((result as {Ok: Array<TokenMetadata>}).Ok.length, 4);
-    t.like(
-      (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(1)),
-      {
-        transferred_at: [],
-        transferred_by: [],
-        owner: aliceIdentity.getPrincipal(),
-        operator: [canisterOwnerIdentity.getPrincipal()],
-        properties: [["A", {Nat64Content: BigInt(9999)}]],
-        token_identifier: BigInt(1),
-        minted_by: canisterOwnerIdentity.getPrincipal()
-      }
-    );
-    t.like(
-      (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(2)),
-      {
-        transferred_at: [],
-        transferred_by: [],
-        owner: aliceIdentity.getPrincipal(),
-        operator: [canisterOwnerIdentity.getPrincipal()],
-        properties: [["B", {Int64Content: BigInt(1234)}]],
-        token_identifier: BigInt(2),
-        minted_by: canisterOwnerIdentity.getPrincipal()
-      }
-    );
-    t.like(
-      (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(3)),
-      {
-        transferred_at: [],
-        transferred_by: [],
-        owner: bobIdentity.getPrincipal(),
-        operator: [canisterOwnerIdentity.getPrincipal()],
-        properties: [["C", {Int32Content: 5678}]],
-        token_identifier: BigInt(3),
-        minted_by: canisterOwnerIdentity.getPrincipal()
-      }
-    );
-    t.like(
-      (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(4)),
-      {
-        transferred_at: [],
-        transferred_by: [],
-        owner: johnIdentity.getPrincipal(),
-        operator: [canisterOwnerIdentity.getPrincipal()],
-        properties: [["D", {TextContent: "∆≈ç√∫"}]],
-        token_identifier: BigInt(4),
-        minted_by: canisterOwnerIdentity.getPrincipal()
-      }
-    );
-  });
+  (await Promise.all(allActors.map(actor => actor.operatorTokenMetadata(custodianIdentity.getPrincipal())))).forEach(
+    result => {
+      t.true("Ok" in result);
+      t.is((result as {Ok: Array<TokenMetadata>}).Ok.length, 4);
+      t.like(
+        (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(1)),
+        {
+          transferred_at: [],
+          transferred_by: [],
+          owner: [aliceIdentity.getPrincipal()],
+          operator: [custodianIdentity.getPrincipal()],
+          properties: [["A", {Nat64Content: BigInt(9999)}]],
+          is_burned: false,
+          burned_by: [],
+          token_identifier: BigInt(1),
+          minted_by: custodianIdentity.getPrincipal()
+        }
+      );
+      t.like(
+        (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(2)),
+        {
+          transferred_at: [],
+          transferred_by: [],
+          owner: [aliceIdentity.getPrincipal()],
+          operator: [custodianIdentity.getPrincipal()],
+          properties: [["B", {Int64Content: BigInt(1234)}]],
+          is_burned: false,
+          burned_by: [],
+          token_identifier: BigInt(2),
+          minted_by: custodianIdentity.getPrincipal()
+        }
+      );
+      t.like(
+        (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(3)),
+        {
+          transferred_at: [],
+          transferred_by: [],
+          owner: [bobIdentity.getPrincipal()],
+          operator: [custodianIdentity.getPrincipal()],
+          properties: [["C", {Int32Content: 5678}]],
+          is_burned: false,
+          burned_by: [],
+          token_identifier: BigInt(3),
+          minted_by: custodianIdentity.getPrincipal()
+        }
+      );
+      t.like(
+        (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(4)),
+        {
+          transferred_at: [],
+          transferred_by: [],
+          owner: [johnIdentity.getPrincipal()],
+          operator: [custodianIdentity.getPrincipal()],
+          properties: [["D", {TextContent: "∆≈ç√∫"}]],
+          is_burned: false,
+          burned_by: [],
+          token_identifier: BigInt(4),
+          minted_by: custodianIdentity.getPrincipal()
+        }
+      );
+    }
+  );
 
   // verify operatorTokenIds
-  (await Promise.all(allActors.map(actor => actor.operatorTokenIds(canisterOwnerIdentity.getPrincipal())))).forEach(
+  (await Promise.all(allActors.map(actor => actor.operatorTokenIds(custodianIdentity.getPrincipal())))).forEach(
     result => {
       t.true((result as {Ok: Array<bigint>}).Ok.includes(BigInt(1)));
       t.true((result as {Ok: Array<bigint>}).Ok.includes(BigInt(2)));
@@ -989,11 +1052,7 @@ test.serial("error on query old operator information.", async t => {
 
 test.serial("error on self transferFrom.", async t => {
   t.deepEqual(
-    await canisterOwnerActor.transferFrom(
-      canisterOwnerIdentity.getPrincipal(),
-      canisterOwnerIdentity.getPrincipal(),
-      BigInt(1)
-    ),
+    await custodianActor.transferFrom(custodianIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(1)),
     {
       Err: {SelfTransfer: null}
     }
@@ -1012,96 +1071,63 @@ test.serial("error on self transferFrom.", async t => {
 // invalid owner
 test.serial("error on unauthorize owner when transferFrom.", async t => {
   t.deepEqual(
-    await canisterOwnerActor.transferFrom(
-      canisterOwnerIdentity.getPrincipal(),
-      aliceIdentity.getPrincipal(),
-      BigInt(1)
-    ),
+    await custodianActor.transferFrom(custodianIdentity.getPrincipal(), aliceIdentity.getPrincipal(), BigInt(1)),
     {
       Err: {Unauthorized: null}
     }
   );
   t.deepEqual(
-    await aliceActor.transferFrom(canisterOwnerIdentity.getPrincipal(), aliceIdentity.getPrincipal(), BigInt(2)),
+    await aliceActor.transferFrom(custodianIdentity.getPrincipal(), aliceIdentity.getPrincipal(), BigInt(2)),
     {
       Err: {Unauthorized: null}
     }
   );
-  t.deepEqual(
-    await bobActor.transferFrom(canisterOwnerIdentity.getPrincipal(), bobIdentity.getPrincipal(), BigInt(3)),
-    {
-      Err: {Unauthorized: null}
-    }
-  );
-  t.deepEqual(
-    await johnActor.transferFrom(canisterOwnerIdentity.getPrincipal(), johnIdentity.getPrincipal(), BigInt(4)),
-    {
-      Err: {Unauthorized: null}
-    }
-  );
+  t.deepEqual(await bobActor.transferFrom(custodianIdentity.getPrincipal(), bobIdentity.getPrincipal(), BigInt(3)), {
+    Err: {Unauthorized: null}
+  });
+  t.deepEqual(await johnActor.transferFrom(custodianIdentity.getPrincipal(), johnIdentity.getPrincipal(), BigInt(4)), {
+    Err: {Unauthorized: null}
+  });
 });
 
 // invalid operator
 test.serial("error on unauthorize operator when transferFrom.", async t => {
-  t.deepEqual(
-    await bobActor.transferFrom(aliceIdentity.getPrincipal(), canisterOwnerIdentity.getPrincipal(), BigInt(1)),
-    {
-      Err: {Unauthorized: null}
-    }
-  );
-  t.deepEqual(
-    await bobActor.transferFrom(aliceIdentity.getPrincipal(), canisterOwnerIdentity.getPrincipal(), BigInt(2)),
-    {
-      Err: {Unauthorized: null}
-    }
-  );
-  t.deepEqual(
-    await johnActor.transferFrom(bobIdentity.getPrincipal(), canisterOwnerIdentity.getPrincipal(), BigInt(3)),
-    {
-      Err: {Unauthorized: null}
-    }
-  );
-  t.deepEqual(
-    await aliceActor.transferFrom(johnIdentity.getPrincipal(), canisterOwnerIdentity.getPrincipal(), BigInt(4)),
-    {
-      Err: {Unauthorized: null}
-    }
-  );
+  t.deepEqual(await bobActor.transferFrom(aliceIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(1)), {
+    Err: {Unauthorized: null}
+  });
+  t.deepEqual(await bobActor.transferFrom(aliceIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(2)), {
+    Err: {Unauthorized: null}
+  });
+  t.deepEqual(await johnActor.transferFrom(bobIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(3)), {
+    Err: {Unauthorized: null}
+  });
+  t.deepEqual(await aliceActor.transferFrom(johnIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(4)), {
+    Err: {Unauthorized: null}
+  });
 });
 
 test.serial("transferFrom.", async t => {
   t.deepEqual(
-    await canisterOwnerActor.transferFrom(
-      aliceIdentity.getPrincipal(),
-      canisterOwnerIdentity.getPrincipal(),
-      BigInt(1)
-    ),
+    await custodianActor.transferFrom(aliceIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(1)),
     {
       Ok: BigInt(13)
     }
   );
   t.deepEqual(
-    await canisterOwnerActor.transferFrom(
-      aliceIdentity.getPrincipal(),
-      canisterOwnerIdentity.getPrincipal(),
-      BigInt(2)
-    ),
+    await custodianActor.transferFrom(aliceIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(2)),
     {
       Ok: BigInt(14)
     }
   );
   t.deepEqual(
-    await canisterOwnerActor.transferFrom(bobIdentity.getPrincipal(), canisterOwnerIdentity.getPrincipal(), BigInt(3)),
+    await custodianActor.transferFrom(bobIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(3)),
     {
       Ok: BigInt(15)
     }
   );
-  t.deepEqual(
-    await canisterOwnerActor.transferFrom(johnIdentity.getPrincipal(), aliceIdentity.getPrincipal(), BigInt(4)),
-    {
-      Ok: BigInt(16)
-    }
-  );
+  t.deepEqual(await custodianActor.transferFrom(johnIdentity.getPrincipal(), aliceIdentity.getPrincipal(), BigInt(4)), {
+    Ok: BigInt(16)
+  });
   (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
     t.is(result, BigInt(16));
   });
@@ -1113,10 +1139,10 @@ test.serial("verify transferFrom transactions.", async t => {
     t.like(result, {
       Ok: {
         operation: "transferFrom",
-        caller: canisterOwnerIdentity.getPrincipal(),
+        caller: custodianIdentity.getPrincipal(),
         details: [
           ["owner", {Principal: aliceIdentity.getPrincipal()}],
-          ["to", {Principal: canisterOwnerIdentity.getPrincipal()}],
+          ["to", {Principal: custodianIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(1)}]
         ]
       }
@@ -1126,10 +1152,10 @@ test.serial("verify transferFrom transactions.", async t => {
     t.like(result, {
       Ok: {
         operation: "transferFrom",
-        caller: canisterOwnerIdentity.getPrincipal(),
+        caller: custodianIdentity.getPrincipal(),
         details: [
           ["owner", {Principal: aliceIdentity.getPrincipal()}],
-          ["to", {Principal: canisterOwnerIdentity.getPrincipal()}],
+          ["to", {Principal: custodianIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(2)}]
         ]
       }
@@ -1139,10 +1165,10 @@ test.serial("verify transferFrom transactions.", async t => {
     t.like(result, {
       Ok: {
         operation: "transferFrom",
-        caller: canisterOwnerIdentity.getPrincipal(),
+        caller: custodianIdentity.getPrincipal(),
         details: [
           ["owner", {Principal: bobIdentity.getPrincipal()}],
-          ["to", {Principal: canisterOwnerIdentity.getPrincipal()}],
+          ["to", {Principal: custodianIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(3)}]
         ]
       }
@@ -1152,7 +1178,7 @@ test.serial("verify transferFrom transactions.", async t => {
     t.like(result, {
       Ok: {
         operation: "transferFrom",
-        caller: canisterOwnerIdentity.getPrincipal(),
+        caller: custodianIdentity.getPrincipal(),
         details: [
           ["owner", {Principal: johnIdentity.getPrincipal()}],
           ["to", {Principal: aliceIdentity.getPrincipal()}],
@@ -1168,19 +1194,19 @@ test.serial("verify transferFrom information.", async t => {
   (await Promise.all(allActors.map(actor => actor.balanceOf(aliceIdentity.getPrincipal())))).forEach(result => {
     t.deepEqual(result, {Ok: BigInt(1)});
   });
-  (await Promise.all(allActors.map(actor => actor.balanceOf(canisterOwnerIdentity.getPrincipal())))).forEach(result => {
+  (await Promise.all(allActors.map(actor => actor.balanceOf(custodianIdentity.getPrincipal())))).forEach(result => {
     t.deepEqual(result, {Ok: BigInt(3)});
   });
 
   // verify ownerOf
   (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(1))))).forEach(result => {
-    t.deepEqual(result, {Ok: canisterOwnerIdentity.getPrincipal()});
+    t.deepEqual(result, {Ok: custodianIdentity.getPrincipal()});
   });
   (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(2))))).forEach(result => {
-    t.deepEqual(result, {Ok: canisterOwnerIdentity.getPrincipal()});
+    t.deepEqual(result, {Ok: custodianIdentity.getPrincipal()});
   });
   (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(3))))).forEach(result => {
-    t.deepEqual(result, {Ok: canisterOwnerIdentity.getPrincipal()});
+    t.deepEqual(result, {Ok: custodianIdentity.getPrincipal()});
   });
   (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(4))))).forEach(result => {
     t.deepEqual(result, {Ok: aliceIdentity.getPrincipal()});
@@ -1204,48 +1230,56 @@ test.serial("verify transferFrom information.", async t => {
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(1))))).forEach(result => {
     t.like(result, {
       Ok: {
-        owner: canisterOwnerIdentity.getPrincipal(),
+        owner: [custodianIdentity.getPrincipal()],
         operator: [],
         properties: [["A", {Nat64Content: BigInt(9999)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(1),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     });
   });
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(2))))).forEach(result => {
     t.like(result, {
       Ok: {
-        owner: canisterOwnerIdentity.getPrincipal(),
+        owner: [custodianIdentity.getPrincipal()],
         operator: [],
         properties: [["B", {Int64Content: BigInt(1234)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(2),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     });
   });
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(3))))).forEach(result => {
     t.like(result, {
       Ok: {
-        owner: canisterOwnerIdentity.getPrincipal(),
+        owner: [custodianIdentity.getPrincipal()],
         operator: [],
         properties: [["C", {Int32Content: 5678}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(3),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     });
   });
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(4))))).forEach(result => {
     t.like(result, {
       Ok: {
-        owner: aliceIdentity.getPrincipal(),
+        owner: [aliceIdentity.getPrincipal()],
         operator: [],
         properties: [["D", {TextContent: "∆≈ç√∫"}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(4),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     });
   });
@@ -1256,50 +1290,58 @@ test.serial("verify transferFrom information.", async t => {
       t.true("Ok" in result);
       t.is((result as {Ok: Array<TokenMetadata>}).Ok.length, 1);
       t.like((result as {Ok: Array<TokenMetadata>}).Ok[0], {
-        owner: aliceIdentity.getPrincipal(),
+        owner: [aliceIdentity.getPrincipal()],
         operator: [],
         properties: [["D", {TextContent: "∆≈ç√∫"}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(4),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       });
     }
   );
-  (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(canisterOwnerIdentity.getPrincipal())))).forEach(
+  (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(custodianIdentity.getPrincipal())))).forEach(
     result => {
       t.true("Ok" in result);
       t.is((result as {Ok: Array<TokenMetadata>}).Ok.length, 3);
       t.like(
         (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(1)),
         {
-          owner: canisterOwnerIdentity.getPrincipal(),
+          owner: [custodianIdentity.getPrincipal()],
           operator: [],
           properties: [["A", {Nat64Content: BigInt(9999)}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(1),
-          minted_by: canisterOwnerIdentity.getPrincipal(),
-          transferred_by: [canisterOwnerIdentity.getPrincipal()]
+          minted_by: custodianIdentity.getPrincipal(),
+          transferred_by: [custodianIdentity.getPrincipal()]
         }
       );
       t.like(
         (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(2)),
         {
-          owner: canisterOwnerIdentity.getPrincipal(),
+          owner: [custodianIdentity.getPrincipal()],
           operator: [],
           properties: [["B", {Int64Content: BigInt(1234)}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(2),
-          minted_by: canisterOwnerIdentity.getPrincipal(),
-          transferred_by: [canisterOwnerIdentity.getPrincipal()]
+          minted_by: custodianIdentity.getPrincipal(),
+          transferred_by: [custodianIdentity.getPrincipal()]
         }
       );
       t.like(
         (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(3)),
         {
-          owner: canisterOwnerIdentity.getPrincipal(),
+          owner: [custodianIdentity.getPrincipal()],
           operator: [],
           properties: [["C", {Int32Content: 5678}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(3),
-          minted_by: canisterOwnerIdentity.getPrincipal(),
-          transferred_by: [canisterOwnerIdentity.getPrincipal()]
+          minted_by: custodianIdentity.getPrincipal(),
+          transferred_by: [custodianIdentity.getPrincipal()]
         }
       );
     }
@@ -1309,17 +1351,15 @@ test.serial("verify transferFrom information.", async t => {
   (await Promise.all(allActors.map(actor => actor.ownerTokenIds(aliceIdentity.getPrincipal())))).forEach(result => {
     t.deepEqual(result, {Ok: [BigInt(4)]});
   });
-  (await Promise.all(allActors.map(actor => actor.ownerTokenIds(canisterOwnerIdentity.getPrincipal())))).forEach(
-    result => {
-      t.true((result as {Ok: Array<bigint>}).Ok.includes(BigInt(1)));
-      t.true((result as {Ok: Array<bigint>}).Ok.includes(BigInt(2)));
-      t.true((result as {Ok: Array<bigint>}).Ok.includes(BigInt(3)));
-    }
-  );
+  (await Promise.all(allActors.map(actor => actor.ownerTokenIds(custodianIdentity.getPrincipal())))).forEach(result => {
+    t.true((result as {Ok: Array<bigint>}).Ok.includes(BigInt(1)));
+    t.true((result as {Ok: Array<bigint>}).Ok.includes(BigInt(2)));
+    t.true((result as {Ok: Array<bigint>}).Ok.includes(BigInt(3)));
+  });
 });
 
 test.serial("error on self transfer.", async t => {
-  t.deepEqual(await canisterOwnerActor.transfer(canisterOwnerIdentity.getPrincipal(), BigInt(1)), {
+  t.deepEqual(await custodianActor.transfer(custodianIdentity.getPrincipal(), BigInt(1)), {
     Err: {SelfTransfer: null}
   });
   t.deepEqual(await aliceActor.transfer(aliceIdentity.getPrincipal(), BigInt(2)), {
@@ -1335,28 +1375,28 @@ test.serial("error on self transfer.", async t => {
 
 // invalid owner
 test.serial("error on unauthorize owner when transfer.", async t => {
-  t.deepEqual(await aliceActor.transfer(canisterOwnerIdentity.getPrincipal(), BigInt(1)), {
+  t.deepEqual(await aliceActor.transfer(custodianIdentity.getPrincipal(), BigInt(1)), {
     Err: {Unauthorized: null}
   });
-  t.deepEqual(await aliceActor.transfer(canisterOwnerIdentity.getPrincipal(), BigInt(2)), {
+  t.deepEqual(await aliceActor.transfer(custodianIdentity.getPrincipal(), BigInt(2)), {
     Err: {Unauthorized: null}
   });
-  t.deepEqual(await bobActor.transfer(canisterOwnerIdentity.getPrincipal(), BigInt(3)), {
+  t.deepEqual(await bobActor.transfer(custodianIdentity.getPrincipal(), BigInt(3)), {
     Err: {Unauthorized: null}
   });
-  t.deepEqual(await johnActor.transfer(canisterOwnerIdentity.getPrincipal(), BigInt(4)), {
+  t.deepEqual(await johnActor.transfer(custodianIdentity.getPrincipal(), BigInt(4)), {
     Err: {Unauthorized: null}
   });
 });
 
 test.serial("transfer.", async t => {
-  t.deepEqual(await canisterOwnerActor.transfer(johnIdentity.getPrincipal(), BigInt(1)), {
+  t.deepEqual(await custodianActor.transfer(johnIdentity.getPrincipal(), BigInt(1)), {
     Ok: BigInt(17)
   });
-  t.deepEqual(await canisterOwnerActor.transfer(johnIdentity.getPrincipal(), BigInt(2)), {
+  t.deepEqual(await custodianActor.transfer(johnIdentity.getPrincipal(), BigInt(2)), {
     Ok: BigInt(18)
   });
-  t.deepEqual(await canisterOwnerActor.transfer(bobIdentity.getPrincipal(), BigInt(3)), {
+  t.deepEqual(await custodianActor.transfer(bobIdentity.getPrincipal(), BigInt(3)), {
     Ok: BigInt(19)
   });
   t.deepEqual(await aliceActor.transfer(bobIdentity.getPrincipal(), BigInt(4)), {
@@ -1370,9 +1410,9 @@ test.serial("verify transfer transactions.", async t => {
     t.like(result, {
       Ok: {
         operation: "transfer",
-        caller: canisterOwnerIdentity.getPrincipal(),
+        caller: custodianIdentity.getPrincipal(),
         details: [
-          ["owner", {Principal: canisterOwnerIdentity.getPrincipal()}],
+          ["owner", {Principal: custodianIdentity.getPrincipal()}],
           ["to", {Principal: johnIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(1)}]
         ]
@@ -1383,9 +1423,9 @@ test.serial("verify transfer transactions.", async t => {
     t.like(result, {
       Ok: {
         operation: "transfer",
-        caller: canisterOwnerIdentity.getPrincipal(),
+        caller: custodianIdentity.getPrincipal(),
         details: [
-          ["owner", {Principal: canisterOwnerIdentity.getPrincipal()}],
+          ["owner", {Principal: custodianIdentity.getPrincipal()}],
           ["to", {Principal: johnIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(2)}]
         ]
@@ -1396,9 +1436,9 @@ test.serial("verify transfer transactions.", async t => {
     t.like(result, {
       Ok: {
         operation: "transfer",
-        caller: canisterOwnerIdentity.getPrincipal(),
+        caller: custodianIdentity.getPrincipal(),
         details: [
-          ["owner", {Principal: canisterOwnerIdentity.getPrincipal()}],
+          ["owner", {Principal: custodianIdentity.getPrincipal()}],
           ["to", {Principal: bobIdentity.getPrincipal()}],
           ["token_identifier", {NatContent: BigInt(3)}]
         ]
@@ -1464,47 +1504,55 @@ test.serial("verify transfer information.", async t => {
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(1))))).forEach(result => {
     t.like(result, {
       Ok: {
-        owner: johnIdentity.getPrincipal(),
+        owner: [johnIdentity.getPrincipal()],
         operator: [],
         properties: [["A", {Nat64Content: BigInt(9999)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(1),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     });
   });
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(2))))).forEach(result => {
     t.like(result, {
       Ok: {
-        owner: johnIdentity.getPrincipal(),
+        owner: [johnIdentity.getPrincipal()],
         operator: [],
         properties: [["B", {Int64Content: BigInt(1234)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(2),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     });
   });
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(3))))).forEach(result => {
     t.like(result, {
       Ok: {
-        owner: bobIdentity.getPrincipal(),
+        owner: [bobIdentity.getPrincipal()],
         operator: [],
         properties: [["C", {Int32Content: 5678}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(3),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     });
   });
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(4))))).forEach(result => {
     t.like(result, {
       Ok: {
-        owner: bobIdentity.getPrincipal(),
+        owner: [bobIdentity.getPrincipal()],
         operator: [],
         properties: [["D", {TextContent: "∆≈ç√∫"}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(4),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
+        minted_by: custodianIdentity.getPrincipal(),
         transferred_by: [aliceIdentity.getPrincipal()]
       }
     });
@@ -1517,23 +1565,27 @@ test.serial("verify transfer information.", async t => {
     t.like(
       (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(1)),
       {
-        owner: johnIdentity.getPrincipal(),
+        owner: [johnIdentity.getPrincipal()],
         operator: [],
         properties: [["A", {Nat64Content: BigInt(9999)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(1),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     );
     t.like(
       (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(2)),
       {
-        owner: johnIdentity.getPrincipal(),
+        owner: [johnIdentity.getPrincipal()],
         operator: [],
         properties: [["B", {Int64Content: BigInt(1234)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(2),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     );
   });
@@ -1543,22 +1595,26 @@ test.serial("verify transfer information.", async t => {
     t.like(
       (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(3)),
       {
-        owner: bobIdentity.getPrincipal(),
+        owner: [bobIdentity.getPrincipal()],
         operator: [],
         properties: [["C", {Int32Content: 5678}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(3),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     );
     t.like(
       (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(4)),
       {
-        owner: bobIdentity.getPrincipal(),
+        owner: [bobIdentity.getPrincipal()],
         operator: [],
         properties: [["D", {TextContent: "∆≈ç√∫"}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(4),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
+        minted_by: custodianIdentity.getPrincipal(),
         transferred_by: [aliceIdentity.getPrincipal()]
       }
     );
@@ -1660,47 +1716,55 @@ test.serial("verify setApprovalForAll(true) information.", async t => {
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(1))))).forEach(result => {
     t.like(result, {
       Ok: {
-        owner: johnIdentity.getPrincipal(),
+        owner: [johnIdentity.getPrincipal()],
         operator: [bobIdentity.getPrincipal()],
         properties: [["A", {Nat64Content: BigInt(9999)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(1),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     });
   });
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(2))))).forEach(result => {
     t.like(result, {
       Ok: {
-        owner: johnIdentity.getPrincipal(),
+        owner: [johnIdentity.getPrincipal()],
         operator: [bobIdentity.getPrincipal()],
         properties: [["B", {Int64Content: BigInt(1234)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(2),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     });
   });
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(3))))).forEach(result => {
     t.like(result, {
       Ok: {
-        owner: bobIdentity.getPrincipal(),
+        owner: [bobIdentity.getPrincipal()],
         operator: [johnIdentity.getPrincipal()],
         properties: [["C", {Int32Content: 5678}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(3),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     });
   });
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(4))))).forEach(result => {
     t.like(result, {
       Ok: {
-        owner: bobIdentity.getPrincipal(),
+        owner: [bobIdentity.getPrincipal()],
         operator: [johnIdentity.getPrincipal()],
         properties: [["D", {TextContent: "∆≈ç√∫"}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(4),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
+        minted_by: custodianIdentity.getPrincipal(),
         transferred_by: [aliceIdentity.getPrincipal()]
       }
     });
@@ -1713,23 +1777,27 @@ test.serial("verify setApprovalForAll(true) information.", async t => {
     t.like(
       (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(1)),
       {
-        owner: johnIdentity.getPrincipal(),
+        owner: [johnIdentity.getPrincipal()],
         operator: [bobIdentity.getPrincipal()],
         properties: [["A", {Nat64Content: BigInt(9999)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(1),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     );
     t.like(
       (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(2)),
       {
-        owner: johnIdentity.getPrincipal(),
+        owner: [johnIdentity.getPrincipal()],
         operator: [bobIdentity.getPrincipal()],
         properties: [["B", {Int64Content: BigInt(1234)}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(2),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     );
   });
@@ -1739,22 +1807,26 @@ test.serial("verify setApprovalForAll(true) information.", async t => {
     t.like(
       (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(3)),
       {
-        owner: bobIdentity.getPrincipal(),
+        owner: [bobIdentity.getPrincipal()],
         operator: [johnIdentity.getPrincipal()],
         properties: [["C", {Int32Content: 5678}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(3),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
-        transferred_by: [canisterOwnerIdentity.getPrincipal()]
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()]
       }
     );
     t.like(
       (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(4)),
       {
-        owner: bobIdentity.getPrincipal(),
+        owner: [bobIdentity.getPrincipal()],
         operator: [johnIdentity.getPrincipal()],
         properties: [["D", {TextContent: "∆≈ç√∫"}]],
+        is_burned: false,
+        burned_by: [],
         token_identifier: BigInt(4),
-        minted_by: canisterOwnerIdentity.getPrincipal(),
+        minted_by: custodianIdentity.getPrincipal(),
         transferred_by: [aliceIdentity.getPrincipal()]
       }
     );
@@ -1778,23 +1850,27 @@ test.serial("verify setApprovalForAll(true) information.", async t => {
       t.like(
         (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(4)),
         {
-          owner: bobIdentity.getPrincipal(),
+          owner: [bobIdentity.getPrincipal()],
           operator: [johnIdentity.getPrincipal()],
           properties: [["D", {TextContent: "∆≈ç√∫"}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(4),
-          minted_by: canisterOwnerIdentity.getPrincipal(),
+          minted_by: custodianIdentity.getPrincipal(),
           transferred_by: [aliceIdentity.getPrincipal()]
         }
       );
       t.like(
         (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(3)),
         {
-          owner: bobIdentity.getPrincipal(),
+          owner: [bobIdentity.getPrincipal()],
           operator: [johnIdentity.getPrincipal()],
           properties: [["C", {Int32Content: 5678}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(3),
-          minted_by: canisterOwnerIdentity.getPrincipal(),
-          transferred_by: [canisterOwnerIdentity.getPrincipal()]
+          minted_by: custodianIdentity.getPrincipal(),
+          transferred_by: [custodianIdentity.getPrincipal()]
         }
       );
     }
@@ -1806,23 +1882,27 @@ test.serial("verify setApprovalForAll(true) information.", async t => {
       t.like(
         (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(2)),
         {
-          owner: johnIdentity.getPrincipal(),
+          owner: [johnIdentity.getPrincipal()],
           operator: [bobIdentity.getPrincipal()],
           properties: [["B", {Int64Content: BigInt(1234)}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(2),
-          minted_by: canisterOwnerIdentity.getPrincipal(),
-          transferred_by: [canisterOwnerIdentity.getPrincipal()]
+          minted_by: custodianIdentity.getPrincipal(),
+          transferred_by: [custodianIdentity.getPrincipal()]
         }
       );
       t.like(
         (result as {Ok: Array<TokenMetadata>}).Ok.find(tokenMetadata => tokenMetadata.token_identifier === BigInt(1)),
         {
-          owner: johnIdentity.getPrincipal(),
+          owner: [johnIdentity.getPrincipal()],
           operator: [bobIdentity.getPrincipal()],
           properties: [["A", {Nat64Content: BigInt(9999)}]],
+          is_burned: false,
+          burned_by: [],
           token_identifier: BigInt(1),
-          minted_by: canisterOwnerIdentity.getPrincipal(),
-          transferred_by: [canisterOwnerIdentity.getPrincipal()]
+          minted_by: custodianIdentity.getPrincipal(),
+          transferred_by: [custodianIdentity.getPrincipal()]
         }
       );
     }
@@ -1953,5 +2033,220 @@ test.serial("error on query non-existed operator (operator removed from tokenMet
   );
   (await Promise.all(allActors.map(actor => actor.operatorTokenIds(bobIdentity.getPrincipal())))).forEach(result =>
     t.deepEqual(result, {Err: {OperatorNotFound: null}})
+  );
+});
+
+test.serial("burn NFTs.", async t => {
+  t.deepEqual(await johnActor.burn(BigInt(1)), {Ok: BigInt(25)});
+  t.deepEqual(await bobActor.burn(BigInt(3)), {Ok: BigInt(26)});
+  t.deepEqual(await johnActor.burn(BigInt(2)), {Ok: BigInt(27)});
+  t.deepEqual(await bobActor.burn(BigInt(4)), {Ok: BigInt(28)});
+});
+
+test.serial("verify burn transactions.", async t => {
+  // verify transaction
+  (await Promise.all(allActors.map(actor => actor.transaction(BigInt(25))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        operation: "burn",
+        caller: johnIdentity.getPrincipal(),
+        details: [["token_identifier", {NatContent: BigInt(1)}]]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.transaction(BigInt(26))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        operation: "burn",
+        caller: bobIdentity.getPrincipal(),
+        details: [["token_identifier", {NatContent: BigInt(3)}]]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.transaction(BigInt(27))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        operation: "burn",
+        caller: johnIdentity.getPrincipal(),
+        details: [["token_identifier", {NatContent: BigInt(2)}]]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.transaction(BigInt(28))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        operation: "burn",
+        caller: bobIdentity.getPrincipal(),
+        details: [["token_identifier", {NatContent: BigInt(4)}]]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(28));
+  });
+});
+
+test.serial("verify burn information.", async t => {
+  // verify totalSupply
+  (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
+    t.is(result, BigInt(4));
+  });
+
+  // verify balanceOf
+  (await Promise.all(allActors.map(actor => actor.balanceOf(aliceIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OwnerNotFound: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.balanceOf(bobIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OwnerNotFound: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.balanceOf(johnIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OwnerNotFound: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.balanceOf(custodianIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OwnerNotFound: null}});
+  });
+
+  // verify ownerOf
+  (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(1))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(2))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(3))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(4))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+
+  // verify operatorOf
+  (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(1))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(2))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(3))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(4))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+
+  // verify token
+  (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(1))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        owner: [],
+        operator: [],
+        properties: [["A", {Nat64Content: BigInt(9999)}]],
+        is_burned: true,
+        token_identifier: BigInt(1),
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()],
+        burned_by: [johnIdentity.getPrincipal()]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(2))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        owner: [],
+        operator: [],
+        properties: [["B", {Int64Content: BigInt(1234)}]],
+        is_burned: true,
+        token_identifier: BigInt(2),
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()],
+        burned_by: [johnIdentity.getPrincipal()]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(3))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        owner: [],
+        operator: [],
+        properties: [["C", {Int32Content: 5678}]],
+        is_burned: true,
+        token_identifier: BigInt(3),
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [custodianIdentity.getPrincipal()],
+        burned_by: [bobIdentity.getPrincipal()]
+      }
+    });
+  });
+  (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(4))))).forEach(result => {
+    t.like(result, {
+      Ok: {
+        owner: [],
+        operator: [],
+        properties: [["D", {TextContent: "∆≈ç√∫"}]],
+        is_burned: true,
+        token_identifier: BigInt(4),
+        minted_by: custodianIdentity.getPrincipal(),
+        transferred_by: [aliceIdentity.getPrincipal()],
+        burned_by: [bobIdentity.getPrincipal()]
+      }
+    });
+  });
+
+  // verify ownerTokenMetadata
+  (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(aliceIdentity.getPrincipal())))).forEach(result =>
+    t.deepEqual(result, {Err: {OwnerNotFound: null}})
+  );
+  (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(bobIdentity.getPrincipal())))).forEach(result =>
+    t.deepEqual(result, {Err: {OwnerNotFound: null}})
+  );
+  (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(johnIdentity.getPrincipal())))).forEach(result =>
+    t.deepEqual(result, {Err: {OwnerNotFound: null}})
+  );
+  (await Promise.all(allActors.map(actor => actor.ownerTokenMetadata(custodianIdentity.getPrincipal())))).forEach(
+    result => t.deepEqual(result, {Err: {OwnerNotFound: null}})
+  );
+
+  // verify operatorTokenMetadata
+  (await Promise.all(allActors.map(actor => actor.operatorTokenMetadata(aliceIdentity.getPrincipal())))).forEach(
+    result => t.deepEqual(result, {Err: {OperatorNotFound: null}})
+  );
+  (await Promise.all(allActors.map(actor => actor.operatorTokenMetadata(bobIdentity.getPrincipal())))).forEach(result =>
+    t.deepEqual(result, {Err: {OperatorNotFound: null}})
+  );
+  (await Promise.all(allActors.map(actor => actor.operatorTokenMetadata(johnIdentity.getPrincipal())))).forEach(
+    result => t.deepEqual(result, {Err: {OperatorNotFound: null}})
+  );
+  (await Promise.all(allActors.map(actor => actor.operatorTokenMetadata(custodianIdentity.getPrincipal())))).forEach(
+    result => t.deepEqual(result, {Err: {OperatorNotFound: null}})
+  );
+
+  // verify ownerTokenIds
+  (await Promise.all(allActors.map(actor => actor.ownerTokenIds(aliceIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OwnerNotFound: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerTokenIds(bobIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OwnerNotFound: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerTokenIds(johnIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OwnerNotFound: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerTokenIds(custodianIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OwnerNotFound: null}});
+  });
+
+  // verify operatorTokenIds
+  (await Promise.all(allActors.map(actor => actor.operatorTokenIds(aliceIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OperatorNotFound: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorTokenIds(bobIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OperatorNotFound: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorTokenIds(johnIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OperatorNotFound: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorTokenIds(custodianIdentity.getPrincipal())))).forEach(
+    result => {
+      t.deepEqual(result, {Err: {OperatorNotFound: null}});
+    }
   );
 });
