@@ -23,7 +23,7 @@ simple, non-ambiguous, extendable API for the transfer and tracking ownership of
 - [Deprecated Interface & Data Structure](#-deprecated-interface--data-structure)
   - [Deprecated Data Structures](#deprecated-data-structure)
   - [Deprecated Methods](#deprecated-methods)
-  - [Migration example](#-migration-example)
+  - [Migration example](#migration-example)
 
 <br>
 
@@ -979,7 +979,7 @@ location field is missing - Embedded in the token contract
 
 ---
 
-## 🏗  Migration example
+### Migration example
 
 Method 1:
 - `pre_upgrade` and `post_upgrade`, check our [example implememtation](./nft-v2/src/migration_example.rs).
