@@ -1,5 +1,6 @@
 // @ts-nocheck
 export const idlFactory = ({ IDL }) => {
+  const Vec = IDL.Rec();
   const InitArgs = IDL.Record({
     'logo' : IDL.Opt(IDL.Text),
     'name' : IDL.Opt(IDL.Text),
@@ -28,6 +29,30 @@ export const idlFactory = ({ IDL }) => {
     'custodians' : IDL.Vec(IDL.Principal),
     'symbol' : IDL.Opt(IDL.Text),
   });
+  Vec.fill(
+    IDL.Vec(
+      IDL.Tuple(
+        IDL.Text,
+        IDL.Variant({
+          'Nat64Content' : IDL.Nat64,
+          'Nat32Content' : IDL.Nat32,
+          'BoolContent' : IDL.Bool,
+          'Nat8Content' : IDL.Nat8,
+          'Int64Content' : IDL.Int64,
+          'IntContent' : IDL.Int,
+          'NatContent' : IDL.Nat,
+          'Nat16Content' : IDL.Nat16,
+          'Int32Content' : IDL.Int32,
+          'Int8Content' : IDL.Int8,
+          'Int16Content' : IDL.Int16,
+          'BlobContent' : IDL.Vec(IDL.Nat8),
+          'NestedContent' : Vec,
+          'Principal' : IDL.Principal,
+          'TextContent' : IDL.Text,
+        }),
+      )
+    )
+  );
   const GenericValue = IDL.Variant({
     'Nat64Content' : IDL.Nat64,
     'Nat32Content' : IDL.Nat32,
@@ -41,6 +66,7 @@ export const idlFactory = ({ IDL }) => {
     'Int8Content' : IDL.Int8,
     'Int16Content' : IDL.Int16,
     'BlobContent' : IDL.Vec(IDL.Nat8),
+    'NestedContent' : Vec,
     'Principal' : IDL.Principal,
     'TextContent' : IDL.Text,
   });

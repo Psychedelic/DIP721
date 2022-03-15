@@ -485,7 +485,20 @@ totalTransactions : () -> (nat) query;
 
 These are the data structures that must be used when interacting with a DIP721 canister.
 
-### Generic Value
+### Metadata
+
+```
+type Metadata = record {
+  logo : opt text;
+  name : opt text;
+  created_at : nat64;
+  upgraded_at : nat64;
+  custodians : vec principal;
+  symbol : opt text;
+};
+```
+
+### GenericValue
 
 ```
 type GenericValue = variant {
