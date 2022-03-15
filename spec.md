@@ -429,6 +429,8 @@ If the mint goes through, returns a `Nat` that represents the CAP History transa
 mint : (principal, nat, vec record { text; GenericValue }) -> (variant { Ok : nat; Err : NftError });
 ```
 
+An example on how to mint a single nft is provided in the [mint-example.md](./docs/mint-example.md)
+
 ---
 
 ### 🔥 Burn Interface
@@ -683,6 +685,18 @@ from the caller's balance.
 This section encompases the data structures and interface methods that we deprecated when going from v1 --> v2 of DIP721.
 
 If you are currently using deprecated methods or data structures, we strongly suggest you migrate to the current implementations to ensure interoperability between your canisters and other canisters interacting with DIP721.
+
+### Migration example
+
+Method 1:
+- `pre_upgrade` and `post_upgrade`, check our [example implememtation](./nft-v2/src/migration_example.rs).
+
+<br>
+
+Method 2:
+- stop canister, backup / download state
+- migrate data offline
+- manual import/restore canister state
 
 ### Deprecated Methods
 
@@ -976,19 +990,3 @@ TextContent(<URI of the NFT location on the Web>) - URI
 location field is missing - Embedded in the token contract
 ```
 <br>
-
----
-
-### Migration example
-
-Method 1:
-- `pre_upgrade` and `post_upgrade`, check our [example implememtation](./nft-v2/src/migration_example.rs).
-
-<br>
-
-Method 2:
-- stop canister, backup / download state
-- migrate data offline
-- manual import/restore canister state
-
----
