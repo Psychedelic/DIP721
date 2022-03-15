@@ -20,7 +20,7 @@ simple, non-ambiguous, extendable API for the transfer and tracking ownership of
   - [History Interface](#-history-interface)
 - [Data Structure Specification](#data-structure-specification)
 - [Fees](#-fees)
-- [Deprecated Interface & Data Structure](#🗑-deprecated-interface--data-structure)
+- [Deprecated Interface & Data Structure](#-deprecated-interface--data-structure)
   - [Deprecated Data Structures](#deprecated-data-structure)
   - [Deprecated Methods](#deprecated-methods)
   - [Migration example](#-migration-example)
