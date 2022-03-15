@@ -514,6 +514,7 @@ type GenericValue = variant {
   Int8Content : int8;
   Int16Content : int16;
   BlobContent : vec nat8;
+  NestedContent : Vec;
   Principal : principal;
   TextContent : text;
 };
@@ -633,6 +634,31 @@ type TxEvent = record {
   operation : text;
   details : vec record { text; GenericValue };
   caller : principal;
+};
+```
+
+### Vec
+
+```
+type Vec = vec record {
+  text;
+  variant {
+    Nat64Content : nat64;
+    Nat32Content : nat32;
+    BoolContent : bool;
+    Nat8Content : nat8;
+    Int64Content : int64;
+    IntContent : int;
+    NatContent : nat;
+    Nat16Content : nat16;
+    Int32Content : int32;
+    Int8Content : int8;
+    Int16Content : int16;
+    BlobContent : vec nat8;
+    NestedContent : Vec;
+    Principal : principal;
+    TextContent : text;
+  };
 };
 ```
 
