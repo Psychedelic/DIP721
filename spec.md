@@ -190,7 +190,7 @@ Returns the `Metadata` for `token_identifier`.
 or Returns `NftError` when error.
 
 ```
-tokenMetadata : (nat) -> (variant { Ok : vec TokenMetadata; Err : NftError }) query;
+tokenMetadata : (nat) -> (variant { Ok : TokenMetadata; Err : NftError }) query;
 ```
 
 <br>
