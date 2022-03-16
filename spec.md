@@ -21,9 +21,9 @@ simple, non-ambiguous, extendable API for the transfer and tracking ownership of
 - [Data Structure Specification](#data-structure-specification)
 - [Fees](#-fees)
 - [Deprecated Interface & Data Structure](#-deprecated-interface--data-structure)
+  - [Migration example](#migration-example)
   - [Deprecated Data Structures](#deprecated-data-structure)
   - [Deprecated Methods](#deprecated-methods)
-  - [Migration example](#migration-example)
 
 <br>
 
