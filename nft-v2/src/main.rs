@@ -1,4 +1,4 @@
-// TODO: use MutualReply when new ic_cdk version release
+// TODO: use ManualReply when new ic_cdk version release
 // https://github.com/dfinity/cdk-rs/pull/210/files
 use ic_cdk::api::{caller, time, trap};
 use ic_cdk::export::candid::{candid_method, CandidType, Deserialize, Int, Nat};
@@ -45,6 +45,7 @@ enum GenericValue {
     Int16Content(i16),
     Int32Content(i32),
     Int64Content(i64),
+    NestedContent(Vec<(String, GenericValue)>),
 }
 
 // Please notice that the example of internal data structure as below doesn't represent your final storage, please use with caution.

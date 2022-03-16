@@ -2092,48 +2092,6 @@ test.serial("verify burn information.", async t => {
     t.is(result, BigInt(4));
   });
 
-  // verify balanceOf
-  (await Promise.all(allActors.map(actor => actor.balanceOf(aliceIdentity.getPrincipal())))).forEach(result => {
-    t.deepEqual(result, {Err: {OwnerNotFound: null}});
-  });
-  (await Promise.all(allActors.map(actor => actor.balanceOf(bobIdentity.getPrincipal())))).forEach(result => {
-    t.deepEqual(result, {Err: {OwnerNotFound: null}});
-  });
-  (await Promise.all(allActors.map(actor => actor.balanceOf(johnIdentity.getPrincipal())))).forEach(result => {
-    t.deepEqual(result, {Err: {OwnerNotFound: null}});
-  });
-  (await Promise.all(allActors.map(actor => actor.balanceOf(custodianIdentity.getPrincipal())))).forEach(result => {
-    t.deepEqual(result, {Err: {OwnerNotFound: null}});
-  });
-
-  // verify ownerOf
-  (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(1))))).forEach(result => {
-    t.deepEqual(result, {Err: {BurnedNFT: null}});
-  });
-  (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(2))))).forEach(result => {
-    t.deepEqual(result, {Err: {BurnedNFT: null}});
-  });
-  (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(3))))).forEach(result => {
-    t.deepEqual(result, {Err: {BurnedNFT: null}});
-  });
-  (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(4))))).forEach(result => {
-    t.deepEqual(result, {Err: {BurnedNFT: null}});
-  });
-
-  // verify operatorOf
-  (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(1))))).forEach(result => {
-    t.deepEqual(result, {Err: {BurnedNFT: null}});
-  });
-  (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(2))))).forEach(result => {
-    t.deepEqual(result, {Err: {BurnedNFT: null}});
-  });
-  (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(3))))).forEach(result => {
-    t.deepEqual(result, {Err: {BurnedNFT: null}});
-  });
-  (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(4))))).forEach(result => {
-    t.deepEqual(result, {Err: {BurnedNFT: null}});
-  });
-
   // verify token
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(1))))).forEach(result => {
     t.like(result, {
@@ -2190,6 +2148,50 @@ test.serial("verify burn information.", async t => {
         burned_by: [bobIdentity.getPrincipal()]
       }
     });
+  });
+});
+
+test.serial("error on query - burned NFTs.", async t => {
+  // verify balanceOf
+  (await Promise.all(allActors.map(actor => actor.balanceOf(aliceIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OwnerNotFound: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.balanceOf(bobIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OwnerNotFound: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.balanceOf(johnIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OwnerNotFound: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.balanceOf(custodianIdentity.getPrincipal())))).forEach(result => {
+    t.deepEqual(result, {Err: {OwnerNotFound: null}});
+  });
+
+  // verify ownerOf
+  (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(1))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(2))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(3))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.ownerOf(BigInt(4))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+
+  // verify operatorOf
+  (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(1))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(2))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(3))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
+  });
+  (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(4))))).forEach(result => {
+    t.deepEqual(result, {Err: {BurnedNFT: null}});
   });
 
   // verify ownerTokenMetadata
@@ -2249,4 +2251,83 @@ test.serial("verify burn information.", async t => {
       t.deepEqual(result, {Err: {OperatorNotFound: null}});
     }
   );
+});
+
+test.serial("error on update(mint) - burned NFTs.", async t => {
+  // mint
+  t.deepEqual(await custodianActor.mint(aliceIdentity.getPrincipal(), BigInt(1), [["X", {Int64Content: BigInt(-1)}]]), {
+    Err: {
+      ExistedNFT: null
+    }
+  });
+  t.deepEqual(await custodianActor.mint(bobIdentity.getPrincipal(), BigInt(1), [["Y", {Int64Content: BigInt(-1)}]]), {
+    Err: {
+      ExistedNFT: null
+    }
+  });
+  t.deepEqual(await custodianActor.mint(johnIdentity.getPrincipal(), BigInt(1), [["Z", {Int64Content: BigInt(-1)}]]), {
+    Err: {
+      ExistedNFT: null
+    }
+  });
+  t.deepEqual(
+    await custodianActor.mint(custodianIdentity.getPrincipal(), BigInt(1), [[".", {Int64Content: BigInt(-1)}]]),
+    {
+      Err: {
+        ExistedNFT: null
+      }
+    }
+  );
+});
+
+test.serial("error on update(burn) - burned NFTs.", async t => {
+  // burn
+  t.deepEqual(await aliceActor.burn(BigInt(1)), {Err: {Unauthorized: null}});
+  t.deepEqual(await bobActor.burn(BigInt(3)), {Err: {Unauthorized: null}});
+  t.deepEqual(await johnActor.burn(BigInt(2)), {Err: {Unauthorized: null}});
+  t.deepEqual(await custodianActor.burn(BigInt(4)), {Err: {Unauthorized: null}});
+});
+
+test.serial("error on update(approve) - burned NFTs.", async t => {
+  // approve
+  t.deepEqual(await aliceActor.approve(bobIdentity.getPrincipal(), BigInt(1)), {Err: {Unauthorized: null}});
+  t.deepEqual(await bobActor.approve(johnIdentity.getPrincipal(), BigInt(2)), {Err: {Unauthorized: null}});
+  t.deepEqual(await johnActor.approve(custodianIdentity.getPrincipal(), BigInt(3)), {Err: {Unauthorized: null}});
+  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(4)), {Err: {Unauthorized: null}});
+});
+
+test.serial("error on update(transfer) - burned NFTs.", async t => {
+  // transfer
+  t.deepEqual(await aliceActor.transfer(bobIdentity.getPrincipal(), BigInt(1)), {Err: {Unauthorized: null}});
+  t.deepEqual(await bobActor.transfer(johnIdentity.getPrincipal(), BigInt(2)), {Err: {Unauthorized: null}});
+  t.deepEqual(await johnActor.transfer(custodianIdentity.getPrincipal(), BigInt(3)), {Err: {Unauthorized: null}});
+  t.deepEqual(await custodianActor.transfer(aliceIdentity.getPrincipal(), BigInt(4)), {Err: {Unauthorized: null}});
+});
+
+test.serial("error on update(transferFrom) - burned NFTs.", async t => {
+  // transferFrom
+  t.deepEqual(await aliceActor.transferFrom(bobIdentity.getPrincipal(), johnIdentity.getPrincipal(), BigInt(1)), {
+    Err: {Unauthorized: null}
+  });
+  t.deepEqual(await bobActor.transferFrom(johnIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(2)), {
+    Err: {Unauthorized: null}
+  });
+  t.deepEqual(await johnActor.transferFrom(custodianIdentity.getPrincipal(), aliceIdentity.getPrincipal(), BigInt(3)), {
+    Err: {Unauthorized: null}
+  });
+  t.deepEqual(await custodianActor.transferFrom(aliceIdentity.getPrincipal(), bobIdentity.getPrincipal(), BigInt(4)), {
+    Err: {Unauthorized: null}
+  });
+});
+
+test.serial("error on update(setApprovalForAll) - burned NFTs.", async t => {
+  // set_approval_for_all
+  t.deepEqual(await aliceActor.setApprovalForAll(bobIdentity.getPrincipal(), true), {Err: {OwnerNotFound: null}});
+  t.deepEqual(await bobActor.setApprovalForAll(johnIdentity.getPrincipal(), false), {Err: {OwnerNotFound: null}});
+  t.deepEqual(await johnActor.setApprovalForAll(custodianIdentity.getPrincipal(), true), {
+    Err: {OwnerNotFound: null}
+  });
+  t.deepEqual(await custodianActor.setApprovalForAll(aliceIdentity.getPrincipal(), false), {
+    Err: {OwnerNotFound: null}
+  });
 });
