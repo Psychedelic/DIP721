@@ -1,7 +1,7 @@
 #### Mint example
 
 ```
-$ dfx canister --network ic call nft-v2 mint \
+$ dfx canister --network ic call nft mint \
   "(
     principal \"v4ehh-6sqi7-irvn2-s43ef-enl26-h7vtu-kymgf-ikejl-k7mdv-wypuo-kqe\",
     1:nat,
