@@ -71,7 +71,7 @@ jobs:
         with:
           path: |
             /usr/local/lib/node_modules
-            $(pwd)/nft/test/node_modules
+            $(pwd)/test/node_modules
           key: cache-cache-npm-integration-tests-${{ hashFiles('package.json') }}
 
       - name: Install global npm modules
@@ -84,7 +84,7 @@ jobs:
         with:
           path: |
             /usr/local/lib/node_modules
-            $(pwd)/nft/test/node_modules
+            $(pwd)/test/node_modules
           key: cache-didc-${{ hashFiles('package.json') }}
 
       - name: Candid didc install
