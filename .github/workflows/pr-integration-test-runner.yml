@@ -58,8 +58,7 @@ jobs:
 
       - name: Install global npm modules
         if: steps.cache-npm-integration-tests.outputs.cache-hit != 'true'
-        run: |
-          cd nft/test && npm install
+        run: cd test && npm install
 
       - name: Cache npm modules
         id: cache-didc
