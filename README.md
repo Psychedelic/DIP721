@@ -34,7 +34,7 @@ Checkout our [implementation example (Rust)](./src/main.rs)
 
 Mokoto implementation example will be available soon.
 
-Checkout out [installation example](Makefile)
+Checkout our [installation example](Makefile)
 
 Checkout our [test and usage example](./test/integration)
 
