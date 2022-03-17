@@ -8,7 +8,7 @@
 This standard aims to adopt the EIP-721 to the Internet Computer; providing a
 simple, non-ambiguous, extendable API for the transfer and tracking ownership of NFTs and expanding/building upon the EXT standard with partial compatibility.
 
-## 📒 Table of Contents 
+## 📒 Table of Contents
 
 - [Specification](#-specification)
 - [NFT Implementation example](#-nft-implementation-example)
@@ -26,13 +26,17 @@ The document for the [DIP-721](spec.md) is available [here](spec.md).
 
 We'd like to collaborate with the community to provide a better [token standard implementation](spec.md) for the developers on the IC, if you have some ideas you'd like to discuss, submit an issue, if you want to improve the code or you made a different implementation, make a pull request by following our [contribution guideline](#-Contributing), please!
 
-Check the [roadmap](docs/roadmap.md)
-
-## 👩‍🎤 NFT Implementation example
+## 👩 NFT Implementation example
 
 An NFT (non-fungible token) implementation which follows the [DIP-721](spec.md) specification is available and can be used as a base for your projects.
 
-Find more about it [here](docs/nft-example.md)
+Checkout our [implementation example (Rust)](./src/main.rs)
+
+Mokoto implementation example will be available soon.
+
+Checkout our [installation example](Makefile)
+
+Checkout our [test and usage example](./test/integration)
 
 ## 🙏 Contributing
 

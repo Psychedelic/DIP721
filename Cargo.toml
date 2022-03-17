@@ -1,13 +1,12 @@
-[workspace]
-members = [
-    "nft"
-]
-exclude=["nft-v2"]
+[package]
+name = "nft"
+version = "0.1.0"
+authors = ["Psychedelic team <support@fleek.co>"]
+edition = "2018"
 
-[profile.release]
-lto = true
-opt-level = 'z'
-overflow-checks = true
-
-[profile.bench]
-overflow-checks = true
+[dependencies]
+candid = "0.7.4"
+ic-cdk-macros = "0.4"
+ic-cdk = "0.4"
+serde = "1.0.132"
+num-traits = "0.2.14"

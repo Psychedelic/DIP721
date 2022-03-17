@@ -16,7 +16,7 @@ jobs:
     env:
       CI: 1
       DEBUG: 0
-      DFX_VERSION: 0.8.4
+      DFX_VERSION: 0.9.2
       DFX_WARNING: -version_check
       NODE_ENV: ci
       DFX_CANDID_RELEASE: 2022-01-06
@@ -26,19 +26,31 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Install Rust
+      - name: Cache Rust
+        uses: actions/cache@v2
+        id: cache-rust
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Setup toolchain
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
-          target: wasm32-unknown-unknown
+          components: rustfmt, clippy
+          default: true
           override: true
+          target: wasm32-unknown-unknown
 
-      - name: Adds ic-cdk-optimizer
-        run: |
-          cd ./.bin/stable-x86_64-unknown-linux-gnu
-          gzip -d ic-cdk-optimizer.gz
-          cp ic-cdk-optimizer /usr/local/bin
+      # - name: Install ic-cdk-optimizer
+        # if: steps.cache-rust.outputs.cache-hit != 'true'
+        # run: cargo install ic-cdk-optimizer
 
       - name: Cache Dfx
         id: cache-dfx
@@ -59,22 +71,12 @@ jobs:
         with:
           path: |
             /usr/local/lib/node_modules
-            $(pwd)/nft-v2/test/node_modules
-          key: cache-cache-npm-integration-tests-${{ hashFiles('package.json') }}
+            $(pwd)/test/node_modules
+          key: cache-cache-npm-integration-tests-${{ hashFiles('./test/package.json') }}
 
       - name: Install global npm modules
         if: steps.cache-npm-integration-tests.outputs.cache-hit != 'true'
-        run: |
-          cd nft-v2/test && npm install
-
-      - name: Cache npm modules
-        id: cache-didc
-        uses: actions/cache@v2
-        with:
-          path: |
-            /usr/local/lib/node_modules
-            $(pwd)/nft-v2/test/node_modules
-          key: cache-didc-${{ hashFiles('package.json') }}
+        run: cd test && npm install
 
       - name: Candid didc install
         if: steps.cache-didc.outputs.cache-hit != 'true'
@@ -84,4 +86,4 @@ jobs:
           ln -s "$(pwd)/didc-linux64" /usr/local/bin/didc
 
       - name: Integration tests
-        run: cd nft-v2 && make lint && make test
+        run: make lint && make test

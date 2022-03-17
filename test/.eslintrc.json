@@ -1,0 +1,66 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "sonarjs", "import", "promise"],
+  "env": {
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:sonarjs/recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "plugin:promise/recommended",
+    "prettier"
+  ],
+  "ignorePatterns": ["src/actor/factory*"],
+  "rules": {
+    "import/no-named-as-default-member": "off",
+    "import/no-named-as-default": ["error"],
+    "eqeqeq": ["error"],
+    "prefer-const": ["error"],
+    "object-shorthand": ["error", "always"],
+    "guard-for-in": ["error"],
+    "no-param-reassign": ["error"],
+    "prefer-rest-params": ["error"],
+    "spaced-comment": ["error", "always", {"exceptions": ["-"]}],
+    "prefer-arrow-callback": ["error"],
+    "arrow-parens": ["error", "as-needed"],
+    "no-confusing-arrow": ["error"],
+    "arrow-body-style": ["error", "as-needed"],
+    "prefer-template": ["error"],
+    "prefer-destructuring": ["error", {"AssignmentExpression": {"array": false}}],
+    "no-multiple-empty-lines": ["error", {"max": 1, "maxEOF": 0, "maxBOF": 0}],
+    "quotes": ["error", "double", {"avoidEscape": true, "allowTemplateLiterals": true}],
+    "linebreak-style": ["error", "unix"],
+    "eol-last": ["error", "always"],
+    "comma-dangle": ["error", "never"],
+    "semi": ["error", "always"],
+    "max-len": ["error", {"code": 120, "ignoreComments": true, "ignoreTrailingComments": true}],
+    "sort-imports": [
+      "error",
+      {
+        "ignoreCase": false,
+        "ignoreDeclarationSort": false,
+        "ignoreMemberSort": false,
+        "memberSyntaxSortOrder": ["none", "all", "multiple", "single"],
+        "allowSeparatedGroups": false
+      }
+    ]
+  },
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts"]
+    },
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": false
+      }
+    }
+  },
+  "parserOptions": {
+    "warnOnUnsupportedTypeScriptVersion": false
+  }
+}

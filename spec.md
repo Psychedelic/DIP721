@@ -50,7 +50,7 @@ DIP-721 tries to improve on existing Internet Computer standards in the followin
 - Removed the `Dip721` suffix from methods.
 - Token Identifier is now a `Nat` instead of `String` type.
 - Simplified data structures.
-- Added safe Rust data storage practices for our [example implememtation](./nft-v2/src/main.rs).
+- Added safe Rust data storage practices for our [example implememtation](./src/main.rs).
 
 <br>
 
@@ -689,7 +689,7 @@ If you are currently using deprecated methods or data structures, we strongly su
 ### Migration example
 
 Method 1:
-- `pre_upgrade` and `post_upgrade`, check our [example implememtation](./nft-v2/src/migration_example.rs).
+- `pre_upgrade` and `post_upgrade`, check our [example implememtation](./src/migration_example.rs).
 
 <br>
 
