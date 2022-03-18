@@ -83,16 +83,11 @@ struct TxEvent {
 }
 
 impl Ledger {
-    fn add_tx(
-        &mut self,
-        caller: Principal,
-        operation: String,
-        details: Vec<(String, GenericValue)>,
-    ) -> Nat {
+    fn add_tx(&mut self, operation: String, details: Vec<(String, GenericValue)>) -> Nat {
         self.tx_records.push(TxEvent {
             time: time(),
             operation,
-            caller,
+            caller: caller(),
             details,
         });
         Nat::from(self.tx_records.len())
@@ -410,7 +405,6 @@ fn set_approval_for_all(operator: Principal, is_approved: bool) -> Result<Nat, N
 
         // history
         Ok(ledger.add_tx(
-            caller(),
             "setApprovalForAll".into(),
             vec![
                 ("operator".into(), GenericValue::Principal(operator)),
@@ -473,7 +467,6 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
 
         // history
         Ok(ledger.add_tx(
-            caller(),
             "approve".into(),
             vec![
                 ("operator".into(), GenericValue::Principal(operator)),
@@ -546,7 +539,6 @@ fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, Nft
 
         // history
         Ok(ledger.add_tx(
-            caller(),
             "transfer".into(),
             vec![
                 ("owner".into(), GenericValue::Principal(caller())),
@@ -631,7 +623,6 @@ fn transfer_from(
 
         // history
         Ok(ledger.add_tx(
-            caller(),
             "transferFrom".into(),
             vec![
                 ("owner".into(), GenericValue::Principal(owner)),
@@ -685,7 +676,6 @@ fn mint(
 
         // history
         Ok(ledger.add_tx(
-            caller(),
             "mint".into(),
             vec![
                 ("to".into(), GenericValue::Principal(to)),
@@ -745,7 +735,6 @@ fn burn(token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
 
         // history
         Ok(ledger.add_tx(
-            caller(),
             "burn".into(),
             vec![(
                 "token_identifier".into(),

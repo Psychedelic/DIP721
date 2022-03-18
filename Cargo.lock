@@ -307,8 +307,7 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 [[package]]
 name = "ic-cdk"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e511d1a019e620d5a3dc43bead7d3c46912bf4f4bfb1d602059046c7a22bb1e"
+source = "git+https://github.com/dfinity/cdk-rs?rev=a44316600ec1fd918567facd8aa4a650ef765228#a44316600ec1fd918567facd8aa4a650ef765228"
 dependencies = [
  "candid",
  "cfg-if",
@@ -318,8 +317,7 @@ dependencies = [
 [[package]]
 name = "ic-cdk-macros"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a59a186745fd7d96ba2e057f3b3e3038578ae1e82dcb548bd96f48e9e4a39129"
+source = "git+https://github.com/dfinity/cdk-rs?rev=a44316600ec1fd918567facd8aa4a650ef765228#a44316600ec1fd918567facd8aa4a650ef765228"
 dependencies = [
  "candid",
  "ic-cdk",
