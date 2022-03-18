@@ -1,5 +1,6 @@
 // TODO: use ManualReply when new ic_cdk version release
 // https://github.com/dfinity/cdk-rs/pull/210/files
+use ic_cdk::api::call::ManualReply;
 use ic_cdk::api::{caller, time, trap};
 use ic_cdk::export::candid::{candid_method, CandidType, Deserialize, Int, Nat};
 use ic_cdk::export::Principal;
@@ -131,16 +132,16 @@ fn is_canister_custodian() -> Result<(), String> {
     })
 }
 
-#[query(name = "metadata")]
+#[query(name = "metadata", manual_reply = true)]
 #[candid_method(query, rename = "metadata")]
-fn metadata() -> Metadata {
-    METADATA.with(|metadata| metadata.borrow().clone())
+fn metadata() -> ManualReply<Metadata> {
+    METADATA.with(|metadata| ManualReply::one::<&Metadata>(&metadata.borrow()))
 }
 
-#[query(name = "name")]
+#[query(name = "name", manual_reply = true)]
 #[candid_method(query, rename = "name")]
-fn name() -> Option<String> {
-    METADATA.with(|metadata| metadata.borrow().name.clone())
+fn name() -> ManualReply<Option<String>> {
+    METADATA.with(|metadata| ManualReply::one(metadata.borrow().name.as_ref()))
 }
 
 #[update(name = "setName", guard = "is_canister_custodian")]
@@ -149,10 +150,10 @@ fn set_name(name: String) {
     METADATA.with(|metadata| metadata.borrow_mut().name = Some(name));
 }
 
-#[query(name = "logo")]
+#[query(name = "logo", manual_reply = true)]
 #[candid_method(query, rename = "logo")]
-fn logo() -> Option<String> {
-    METADATA.with(|metadata| metadata.borrow().logo.clone())
+fn logo() -> ManualReply<Option<String>> {
+    METADATA.with(|metadata| ManualReply::one(metadata.borrow().logo.as_ref()))
 }
 
 #[update(name = "setLogo", guard = "is_canister_custodian")]
@@ -161,10 +162,10 @@ fn set_logo(logo: String) {
     METADATA.with(|metadata| metadata.borrow_mut().logo = Some(logo));
 }
 
-#[query(name = "symbol")]
+#[query(name = "symbol", manual_reply = true)]
 #[candid_method(query, rename = "symbol")]
-fn symbol() -> Option<String> {
-    METADATA.with(|metadata| metadata.borrow().symbol.clone())
+fn symbol() -> ManualReply<Option<String>> {
+    METADATA.with(|metadata| ManualReply::one(metadata.borrow().symbol.as_ref()))
 }
 
 #[update(name = "setSymbol", guard = "is_canister_custodian")]
@@ -173,10 +174,18 @@ fn set_symbol(symbol: String) {
     METADATA.with(|metadata| metadata.borrow_mut().symbol = Some(symbol))
 }
 
-#[query(name = "custodians")]
+#[query(name = "custodians", manual_reply = true)]
 #[candid_method(query, rename = "custodians")]
-fn custodians() -> HashSet<Principal> {
-    METADATA.with(|metadata| metadata.borrow().custodians.iter().cloned().collect())
+fn custodians() -> ManualReply<HashSet<Principal>> {
+    METADATA.with(|metadata| {
+        ManualReply::one(
+            metadata
+                .borrow()
+                .custodians
+                .iter()
+                .collect::<HashSet<&Principal>>(),
+        )
+    })
 }
 
 #[update(name = "setCustodians", guard = "is_canister_custodian")]
