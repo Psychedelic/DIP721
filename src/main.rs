@@ -767,7 +767,7 @@ fn post_upgrade() {
             Ok((ledger_store,)) => {
                 *ledger = ledger_store;
                 ledger.metadata_mut().upgraded_at = time();
-            },
+            }
             Err(err) => {
                 trap(&format!(
                     "An error occurred when loading from stable memory (post_upgrade): {:?}",
