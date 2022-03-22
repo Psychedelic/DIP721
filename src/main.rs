@@ -764,7 +764,10 @@ fn pre_upgrade() {
 fn post_upgrade() {
     ledger::with_mut(
         |ledger| match ic_cdk::storage::stable_restore::<(ledger::Ledger,)>() {
-            Ok((ledger_store,)) => *ledger = ledger_store,
+            Ok((ledger_store,)) => {
+                *ledger = ledger_store;
+                ledger.metadata_mut().upgraded_at = time();
+            },
             Err(err) => {
                 trap(&format!(
                     "An error occurred when loading from stable memory (post_upgrade): {:?}",
