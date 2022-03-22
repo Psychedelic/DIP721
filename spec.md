@@ -218,12 +218,12 @@ Returns the `Principal` of the owner of the NFT associated with `token_identifie
 Returns an error containing `NftError` if `token_identifier` is invalid.
 
 ```
-ownerOf : (nat) -> (variant { Ok : principal; Err : NftError }) query;
+ownerOf : (nat) -> (variant { Ok : opt principal; Err : NftError }) query;
 ```
 
 <br>
 
-#### ownerTokenIds
+#### ownerTokenIdentifiers
 
 ---
 
@@ -232,7 +232,7 @@ Returns the list of the `token_identifier` of the NFT associated with owner.
 Returns an error containing `NftError` if `principal` is invalid.
 
 ```
-ownerTokenIds : (principal) -> (variant { Ok : vec nat; Err : NftError }) query;
+ownerTokenIdentifiers : (principal) -> (variant { Ok : vec nat; Err : NftError }) query;
 ```
 
 <br>
@@ -260,12 +260,12 @@ Returns the `Principal` of the operator of the NFT associated with `token_identi
 Returns an error containing `NftError` if `token_identifier` is invalid.
 
 ```
-operatorOf : (nat) -> (variant { Ok : principal; Err : NftError }) query;
+operatorOf : (nat) -> (variant { Ok : opt principal; Err : NftError }) query;
 ```
 
 <br>
 
-#### operatorTokenIds
+#### operatorTokenIdentifiers
 
 ---
 
@@ -274,7 +274,7 @@ Returns the list of the `token_identifier` of the NFT associated with operator.
 Returns an error containing `NftError` if `principal` is invalid.
 
 ```
-operatorTokenIds : (principal) -> (variant { Ok : vec nat; Err : NftError }) query;
+operatorTokenIdentifiers : (principal) -> (variant { Ok : vec nat; Err : NftError }) query;
 ```
 
 <br>
@@ -535,6 +535,8 @@ type TokenMetadata = record {
   token_identifier : nat;
   burned_at : opt nat64;
   burned_by : opt principal;
+  approved_at : opt nat64;
+  approved_by : opt principal;
   minted_at : nat64;
   minted_by : principal;
 };
@@ -605,7 +607,6 @@ type NftError = variant {
   SelfTransfer;
   TokenNotFound;
   TxNotFound;
-  BurnedNFT;
   SelfApprove;
   OperatorNotFound;
   Unauthorized;
