@@ -8,12 +8,13 @@ export const idlFactory = ({ IDL }) => {
     'symbol' : IDL.Opt(IDL.Text),
   });
   const NftError = IDL.Variant({
+    'UnauthorizedOperator' : IDL.Null,
     'SelfTransfer' : IDL.Null,
     'TokenNotFound' : IDL.Null,
+    'UnauthorizedOwner' : IDL.Null,
     'TxNotFound' : IDL.Null,
     'SelfApprove' : IDL.Null,
     'OperatorNotFound' : IDL.Null,
-    'Unauthorized' : IDL.Null,
     'ExistedNFT' : IDL.Null,
     'OwnerNotFound' : IDL.Null,
     'Other' : IDL.Text,

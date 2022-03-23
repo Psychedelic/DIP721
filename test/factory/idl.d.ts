@@ -42,12 +42,13 @@ export type ManualReply_6 = { 'Ok' : TokenMetadata } |
   { 'Err' : NftError };
 export type ManualReply_7 = { 'Ok' : TxEvent } |
   { 'Err' : NftError };
-export type NftError = { 'SelfTransfer' : null } |
+export type NftError = { 'UnauthorizedOperator' : null } |
+  { 'SelfTransfer' : null } |
   { 'TokenNotFound' : null } |
+  { 'UnauthorizedOwner' : null } |
   { 'TxNotFound' : null } |
   { 'SelfApprove' : null } |
   { 'OperatorNotFound' : null } |
-  { 'Unauthorized' : null } |
   { 'ExistedNFT' : null } |
   { 'OwnerNotFound' : null } |
   { 'Other' : string };

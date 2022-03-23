@@ -801,10 +801,10 @@ test.serial("error on self approve or approve non-existed operator.", async t =>
 });
 
 test.serial("error on unauthorize owner when approve.", async t => {
-  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(1)), {Err: {Unauthorized: null}});
-  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(2)), {Err: {Unauthorized: null}});
-  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(3)), {Err: {Unauthorized: null}});
-  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(4)), {Err: {Unauthorized: null}});
+  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(1)), {Err: {UnauthorizedOwner: null}});
+  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(2)), {Err: {UnauthorizedOwner: null}});
+  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(3)), {Err: {UnauthorizedOwner: null}});
+  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(4)), {Err: {UnauthorizedOwner: null}});
 });
 
 test.serial("approve NFTs (new operator).", async t => {
@@ -1170,36 +1170,36 @@ test.serial("error on unauthorize owner when transferFrom.", async t => {
   t.deepEqual(
     await custodianActor.transferFrom(custodianIdentity.getPrincipal(), aliceIdentity.getPrincipal(), BigInt(1)),
     {
-      Err: {Unauthorized: null}
+      Err: {UnauthorizedOwner: null}
     }
   );
   t.deepEqual(
     await aliceActor.transferFrom(custodianIdentity.getPrincipal(), aliceIdentity.getPrincipal(), BigInt(2)),
     {
-      Err: {Unauthorized: null}
+      Err: {UnauthorizedOwner: null}
     }
   );
   t.deepEqual(await bobActor.transferFrom(custodianIdentity.getPrincipal(), bobIdentity.getPrincipal(), BigInt(3)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOwner: null}
   });
   t.deepEqual(await johnActor.transferFrom(custodianIdentity.getPrincipal(), johnIdentity.getPrincipal(), BigInt(4)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOwner: null}
   });
 });
 
 // invalid operator
 test.serial("error on unauthorize operator when transferFrom.", async t => {
   t.deepEqual(await bobActor.transferFrom(aliceIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(1)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOperator: null}
   });
   t.deepEqual(await bobActor.transferFrom(aliceIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(2)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOperator: null}
   });
   t.deepEqual(await johnActor.transferFrom(bobIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(3)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOperator: null}
   });
   t.deepEqual(await aliceActor.transferFrom(johnIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(4)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOperator: null}
   });
 });
 
@@ -1493,16 +1493,16 @@ test.serial("error on self transfer.", async t => {
 // invalid owner
 test.serial("error on unauthorize owner when transfer.", async t => {
   t.deepEqual(await aliceActor.transfer(custodianIdentity.getPrincipal(), BigInt(1)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOwner: null}
   });
   t.deepEqual(await aliceActor.transfer(custodianIdentity.getPrincipal(), BigInt(2)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOwner: null}
   });
   t.deepEqual(await bobActor.transfer(custodianIdentity.getPrincipal(), BigInt(3)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOwner: null}
   });
   t.deepEqual(await johnActor.transfer(custodianIdentity.getPrincipal(), BigInt(4)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOwner: null}
   });
 });
 
@@ -2473,41 +2473,41 @@ test.serial("error on update(mint) - burned NFTs.", async t => {
 
 test.serial("error on update(burn) - burned NFTs.", async t => {
   // burn
-  t.deepEqual(await aliceActor.burn(BigInt(1)), {Err: {Unauthorized: null}});
-  t.deepEqual(await bobActor.burn(BigInt(3)), {Err: {Unauthorized: null}});
-  t.deepEqual(await johnActor.burn(BigInt(2)), {Err: {Unauthorized: null}});
-  t.deepEqual(await custodianActor.burn(BigInt(4)), {Err: {Unauthorized: null}});
+  t.deepEqual(await aliceActor.burn(BigInt(1)), {Err: {UnauthorizedOwner: null}});
+  t.deepEqual(await bobActor.burn(BigInt(3)), {Err: {UnauthorizedOwner: null}});
+  t.deepEqual(await johnActor.burn(BigInt(2)), {Err: {UnauthorizedOwner: null}});
+  t.deepEqual(await custodianActor.burn(BigInt(4)), {Err: {UnauthorizedOwner: null}});
 });
 
 test.serial("error on update(approve) - burned NFTs.", async t => {
   // approve
-  t.deepEqual(await aliceActor.approve(bobIdentity.getPrincipal(), BigInt(1)), {Err: {Unauthorized: null}});
-  t.deepEqual(await bobActor.approve(johnIdentity.getPrincipal(), BigInt(2)), {Err: {Unauthorized: null}});
-  t.deepEqual(await johnActor.approve(custodianIdentity.getPrincipal(), BigInt(3)), {Err: {Unauthorized: null}});
-  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(4)), {Err: {Unauthorized: null}});
+  t.deepEqual(await aliceActor.approve(bobIdentity.getPrincipal(), BigInt(1)), {Err: {UnauthorizedOwner: null}});
+  t.deepEqual(await bobActor.approve(johnIdentity.getPrincipal(), BigInt(2)), {Err: {UnauthorizedOwner: null}});
+  t.deepEqual(await johnActor.approve(custodianIdentity.getPrincipal(), BigInt(3)), {Err: {UnauthorizedOwner: null}});
+  t.deepEqual(await custodianActor.approve(aliceIdentity.getPrincipal(), BigInt(4)), {Err: {UnauthorizedOwner: null}});
 });
 
 test.serial("error on update(transfer) - burned NFTs.", async t => {
   // transfer
-  t.deepEqual(await aliceActor.transfer(bobIdentity.getPrincipal(), BigInt(1)), {Err: {Unauthorized: null}});
-  t.deepEqual(await bobActor.transfer(johnIdentity.getPrincipal(), BigInt(2)), {Err: {Unauthorized: null}});
-  t.deepEqual(await johnActor.transfer(custodianIdentity.getPrincipal(), BigInt(3)), {Err: {Unauthorized: null}});
-  t.deepEqual(await custodianActor.transfer(aliceIdentity.getPrincipal(), BigInt(4)), {Err: {Unauthorized: null}});
+  t.deepEqual(await aliceActor.transfer(bobIdentity.getPrincipal(), BigInt(1)), {Err: {UnauthorizedOwner: null}});
+  t.deepEqual(await bobActor.transfer(johnIdentity.getPrincipal(), BigInt(2)), {Err: {UnauthorizedOwner: null}});
+  t.deepEqual(await johnActor.transfer(custodianIdentity.getPrincipal(), BigInt(3)), {Err: {UnauthorizedOwner: null}});
+  t.deepEqual(await custodianActor.transfer(aliceIdentity.getPrincipal(), BigInt(4)), {Err: {UnauthorizedOwner: null}});
 });
 
 test.serial("error on update(transferFrom) - burned NFTs.", async t => {
   // transferFrom
   t.deepEqual(await aliceActor.transferFrom(bobIdentity.getPrincipal(), johnIdentity.getPrincipal(), BigInt(1)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOwner: null}
   });
   t.deepEqual(await bobActor.transferFrom(johnIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(2)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOwner: null}
   });
   t.deepEqual(await johnActor.transferFrom(custodianIdentity.getPrincipal(), aliceIdentity.getPrincipal(), BigInt(3)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOwner: null}
   });
   t.deepEqual(await custodianActor.transferFrom(aliceIdentity.getPrincipal(), bobIdentity.getPrincipal(), BigInt(4)), {
-    Err: {Unauthorized: null}
+    Err: {UnauthorizedOwner: null}
   });
 });
 
