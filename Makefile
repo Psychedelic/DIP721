@@ -1,4 +1,4 @@
-.PHONY: init candid build local test format lint clean
+.PHONY: init candid build local stop-replica test format lint clean
 
 LOCAL_CUSTODIAN_PRINCIPAL=$(shell dfx identity get-principal)
 TEST_CUSTODIAN_PRINCIPAL=$(shell cat test/custodian-test-principal)
