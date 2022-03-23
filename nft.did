@@ -37,12 +37,13 @@ type ManualReply_5 = variant { Ok : vec TokenMetadata; Err : NftError };
 type ManualReply_6 = variant { Ok : TokenMetadata; Err : NftError };
 type ManualReply_7 = variant { Ok : TxEvent; Err : NftError };
 type NftError = variant {
+  UnauthorizedOperator;
   SelfTransfer;
   TokenNotFound;
+  UnauthorizedOwner;
   TxNotFound;
   SelfApprove;
   OperatorNotFound;
-  Unauthorized;
   ExistedNFT;
   OwnerNotFound;
   Other : text;
