@@ -176,8 +176,8 @@ mod ledger {
             self.tokens.insert(token_identifier, token_metadata);
         }
 
-        pub fn owners(&self) -> &HashMap<Principal, HashSet<TokenIdentifier>> {
-            &self.owners
+        pub fn owners_count(&self) -> usize {
+            self.owners.len()
         }
 
         pub fn owner_token_identifiers(
@@ -448,7 +448,7 @@ fn cycles() -> Nat {
 #[query(name = "totalUniqueHolders")]
 #[candid_method(query, rename = "totalUniqueHolders")]
 fn total_unique_holders() -> Nat {
-    ledger::with(|ledger| Nat::from(ledger.owners().len()))
+    ledger::with(|ledger| Nat::from(ledger.owners_count()))
 }
 
 #[query(name = "stats")]
