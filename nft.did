@@ -48,6 +48,12 @@ type NftError = variant {
   OwnerNotFound;
   Other : text;
 };
+type Stats = record {
+  cycles : nat;
+  total_transactions : nat;
+  total_unique_holders : nat;
+  total_supply : nat;
+};
 type SupportedInterface = variant { Burn; Mint; Approval; TransactionHistory };
 type TokenMetadata = record {
   transferred_at : opt nat64;
@@ -95,6 +101,7 @@ service : (opt InitArgs) -> {
   balanceOf : (principal) -> (ManualReply) query;
   burn : (nat) -> (ManualReply);
   custodians : () -> (vec principal) query;
+  cycles : () -> (nat) query;
   isApprovedForAll : (principal, principal) -> (ManualReply_1) query;
   logo : () -> (opt text) query;
   metadata : () -> (ManualReply_2) query;
@@ -111,11 +118,13 @@ service : (opt InitArgs) -> {
   setLogo : (text) -> ();
   setName : (text) -> ();
   setSymbol : (text) -> ();
+  stats : () -> (Stats) query;
   supportedInterfaces : () -> (vec SupportedInterface) query;
   symbol : () -> (opt text) query;
   tokenMetadata : (nat) -> (ManualReply_6) query;
   totalSupply : () -> (nat) query;
   totalTransactions : () -> (nat) query;
+  totalUniqueHolders : () -> (nat) query;
   transaction : (nat) -> (ManualReply_7) query;
   transfer : (principal, nat) -> (ManualReply);
   transferFrom : (principal, principal, nat) -> (ManualReply);

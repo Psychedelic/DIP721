@@ -77,6 +77,18 @@ metadata: () -> (Metadata) query;
 
 <br>
 
+#### stats
+
+---
+
+Returns the `Stats` of the NFT canister which includes `cycles`, `totalSupply`, `totalTransactions`, `totalUniqueHolders`.
+
+```
+stats: () -> (Stats) query;
+```
+
+<br>
+
 #### logo
 
 ---
@@ -177,6 +189,30 @@ Caller must be the custodian of NFT canister.
 
 ```
 setCustodians : (vec principal) -> ();
+```
+
+<br>
+
+#### cycles
+
+---
+
+Return cycles balance of NFT canister.
+
+```
+cycles : () -> (nat) query;
+```
+
+<br>
+
+#### totalUniqueHolders
+
+---
+
+Return total unique user's NFT holders of NFT canister.
+
+```
+totalUniqueHolders : () -> (nat) query;
 ```
 
 <br>
@@ -497,6 +533,17 @@ type Metadata = record {
   upgraded_at : nat64;
   custodians : vec principal;
   symbol : opt text;
+};
+```
+
+### Stats
+
+```
+type Stats = record {
+  cycles : nat;
+  total_transactions : nat;
+  total_unique_holders : nat;
+  total_supply : nat;
 };
 ```
 
