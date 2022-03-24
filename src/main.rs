@@ -1,7 +1,7 @@
 /// TODO: use ManualReply when new ic_cdk version release
 /// https://github.com/dfinity/cdk-rs/pull/210/files
 use ic_cdk::api::call::ManualReply;
-use ic_cdk::api::{caller, time, trap};
+use ic_cdk::api::{caller, canister_balance128, time, trap};
 use ic_cdk::export::candid::{candid_method, CandidType, Deserialize, Int, Nat};
 use ic_cdk::export::Principal;
 use ic_cdk_macros::{init, post_upgrade, pre_upgrade, query, update};
@@ -27,6 +27,13 @@ mod types {
         pub custodians: HashSet<Principal>,
         pub created_at: u64,
         pub upgraded_at: u64,
+    }
+    #[derive(CandidType)]
+    pub struct Stats {
+        pub total_transactions: Nat,
+        pub total_supply: Nat,
+        pub cycles: Nat,
+        pub total_unique_holders: Nat,
     }
     pub type TokenIdentifier = Nat;
     #[derive(CandidType, Deserialize)]
@@ -94,9 +101,9 @@ mod types {
         Other(String),
     }
 }
+
 mod ledger {
     use super::*;
-
     thread_local!(
         static LEDGER: RefCell<Ledger> = RefCell::new(Ledger::default());
     );
@@ -167,6 +174,10 @@ mod ledger {
             token_metadata: TokenMetadata,
         ) {
             self.tokens.insert(token_identifier, token_metadata);
+        }
+
+        pub fn owners(&self) -> &HashMap<Principal, HashSet<TokenIdentifier>> {
+            &self.owners
         }
 
         pub fn owner_token_identifiers(
@@ -354,22 +365,13 @@ fn is_canister_custodian() -> Result<(), String> {
     })
 }
 
-#[query(name = "metadata", manual_reply = true)]
-#[candid_method(query, rename = "metadata")]
-fn metadata() -> ManualReply<Metadata> {
-    ledger::with(|ledger| ManualReply::one(ledger.metadata()))
-}
-
+// ==================================================================================================
+// metadata
+// ==================================================================================================
 #[query(name = "name", manual_reply = true)]
 #[candid_method(query, rename = "name")]
 fn name() -> ManualReply<Option<String>> {
     ledger::with(|ledger| ManualReply::one(ledger.metadata().name.as_ref()))
-}
-
-#[update(name = "setName", guard = "is_canister_custodian")]
-#[candid_method(update, rename = "setName")]
-fn set_name(name: String) {
-    ledger::with_mut(|ledger| ledger.metadata_mut().name = Some(name));
 }
 
 #[query(name = "logo", manual_reply = true)]
@@ -378,22 +380,10 @@ fn logo() -> ManualReply<Option<String>> {
     ledger::with(|ledger| ManualReply::one(ledger.metadata().logo.as_ref()))
 }
 
-#[update(name = "setLogo", guard = "is_canister_custodian")]
-#[candid_method(update, rename = "setLogo")]
-fn set_logo(logo: String) {
-    ledger::with_mut(|ledger| ledger.metadata_mut().logo = Some(logo));
-}
-
 #[query(name = "symbol", manual_reply = true)]
 #[candid_method(query, rename = "symbol")]
 fn symbol() -> ManualReply<Option<String>> {
     ledger::with(|ledger| ManualReply::one(ledger.metadata().symbol.as_ref()))
-}
-
-#[update(name = "setSymbol", guard = "is_canister_custodian")]
-#[candid_method(update, rename = "setSymbol")]
-fn set_symbol(symbol: String) {
-    ledger::with_mut(|ledger| ledger.metadata_mut().symbol = Some(symbol));
 }
 
 #[query(name = "custodians", manual_reply = true)]
@@ -402,10 +392,43 @@ fn custodians() -> ManualReply<HashSet<Principal>> {
     ledger::with(|ledger| ManualReply::one(&ledger.metadata().custodians))
 }
 
+#[query(name = "metadata", manual_reply = true)]
+#[candid_method(query, rename = "metadata")]
+fn metadata() -> ManualReply<Metadata> {
+    ledger::with(|ledger| ManualReply::one(ledger.metadata()))
+}
+
+#[update(name = "setName", guard = "is_canister_custodian")]
+#[candid_method(update, rename = "setName")]
+fn set_name(name: String) {
+    ledger::with_mut(|ledger| ledger.metadata_mut().name = Some(name));
+}
+
+#[update(name = "setLogo", guard = "is_canister_custodian")]
+#[candid_method(update, rename = "setLogo")]
+fn set_logo(logo: String) {
+    ledger::with_mut(|ledger| ledger.metadata_mut().logo = Some(logo));
+}
+
+#[update(name = "setSymbol", guard = "is_canister_custodian")]
+#[candid_method(update, rename = "setSymbol")]
+fn set_symbol(symbol: String) {
+    ledger::with_mut(|ledger| ledger.metadata_mut().symbol = Some(symbol));
+}
+
 #[update(name = "setCustodians", guard = "is_canister_custodian")]
 #[candid_method(update, rename = "setCustodians")]
 fn set_custodians(custodians: HashSet<Principal>) {
     ledger::with_mut(|ledger| ledger.metadata_mut().custodians = custodians);
+}
+
+// ==================================================================================================
+// stats
+// ==================================================================================================
+#[query(name = "totalTransactions")]
+#[candid_method(query, rename = "totalTransactions")]
+fn total_transactions() -> Nat {
+    ledger::with(|ledger| Nat::from(ledger.tx_count()))
 }
 
 /// Returns the total current supply of NFT tokens.
@@ -416,6 +439,32 @@ fn total_supply() -> Nat {
     ledger::with(|ledger| Nat::from(ledger.tokens_count()))
 }
 
+#[query(name = "cycles")]
+#[candid_method(query, rename = "cycles")]
+fn cycles() -> Nat {
+    Nat::from(canister_balance128())
+}
+
+#[query(name = "totalUniqueHolders")]
+#[candid_method(query, rename = "totalUniqueHolders")]
+fn total_unique_holders() -> Nat {
+    ledger::with(|ledger| Nat::from(ledger.owners().len()))
+}
+
+#[query(name = "stats")]
+#[candid_method(query, rename = "stats")]
+fn stats() -> Stats {
+    Stats {
+        total_transactions: total_transactions(),
+        total_supply: total_supply(),
+        cycles: cycles(),
+        total_unique_holders: total_unique_holders(),
+    }
+}
+
+// ==================================================================================================
+// supported interfaces
+// ==================================================================================================
 #[query(name = "supportedInterfaces")]
 #[candid_method(query, rename = "supportedInterfaces")]
 fn supported_interfaces() -> Vec<SupportedInterface> {
@@ -427,6 +476,9 @@ fn supported_interfaces() -> Vec<SupportedInterface> {
     ]
 }
 
+// ==================================================================================================
+// balance
+// ==================================================================================================
 #[query(name = "balanceOf", manual_reply = true)]
 #[candid_method(query, rename = "balanceOf")]
 fn balance_of(owner: Principal) -> ManualReply<Result<Nat, NftError>> {
@@ -439,6 +491,9 @@ fn balance_of(owner: Principal) -> ManualReply<Result<Nat, NftError>> {
     })
 }
 
+// ==================================================================================================
+// token ownership
+// ==================================================================================================
 #[query(name = "ownerOf", manual_reply = true)]
 #[candid_method(query, rename = "ownerOf")]
 fn owner_of(token_identifier: TokenIdentifier) -> ManualReply<Result<Option<Principal>, NftError>> {
@@ -451,14 +506,6 @@ fn operator_of(
     token_identifier: TokenIdentifier,
 ) -> ManualReply<Result<Option<Principal>, NftError>> {
     ledger::with(|ledger| ManualReply::one(ledger.operator_of(&token_identifier)))
-}
-
-#[query(name = "tokenMetadata", manual_reply = true)]
-#[candid_method(query, rename = "tokenMetadata")]
-fn token_metadata(
-    token_identifier: TokenIdentifier,
-) -> ManualReply<Result<TokenMetadata, NftError>> {
-    ledger::with(|ledger| ManualReply::one(ledger.token_metadata(&token_identifier)))
 }
 
 #[query(name = "ownerTokenMetadata", manual_reply = true)]
@@ -491,42 +538,20 @@ fn operator_token_identifiers(
     ledger::with(|ledger| ManualReply::one(ledger.operator_token_identifiers(&operator)))
 }
 
-/// since we've supported single operator per owner only
-/// so when `is_approved` is false that mean set all caller's nfts to None regardless of `operator`
-/// otherwise set all caller's nfts to `operator`
-#[update(name = "setApprovalForAll", manual_reply = true)]
-#[candid_method(update, rename = "setApprovalForAll")]
-fn set_approval_for_all(
-    operator: Principal,
-    is_approved: bool,
-) -> ManualReply<Result<Nat, NftError>> {
-    ledger::with_mut(|ledger| {
-        let caller = caller();
-        ManualReply::one(
-            operator
-                .ne(&caller)
-                .then(|| {
-                    let owner_token_identifiers = ledger.owner_token_identifiers(&caller)?.clone();
-                    for token_identifier in owner_token_identifiers {
-                        let old_operator = ledger.operator_of(&token_identifier)?;
-                        let new_operator = if is_approved { Some(operator) } else { None };
-                        ledger.update_operator_cache(&token_identifier, old_operator, new_operator);
-                        ledger.approve(caller, &token_identifier, new_operator);
-                    }
-                    Ok(Nat::from(ledger.add_tx(
-                        caller,
-                        "setApprovalForAll".into(),
-                        vec![
-                            ("operator".into(), GenericValue::Principal(operator)),
-                            ("is_approved".into(), GenericValue::BoolContent(is_approved)),
-                        ],
-                    )))
-                })
-                .unwrap_or(Err(NftError::SelfApprove)),
-        )
-    })
+// ==================================================================================================
+// token metadata
+// ==================================================================================================
+#[query(name = "tokenMetadata", manual_reply = true)]
+#[candid_method(query, rename = "tokenMetadata")]
+fn token_metadata(
+    token_identifier: TokenIdentifier,
+) -> ManualReply<Result<TokenMetadata, NftError>> {
+    ledger::with(|ledger| ManualReply::one(ledger.token_metadata(&token_identifier)))
 }
 
+// ==================================================================================================
+// approved for all
+// ==================================================================================================
 #[query(name = "isApprovedForAll", manual_reply = true)]
 #[candid_method(query, rename = "isApprovedForAll")]
 fn is_approved_for_all(
@@ -546,6 +571,26 @@ fn is_approved_for_all(
     })
 }
 
+// ==================================================================================================
+// transaction history
+// ==================================================================================================
+#[query(name = "transaction", manual_reply = true)]
+#[candid_method(query, rename = "transaction")]
+fn transaction(tx_id: Nat) -> ManualReply<Result<TxEvent, NftError>> {
+    ledger::with(|ledger| {
+        ManualReply::one(
+            tx_id
+                .0
+                .to_usize()
+                .ok_or_else(|| NftError::Other("failed to cast usize from nat".into()))
+                .and_then(|index| ledger.get_tx(index - 1).ok_or(NftError::TxNotFound)),
+        )
+    })
+}
+
+// ==================================================================================================
+// core api
+// ==================================================================================================
 #[update(name = "approve", manual_reply = true)]
 #[candid_method(update, rename = "approve")]
 fn approve(
@@ -578,6 +623,42 @@ fn approve(
                                 "token_identifier".into(),
                                 GenericValue::NatContent(token_identifier),
                             ),
+                        ],
+                    )))
+                })
+                .unwrap_or(Err(NftError::SelfApprove)),
+        )
+    })
+}
+
+/// since we've supported single operator per owner only
+/// so when `is_approved` is false that mean set all caller's nfts to None regardless of `operator`
+/// otherwise set all caller's nfts to `operator`
+#[update(name = "setApprovalForAll", manual_reply = true)]
+#[candid_method(update, rename = "setApprovalForAll")]
+fn set_approval_for_all(
+    operator: Principal,
+    is_approved: bool,
+) -> ManualReply<Result<Nat, NftError>> {
+    ledger::with_mut(|ledger| {
+        let caller = caller();
+        ManualReply::one(
+            operator
+                .ne(&caller)
+                .then(|| {
+                    let owner_token_identifiers = ledger.owner_token_identifiers(&caller)?.clone();
+                    for token_identifier in owner_token_identifiers {
+                        let old_operator = ledger.operator_of(&token_identifier)?;
+                        let new_operator = if is_approved { Some(operator) } else { None };
+                        ledger.update_operator_cache(&token_identifier, old_operator, new_operator);
+                        ledger.approve(caller, &token_identifier, new_operator);
+                    }
+                    Ok(Nat::from(ledger.add_tx(
+                        caller,
+                        "setApprovalForAll".into(),
+                        vec![
+                            ("operator".into(), GenericValue::Principal(operator)),
+                            ("is_approved".into(), GenericValue::BoolContent(is_approved)),
                         ],
                     )))
                 })
@@ -744,26 +825,9 @@ fn burn(token_identifier: TokenIdentifier) -> ManualReply<Result<Nat, NftError>>
     })
 }
 
-#[query(name = "transaction", manual_reply = true)]
-#[candid_method(query, rename = "transaction")]
-fn transaction(tx_id: Nat) -> ManualReply<Result<TxEvent, NftError>> {
-    ledger::with(|ledger| {
-        ManualReply::one(
-            tx_id
-                .0
-                .to_usize()
-                .ok_or_else(|| NftError::Other("failed to cast usize from nat".into()))
-                .and_then(|index| ledger.get_tx(index - 1).ok_or(NftError::TxNotFound)),
-        )
-    })
-}
-
-#[query(name = "totalTransactions")]
-#[candid_method(query, rename = "totalTransactions")]
-fn total_transactions() -> Nat {
-    ledger::with(|ledger| Nat::from(ledger.tx_count()))
-}
-
+// ==================================================================================================
+// upgrade
+// ==================================================================================================
 /// NOTE:
 /// If you plan to store gigabytes of state and upgrade the code,
 /// Using stable memory as the main storage is a good option to consider
