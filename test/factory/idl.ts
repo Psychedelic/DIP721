@@ -97,6 +97,12 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : IDL.Vec(TokenMetadata),
     'Err' : NftError,
   });
+  const Stats = IDL.Record({
+    'cycles' : IDL.Nat,
+    'total_transactions' : IDL.Nat,
+    'total_unique_holders' : IDL.Nat,
+    'total_supply' : IDL.Nat,
+  });
   const SupportedInterface = IDL.Variant({
     'Burn' : IDL.Null,
     'Mint' : IDL.Null,
@@ -116,6 +122,7 @@ export const idlFactory = ({ IDL }) => {
     'balanceOf' : IDL.Func([IDL.Principal], [ManualReply], ['query']),
     'burn' : IDL.Func([IDL.Nat], [ManualReply], []),
     'custodians' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+    'cycles' : IDL.Func([], [IDL.Nat], ['query']),
     'isApprovedForAll' : IDL.Func(
         [IDL.Principal, IDL.Principal],
         [ManualReply_1],
@@ -160,6 +167,7 @@ export const idlFactory = ({ IDL }) => {
     'setLogo' : IDL.Func([IDL.Text], [], []),
     'setName' : IDL.Func([IDL.Text], [], []),
     'setSymbol' : IDL.Func([IDL.Text], [], []),
+    'stats' : IDL.Func([], [Stats], ['query']),
     'supportedInterfaces' : IDL.Func(
         [],
         [IDL.Vec(SupportedInterface)],
@@ -169,6 +177,7 @@ export const idlFactory = ({ IDL }) => {
     'tokenMetadata' : IDL.Func([IDL.Nat], [ManualReply_6], ['query']),
     'totalSupply' : IDL.Func([], [IDL.Nat], ['query']),
     'totalTransactions' : IDL.Func([], [IDL.Nat], ['query']),
+    'totalUniqueHolders' : IDL.Func([], [IDL.Nat], ['query']),
     'transaction' : IDL.Func([IDL.Nat], [ManualReply_7], ['query']),
     'transfer' : IDL.Func([IDL.Principal, IDL.Nat], [ManualReply], []),
     'transferFrom' : IDL.Func(

@@ -52,6 +52,12 @@ export type NftError = { 'UnauthorizedOperator' : null } |
   { 'ExistedNFT' : null } |
   { 'OwnerNotFound' : null } |
   { 'Other' : string };
+export interface Stats {
+  'cycles' : bigint,
+  'total_transactions' : bigint,
+  'total_unique_holders' : bigint,
+  'total_supply' : bigint,
+}
 export type SupportedInterface = { 'Burn' : null } |
   { 'Mint' : null } |
   { 'Approval' : null } |
@@ -102,6 +108,7 @@ export interface _SERVICE {
   'balanceOf' : (arg_0: Principal) => Promise<ManualReply>,
   'burn' : (arg_0: bigint) => Promise<ManualReply>,
   'custodians' : () => Promise<Array<Principal>>,
+  'cycles' : () => Promise<bigint>,
   'isApprovedForAll' : (arg_0: Principal, arg_1: Principal) => Promise<
       ManualReply_1
     >,
@@ -126,11 +133,13 @@ export interface _SERVICE {
   'setLogo' : (arg_0: string) => Promise<undefined>,
   'setName' : (arg_0: string) => Promise<undefined>,
   'setSymbol' : (arg_0: string) => Promise<undefined>,
+  'stats' : () => Promise<Stats>,
   'supportedInterfaces' : () => Promise<Array<SupportedInterface>>,
   'symbol' : () => Promise<[] | [string]>,
   'tokenMetadata' : (arg_0: bigint) => Promise<ManualReply_6>,
   'totalSupply' : () => Promise<bigint>,
   'totalTransactions' : () => Promise<bigint>,
+  'totalUniqueHolders' : () => Promise<bigint>,
   'transaction' : (arg_0: bigint) => Promise<ManualReply_7>,
   'transfer' : (arg_0: Principal, arg_1: bigint) => Promise<ManualReply>,
   'transferFrom' : (

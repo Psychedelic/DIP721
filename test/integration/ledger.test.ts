@@ -34,9 +34,6 @@ test.serial("simple mint NFT and verify information.", async t => {
       }
     });
   });
-  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
-    t.is(result, BigInt(1));
-  });
 
   // verify token
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(1))))).forEach(result => {
@@ -101,10 +98,35 @@ test.serial("simple mint NFT and verify information.", async t => {
   (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(1))))).forEach(result => {
     t.deepEqual(result, {Ok: []});
   });
+});
+
+test.serial("verify stats after simple mint.", async t => {
+  // verify totalTransactions
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(1));
+  });
 
   // verify totalSupply
   (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
-    t.deepEqual(result, BigInt(1));
+    t.is(result, BigInt(1));
+  });
+
+  // verify cycles
+  (await Promise.all(allActors.map(actor => actor.cycles()))).forEach(result => {
+    t.truthy(result);
+  });
+
+  // verify totalUniqueHolders
+  (await Promise.all(allActors.map(actor => actor.totalUniqueHolders()))).forEach(result => {
+    t.is(result, BigInt(1));
+  });
+
+  // verify stats
+  (await Promise.all(allActors.map(actor => actor.stats()))).forEach(result => {
+    t.truthy(result.cycles);
+    t.is(result.total_transactions, BigInt(1));
+    t.is(result.total_supply, BigInt(1));
+    t.is(result.total_unique_holders, BigInt(1));
   });
 });
 
@@ -186,6 +208,36 @@ test.serial("mint NFTs.", async t => {
   });
 });
 
+test.serial("verify stats after mint.", async t => {
+  // verify totalTransactions
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(4));
+  });
+
+  // verify totalSupply
+  (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
+    t.is(result, BigInt(4));
+  });
+
+  // verify cycles
+  (await Promise.all(allActors.map(actor => actor.cycles()))).forEach(result => {
+    t.truthy(result);
+  });
+
+  // verify totalUniqueHolders
+  (await Promise.all(allActors.map(actor => actor.totalUniqueHolders()))).forEach(result => {
+    t.is(result, BigInt(3));
+  });
+
+  // verify stats
+  (await Promise.all(allActors.map(actor => actor.stats()))).forEach(result => {
+    t.truthy(result.cycles);
+    t.is(result.total_transactions, BigInt(4));
+    t.is(result.total_supply, BigInt(4));
+    t.is(result.total_unique_holders, BigInt(3));
+  });
+});
+
 test.serial("verify mint information.", async t => {
   // verify transaction
   (await Promise.all(allActors.map(actor => actor.transaction(BigInt(2))))).forEach(result => {
@@ -223,9 +275,6 @@ test.serial("verify mint information.", async t => {
         ]
       }
     });
-  });
-  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
-    t.is(result, BigInt(4));
   });
 
   // verify token
@@ -415,11 +464,6 @@ test.serial("verify mint information.", async t => {
   (await Promise.all(allActors.map(actor => actor.operatorOf(BigInt(4))))).forEach(result => {
     t.deepEqual(result, {Ok: []});
   });
-
-  // verify totalSupply
-  (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
-    t.deepEqual(result, BigInt(4));
-  });
 });
 
 test.serial("approve NFTs.", async t => {
@@ -441,6 +485,36 @@ test.serial("approve NFTs.", async t => {
       ...allActors.map(actor => actor.isApprovedForAll(aliceIdentity.getPrincipal(), johnIdentity.getPrincipal()))
     ])
   ).forEach(result => t.deepEqual(result, {Ok: false}));
+});
+
+test.serial("verify stats after approve.", async t => {
+  // verify totalTransactions
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(8));
+  });
+
+  // verify totalSupply
+  (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
+    t.is(result, BigInt(4));
+  });
+
+  // verify cycles
+  (await Promise.all(allActors.map(actor => actor.cycles()))).forEach(result => {
+    t.truthy(result);
+  });
+
+  // verify totalUniqueHolders
+  (await Promise.all(allActors.map(actor => actor.totalUniqueHolders()))).forEach(result => {
+    t.is(result, BigInt(3));
+  });
+
+  // verify stats
+  (await Promise.all(allActors.map(actor => actor.stats()))).forEach(result => {
+    t.truthy(result.cycles);
+    t.is(result.total_transactions, BigInt(8));
+    t.is(result.total_supply, BigInt(4));
+    t.is(result.total_unique_holders, BigInt(3));
+  });
 });
 
 test.serial("verify approve transactions.", async t => {
@@ -492,9 +566,6 @@ test.serial("verify approve transactions.", async t => {
         ]
       }
     });
-  });
-  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
-    t.is(result, BigInt(8));
   });
 });
 
@@ -814,6 +885,36 @@ test.serial("approve NFTs (new operator).", async t => {
   t.deepEqual(await johnActor.approve(custodianIdentity.getPrincipal(), BigInt(4)), {Ok: BigInt(12)});
 });
 
+test.serial("verify stats after approve (new operator).", async t => {
+  // verify totalTransactions
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(12));
+  });
+
+  // verify totalSupply
+  (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
+    t.is(result, BigInt(4));
+  });
+
+  // verify cycles
+  (await Promise.all(allActors.map(actor => actor.cycles()))).forEach(result => {
+    t.truthy(result);
+  });
+
+  // verify totalUniqueHolders
+  (await Promise.all(allActors.map(actor => actor.totalUniqueHolders()))).forEach(result => {
+    t.is(result, BigInt(3));
+  });
+
+  // verify stats
+  (await Promise.all(allActors.map(actor => actor.stats()))).forEach(result => {
+    t.truthy(result.cycles);
+    t.is(result.total_transactions, BigInt(12));
+    t.is(result.total_supply, BigInt(4));
+    t.is(result.total_unique_holders, BigInt(3));
+  });
+});
+
 test.serial("verify approve transactions after updated to new operator.", async t => {
   // verify transaction
   (await Promise.all(allActors.map(actor => actor.transaction(BigInt(9))))).forEach(result => {
@@ -863,9 +964,6 @@ test.serial("verify approve transactions after updated to new operator.", async 
         ]
       }
     });
-  });
-  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
-    t.is(result, BigInt(12));
   });
 });
 
@@ -1225,8 +1323,35 @@ test.serial("transferFrom.", async t => {
   t.deepEqual(await custodianActor.transferFrom(johnIdentity.getPrincipal(), aliceIdentity.getPrincipal(), BigInt(4)), {
     Ok: BigInt(16)
   });
+});
+
+test.serial("verify stats after transferFrom.", async t => {
+  // verify totalTransactions
   (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
     t.is(result, BigInt(16));
+  });
+
+  // verify totalSupply
+  (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
+    t.is(result, BigInt(4));
+  });
+
+  // verify cycles
+  (await Promise.all(allActors.map(actor => actor.cycles()))).forEach(result => {
+    t.truthy(result);
+  });
+
+  // verify totalUniqueHolders
+  (await Promise.all(allActors.map(actor => actor.totalUniqueHolders()))).forEach(result => {
+    t.is(result, BigInt(2));
+  });
+
+  // verify stats
+  (await Promise.all(allActors.map(actor => actor.stats()))).forEach(result => {
+    t.truthy(result.cycles);
+    t.is(result.total_transactions, BigInt(16));
+    t.is(result.total_supply, BigInt(4));
+    t.is(result.total_unique_holders, BigInt(2));
   });
 });
 
@@ -1521,6 +1646,36 @@ test.serial("transfer.", async t => {
   });
 });
 
+test.serial("verify stats after transfer.", async t => {
+  // verify totalTransactions
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(20));
+  });
+
+  // verify totalSupply
+  (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
+    t.is(result, BigInt(4));
+  });
+
+  // verify cycles
+  (await Promise.all(allActors.map(actor => actor.cycles()))).forEach(result => {
+    t.truthy(result);
+  });
+
+  // verify totalUniqueHolders
+  (await Promise.all(allActors.map(actor => actor.totalUniqueHolders()))).forEach(result => {
+    t.is(result, BigInt(2));
+  });
+
+  // verify stats
+  (await Promise.all(allActors.map(actor => actor.stats()))).forEach(result => {
+    t.truthy(result.cycles);
+    t.is(result.total_transactions, BigInt(20));
+    t.is(result.total_supply, BigInt(4));
+    t.is(result.total_unique_holders, BigInt(2));
+  });
+});
+
 test.serial("verify transfer transactions.", async t => {
   // verify transaction
   (await Promise.all(allActors.map(actor => actor.transaction(BigInt(17))))).forEach(result => {
@@ -1574,9 +1729,6 @@ test.serial("verify transfer transactions.", async t => {
         ]
       }
     });
-  });
-  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
-    t.is(result, BigInt(20));
   });
 });
 
@@ -1781,6 +1933,36 @@ test.serial("setApprovalForAll(true).", async t => {
   ).forEach(result => t.deepEqual(result, {Ok: true}));
 });
 
+test.serial("verify stats after setApprovalForAll(true).", async t => {
+  // verify totalTransactions
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(22));
+  });
+
+  // verify totalSupply
+  (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
+    t.is(result, BigInt(4));
+  });
+
+  // verify cycles
+  (await Promise.all(allActors.map(actor => actor.cycles()))).forEach(result => {
+    t.truthy(result);
+  });
+
+  // verify totalUniqueHolders
+  (await Promise.all(allActors.map(actor => actor.totalUniqueHolders()))).forEach(result => {
+    t.is(result, BigInt(2));
+  });
+
+  // verify stats
+  (await Promise.all(allActors.map(actor => actor.stats()))).forEach(result => {
+    t.truthy(result.cycles);
+    t.is(result.total_transactions, BigInt(22));
+    t.is(result.total_supply, BigInt(4));
+    t.is(result.total_unique_holders, BigInt(2));
+  });
+});
+
 test.serial("verify setApprovalForAll(true) transactions.", async t => {
   // verify transaction
   (await Promise.all(allActors.map(actor => actor.transaction(BigInt(21))))).forEach(result => {
@@ -1806,9 +1988,6 @@ test.serial("verify setApprovalForAll(true) transactions.", async t => {
         ]
       }
     });
-  });
-  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
-    t.is(result, BigInt(22));
   });
 });
 
@@ -2134,8 +2313,35 @@ test.serial("verify setApprovalForAll(false) transactions.", async t => {
       }
     });
   });
+});
+
+test.serial("verify stats after setApprovalForAll(false).", async t => {
+  // verify totalTransactions
   (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
     t.is(result, BigInt(24));
+  });
+
+  // verify totalSupply
+  (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
+    t.is(result, BigInt(4));
+  });
+
+  // verify cycles
+  (await Promise.all(allActors.map(actor => actor.cycles()))).forEach(result => {
+    t.truthy(result);
+  });
+
+  // verify totalUniqueHolders
+  (await Promise.all(allActors.map(actor => actor.totalUniqueHolders()))).forEach(result => {
+    t.is(result, BigInt(2));
+  });
+
+  // verify stats
+  (await Promise.all(allActors.map(actor => actor.stats()))).forEach(result => {
+    t.truthy(result.cycles);
+    t.is(result.total_transactions, BigInt(24));
+    t.is(result.total_supply, BigInt(4));
+    t.is(result.total_unique_holders, BigInt(2));
   });
 });
 
@@ -2216,6 +2422,36 @@ test.serial("burn NFTs.", async t => {
   t.deepEqual(await bobActor.burn(BigInt(4)), {Ok: BigInt(28)});
 });
 
+test.serial("verify stats after burn.", async t => {
+  // verify totalTransactions
+  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
+    t.is(result, BigInt(28));
+  });
+
+  // verify totalSupply
+  (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
+    t.is(result, BigInt(4));
+  });
+
+  // verify cycles
+  (await Promise.all(allActors.map(actor => actor.cycles()))).forEach(result => {
+    t.truthy(result);
+  });
+
+  // verify totalUniqueHolders
+  (await Promise.all(allActors.map(actor => actor.totalUniqueHolders()))).forEach(result => {
+    t.is(result, BigInt(0));
+  });
+
+  // verify stats
+  (await Promise.all(allActors.map(actor => actor.stats()))).forEach(result => {
+    t.truthy(result.cycles);
+    t.is(result.total_transactions, BigInt(28));
+    t.is(result.total_supply, BigInt(4));
+    t.is(result.total_unique_holders, BigInt(0));
+  });
+});
+
 test.serial("verify burn transactions.", async t => {
   // verify transaction
   (await Promise.all(allActors.map(actor => actor.transaction(BigInt(25))))).forEach(result => {
@@ -2254,17 +2490,9 @@ test.serial("verify burn transactions.", async t => {
       }
     });
   });
-  (await Promise.all(allActors.map(actor => actor.totalTransactions()))).forEach(result => {
-    t.is(result, BigInt(28));
-  });
 });
 
 test.serial("verify burn information.", async t => {
-  // verify totalSupply
-  (await Promise.all(allActors.map(actor => actor.totalSupply()))).forEach(result => {
-    t.is(result, BigInt(4));
-  });
-
   // verify token
   (await Promise.all(allActors.map(actor => actor.tokenMetadata(BigInt(1))))).forEach(result => {
     t.like(result, {
