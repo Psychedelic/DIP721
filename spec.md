@@ -609,7 +609,8 @@ type NftError = variant {
   TxNotFound;
   SelfApprove;
   OperatorNotFound;
-  Unauthorized;
+  UnauthorizedOwner;
+  UnauthorizedOperator;
   ExistedNFT;
   OwnerNotFound;
   Other : text;
