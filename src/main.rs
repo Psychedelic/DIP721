@@ -479,33 +479,29 @@ fn supported_interfaces() -> Vec<SupportedInterface> {
 // ==================================================================================================
 // balance
 // ==================================================================================================
-#[query(name = "balanceOf", manual_reply = true)]
+#[query(name = "balanceOf")]
 #[candid_method(query, rename = "balanceOf")]
-fn balance_of(owner: Principal) -> ManualReply<Result<Nat, NftError>> {
+fn balance_of(owner: Principal) -> Result<Nat, NftError> {
     ledger::with(|ledger| {
-        ManualReply::one(
-            ledger
-                .owner_token_identifiers(&owner)
-                .map(|token_identifiers| Nat::from(token_identifiers.len())),
-        )
+        ledger
+            .owner_token_identifiers(&owner)
+            .map(|token_identifiers| Nat::from(token_identifiers.len()))
     })
 }
 
 // ==================================================================================================
 // token ownership
 // ==================================================================================================
-#[query(name = "ownerOf", manual_reply = true)]
+#[query(name = "ownerOf")]
 #[candid_method(query, rename = "ownerOf")]
-fn owner_of(token_identifier: TokenIdentifier) -> ManualReply<Result<Option<Principal>, NftError>> {
-    ledger::with(|ledger| ManualReply::one(ledger.owner_of(&token_identifier)))
+fn owner_of(token_identifier: TokenIdentifier) -> Result<Option<Principal>, NftError> {
+    ledger::with(|ledger| ledger.owner_of(&token_identifier))
 }
 
-#[query(name = "operatorOf", manual_reply = true)]
+#[query(name = "operatorOf")]
 #[candid_method(query, rename = "operatorOf")]
-fn operator_of(
-    token_identifier: TokenIdentifier,
-) -> ManualReply<Result<Option<Principal>, NftError>> {
-    ledger::with(|ledger| ManualReply::one(ledger.operator_of(&token_identifier)))
+fn operator_of(token_identifier: TokenIdentifier) -> Result<Option<Principal>, NftError> {
+    ledger::with(|ledger| ledger.operator_of(&token_identifier))
 }
 
 #[query(name = "ownerTokenMetadata", manual_reply = true)]
@@ -552,22 +548,17 @@ fn token_metadata(
 // ==================================================================================================
 // approved for all
 // ==================================================================================================
-#[query(name = "isApprovedForAll", manual_reply = true)]
+#[query(name = "isApprovedForAll")]
 #[candid_method(query, rename = "isApprovedForAll")]
-fn is_approved_for_all(
-    owner: Principal,
-    operator: Principal,
-) -> ManualReply<Result<bool, NftError>> {
+fn is_approved_for_all(owner: Principal, operator: Principal) -> Result<bool, NftError> {
     ledger::with(|ledger| {
-        ManualReply::one(
-            ledger
-                .owner_token_metadata(&owner)
-                .map(|owner_token_metadata| {
-                    owner_token_metadata
-                        .iter()
-                        .all(|token_metadata| token_metadata.operator.eq(&Some(operator)))
-                }),
-        )
+        ledger
+            .owner_token_metadata(&owner)
+            .map(|owner_token_metadata| {
+                owner_token_metadata
+                    .iter()
+                    .all(|token_metadata| token_metadata.operator.eq(&Some(operator)))
+            })
     })
 }
 
@@ -591,220 +582,191 @@ fn transaction(tx_id: Nat) -> ManualReply<Result<TxEvent, NftError>> {
 // ==================================================================================================
 // core api
 // ==================================================================================================
-#[update(name = "approve", manual_reply = true)]
+#[update(name = "approve")]
 #[candid_method(update, rename = "approve")]
-fn approve(
-    operator: Principal,
-    token_identifier: TokenIdentifier,
-) -> ManualReply<Result<Nat, NftError>> {
+fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
-        ManualReply::one(
-            operator
-                .ne(&caller)
-                .then(|| {
-                    ledger
-                        .owner_of(&token_identifier)?
-                        .eq(&Some(caller))
-                        .then(|| ())
-                        .ok_or(NftError::UnauthorizedOwner)?;
-                    ledger.update_operator_cache(
-                        &token_identifier,
-                        ledger.operator_of(&token_identifier)?,
-                        Some(operator),
-                    );
-                    ledger.approve(caller, &token_identifier, Some(operator));
-                    Ok(Nat::from(ledger.add_tx(
-                        caller,
-                        "approve".into(),
-                        vec![
-                            ("operator".into(), GenericValue::Principal(operator)),
-                            (
-                                "token_identifier".into(),
-                                GenericValue::NatContent(token_identifier),
-                            ),
-                        ],
-                    )))
-                })
-                .unwrap_or(Err(NftError::SelfApprove)),
-        )
+        operator
+            .ne(&caller)
+            .then(|| {})
+            .ok_or(NftError::SelfApprove)?;
+        ledger
+            .owner_of(&token_identifier)?
+            .eq(&Some(caller))
+            .then(|| ())
+            .ok_or(NftError::UnauthorizedOwner)?;
+        ledger.update_operator_cache(
+            &token_identifier,
+            ledger.operator_of(&token_identifier)?,
+            Some(operator),
+        );
+        ledger.approve(caller, &token_identifier, Some(operator));
+        Ok(Nat::from(ledger.add_tx(
+            caller,
+            "approve".into(),
+            vec![
+                ("operator".into(), GenericValue::Principal(operator)),
+                (
+                    "token_identifier".into(),
+                    GenericValue::NatContent(token_identifier),
+                ),
+            ],
+        )))
     })
 }
 
 /// since we've supported single operator per owner only
 /// so when `is_approved` is false that mean set all caller's nfts to None regardless of `operator`
 /// otherwise set all caller's nfts to `operator`
-#[update(name = "setApprovalForAll", manual_reply = true)]
+#[update(name = "setApprovalForAll")]
 #[candid_method(update, rename = "setApprovalForAll")]
-fn set_approval_for_all(
-    operator: Principal,
-    is_approved: bool,
-) -> ManualReply<Result<Nat, NftError>> {
+fn set_approval_for_all(operator: Principal, is_approved: bool) -> Result<Nat, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
-        ManualReply::one(
-            operator
-                .ne(&caller)
-                .then(|| {
-                    let owner_token_identifiers = ledger.owner_token_identifiers(&caller)?.clone();
-                    for token_identifier in owner_token_identifiers {
-                        let old_operator = ledger.operator_of(&token_identifier)?;
-                        let new_operator = if is_approved { Some(operator) } else { None };
-                        ledger.update_operator_cache(&token_identifier, old_operator, new_operator);
-                        ledger.approve(caller, &token_identifier, new_operator);
-                    }
-                    Ok(Nat::from(ledger.add_tx(
-                        caller,
-                        "setApprovalForAll".into(),
-                        vec![
-                            ("operator".into(), GenericValue::Principal(operator)),
-                            ("is_approved".into(), GenericValue::BoolContent(is_approved)),
-                        ],
-                    )))
-                })
-                .unwrap_or(Err(NftError::SelfApprove)),
-        )
+        operator
+            .ne(&caller)
+            .then(|| {})
+            .ok_or(NftError::SelfApprove)?;
+        let owner_token_identifiers = ledger.owner_token_identifiers(&caller)?.clone();
+        for token_identifier in owner_token_identifiers {
+            let old_operator = ledger.operator_of(&token_identifier)?;
+            let new_operator = if is_approved { Some(operator) } else { None };
+            ledger.update_operator_cache(&token_identifier, old_operator, new_operator);
+            ledger.approve(caller, &token_identifier, new_operator);
+        }
+        Ok(Nat::from(ledger.add_tx(
+            caller,
+            "setApprovalForAll".into(),
+            vec![
+                ("operator".into(), GenericValue::Principal(operator)),
+                ("is_approved".into(), GenericValue::BoolContent(is_approved)),
+            ],
+        )))
     })
 }
 
-#[update(name = "transfer", manual_reply = true)]
+#[update(name = "transfer")]
 #[candid_method(update, rename = "transfer")]
-fn transfer(
-    to: Principal,
-    token_identifier: TokenIdentifier,
-) -> ManualReply<Result<Nat, NftError>> {
+fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
-        ManualReply::one(
-            to.ne(&caller)
-                .then(|| {
-                    let old_owner = ledger.owner_of(&token_identifier)?;
-                    let old_operator = ledger.operator_of(&token_identifier)?;
-                    old_owner
-                        .eq(&Some(caller))
-                        .then(|| ())
-                        .ok_or(NftError::UnauthorizedOwner)?;
-                    ledger.update_owner_cache(&token_identifier, old_owner, Some(to));
-                    ledger.update_operator_cache(&token_identifier, old_operator, None);
-                    ledger.transfer(caller, &token_identifier, Some(to));
-                    Ok(Nat::from(ledger.add_tx(
-                        caller,
-                        "transfer".into(),
-                        vec![
-                            ("owner".into(), GenericValue::Principal(caller)),
-                            ("to".into(), GenericValue::Principal(to)),
-                            (
-                                "token_identifier".into(),
-                                GenericValue::NatContent(token_identifier),
-                            ),
-                        ],
-                    )))
-                })
-                .unwrap_or(Err(NftError::SelfTransfer)),
-        )
+        to.ne(&caller).then(|| {}).ok_or(NftError::SelfTransfer)?;
+        let old_owner = ledger.owner_of(&token_identifier)?;
+        let old_operator = ledger.operator_of(&token_identifier)?;
+        old_owner
+            .eq(&Some(caller))
+            .then(|| ())
+            .ok_or(NftError::UnauthorizedOwner)?;
+        ledger.update_owner_cache(&token_identifier, old_owner, Some(to));
+        ledger.update_operator_cache(&token_identifier, old_operator, None);
+        ledger.transfer(caller, &token_identifier, Some(to));
+        Ok(Nat::from(ledger.add_tx(
+            caller,
+            "transfer".into(),
+            vec![
+                ("owner".into(), GenericValue::Principal(caller)),
+                ("to".into(), GenericValue::Principal(to)),
+                (
+                    "token_identifier".into(),
+                    GenericValue::NatContent(token_identifier),
+                ),
+            ],
+        )))
     })
 }
 
-#[update(name = "transferFrom", manual_reply = true)]
+#[update(name = "transferFrom")]
 #[candid_method(update, rename = "transferFrom")]
 fn transfer_from(
     owner: Principal,
     to: Principal,
     token_identifier: TokenIdentifier,
-) -> ManualReply<Result<Nat, NftError>> {
+) -> Result<Nat, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
-        ManualReply::one(
-            owner
-                .ne(&to)
-                .then(|| {
-                    let old_owner = ledger.owner_of(&token_identifier)?;
-                    let old_operator = ledger.operator_of(&token_identifier)?;
-                    old_owner
-                        .eq(&Some(owner))
-                        .then(|| ())
-                        .ok_or(NftError::UnauthorizedOwner)?;
-                    old_operator
-                        .eq(&Some(caller))
-                        .then(|| ())
-                        .ok_or(NftError::UnauthorizedOperator)?;
-                    ledger.update_owner_cache(&token_identifier, old_owner, Some(to));
-                    ledger.update_operator_cache(&token_identifier, old_operator, None);
-                    ledger.transfer(caller, &token_identifier, Some(to));
-                    Ok(Nat::from(ledger.add_tx(
-                        caller,
-                        "transferFrom".into(),
-                        vec![
-                            ("owner".into(), GenericValue::Principal(owner)),
-                            ("to".into(), GenericValue::Principal(to)),
-                            (
-                                "token_identifier".into(),
-                                GenericValue::NatContent(token_identifier),
-                            ),
-                        ],
-                    )))
-                })
-                .unwrap_or(Err(NftError::SelfTransfer)),
-        )
+        owner.ne(&to).then(|| {}).ok_or(NftError::SelfTransfer)?;
+        let old_owner = ledger.owner_of(&token_identifier)?;
+        let old_operator = ledger.operator_of(&token_identifier)?;
+        old_owner
+            .eq(&Some(owner))
+            .then(|| ())
+            .ok_or(NftError::UnauthorizedOwner)?;
+        old_operator
+            .eq(&Some(caller))
+            .then(|| ())
+            .ok_or(NftError::UnauthorizedOperator)?;
+        ledger.update_owner_cache(&token_identifier, old_owner, Some(to));
+        ledger.update_operator_cache(&token_identifier, old_operator, None);
+        ledger.transfer(caller, &token_identifier, Some(to));
+        Ok(Nat::from(ledger.add_tx(
+            caller,
+            "transferFrom".into(),
+            vec![
+                ("owner".into(), GenericValue::Principal(owner)),
+                ("to".into(), GenericValue::Principal(to)),
+                (
+                    "token_identifier".into(),
+                    GenericValue::NatContent(token_identifier),
+                ),
+            ],
+        )))
     })
 }
 
-#[update(name = "mint", guard = "is_canister_custodian", manual_reply = true)]
+#[update(name = "mint", guard = "is_canister_custodian")]
 #[candid_method(update, rename = "mint")]
 fn mint(
     to: Principal,
     token_identifier: TokenIdentifier,
     properties: Vec<(String, GenericValue)>,
-) -> ManualReply<Result<Nat, NftError>> {
+) -> Result<Nat, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
-        ManualReply::one(
-            ledger
-                .is_token_existed(&token_identifier)
-                .not()
-                .then(|| {
-                    ledger.add_token_metadata(
-                        token_identifier.clone(),
-                        TokenMetadata {
-                            token_identifier: token_identifier.clone(),
-                            owner: Some(to),
-                            operator: None,
-                            properties,
-                            is_burned: false,
-                            minted_at: time(),
-                            minted_by: caller,
-                            transferred_at: None,
-                            transferred_by: None,
-                            approved_at: None,
-                            approved_by: None,
-                            burned_at: None,
-                            burned_by: None,
-                        },
-                    );
-                    ledger.update_owner_cache(&token_identifier, None, Some(to));
-                    Ok(Nat::from(ledger.add_tx(
-                        caller,
-                        "mint".into(),
-                        vec![
-                            ("to".into(), GenericValue::Principal(to)),
-                            (
-                                "token_identifier".into(),
-                                GenericValue::NatContent(token_identifier),
-                            ),
-                        ],
-                    )))
-                })
-                .unwrap_or(Err(NftError::ExistedNFT)),
-        )
+        ledger
+            .is_token_existed(&token_identifier)
+            .not()
+            .then(|| {})
+            .ok_or(NftError::ExistedNFT)?;
+        ledger.add_token_metadata(
+            token_identifier.clone(),
+            TokenMetadata {
+                token_identifier: token_identifier.clone(),
+                owner: Some(to),
+                operator: None,
+                properties,
+                is_burned: false,
+                minted_at: time(),
+                minted_by: caller,
+                transferred_at: None,
+                transferred_by: None,
+                approved_at: None,
+                approved_by: None,
+                burned_at: None,
+                burned_by: None,
+            },
+        );
+        ledger.update_owner_cache(&token_identifier, None, Some(to));
+        Ok(Nat::from(ledger.add_tx(
+            caller,
+            "mint".into(),
+            vec![
+                ("to".into(), GenericValue::Principal(to)),
+                (
+                    "token_identifier".into(),
+                    GenericValue::NatContent(token_identifier),
+                ),
+            ],
+        )))
     })
 }
 
-#[update(name = "burn", manual_reply = true)]
+#[update(name = "burn")]
 #[candid_method(update, rename = "burn")]
-fn burn(token_identifier: TokenIdentifier) -> ManualReply<Result<Nat, NftError>> {
+fn burn(token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
-        ManualReply::one(ledger.owner_of(&token_identifier).and_then(|old_owner| {
+        ledger.owner_of(&token_identifier).and_then(|old_owner| {
             old_owner
                 .eq(&Some(caller))
                 .then(|| ())
@@ -821,7 +783,7 @@ fn burn(token_identifier: TokenIdentifier) -> ManualReply<Result<Nat, NftError>>
                     GenericValue::NatContent(token_identifier),
                 )],
             )))
-        }))
+        })
     })
 }
 
