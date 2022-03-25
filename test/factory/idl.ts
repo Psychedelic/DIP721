@@ -17,8 +17,9 @@ export const idlFactory = ({ IDL }) => {
     'OperatorNotFound' : IDL.Null,
     'ExistedNFT' : IDL.Null,
     'OwnerNotFound' : IDL.Null,
+    'Other' : IDL.Text,
   });
-  const Result = IDL.Variant({ 'Ok' : IDL.Nat64, 'Err' : NftError });
+  const Result = IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : NftError });
   const Result_1 = IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : NftError });
   const ManualReply = IDL.Record({
     'logo' : IDL.Opt(IDL.Text),
@@ -76,7 +77,7 @@ export const idlFactory = ({ IDL }) => {
     'Err' : NftError,
   });
   const ManualReply_1 = IDL.Variant({
-    'Ok' : IDL.Vec(IDL.Nat64),
+    'Ok' : IDL.Vec(IDL.Nat),
     'Err' : NftError,
   });
   const TokenMetadata = IDL.Record({
@@ -88,7 +89,7 @@ export const idlFactory = ({ IDL }) => {
     'approved_by' : IDL.Opt(IDL.Principal),
     'properties' : IDL.Vec(IDL.Tuple(IDL.Text, GenericValue)),
     'is_burned' : IDL.Bool,
-    'token_identifier' : IDL.Nat64,
+    'token_identifier' : IDL.Nat,
     'burned_at' : IDL.Opt(IDL.Nat64),
     'burned_by' : IDL.Opt(IDL.Principal),
     'minted_at' : IDL.Nat64,
@@ -100,9 +101,9 @@ export const idlFactory = ({ IDL }) => {
   });
   const Stats = IDL.Record({
     'cycles' : IDL.Nat,
-    'total_transactions' : IDL.Nat64,
-    'total_unique_holders' : IDL.Nat64,
-    'total_supply' : IDL.Nat64,
+    'total_transactions' : IDL.Nat,
+    'total_unique_holders' : IDL.Nat,
+    'total_supply' : IDL.Nat,
   });
   const SupportedInterface = IDL.Variant({
     'Burn' : IDL.Null,
@@ -119,9 +120,9 @@ export const idlFactory = ({ IDL }) => {
   });
   const ManualReply_4 = IDL.Variant({ 'Ok' : TxEvent, 'Err' : NftError });
   return IDL.Service({
-    'approve' : IDL.Func([IDL.Principal, IDL.Nat64], [Result], []),
+    'approve' : IDL.Func([IDL.Principal, IDL.Nat], [Result], []),
     'balanceOf' : IDL.Func([IDL.Principal], [Result], ['query']),
-    'burn' : IDL.Func([IDL.Nat64], [Result], []),
+    'burn' : IDL.Func([IDL.Nat], [Result], []),
     'custodians' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'cycles' : IDL.Func([], [IDL.Nat], ['query']),
     'isApprovedForAll' : IDL.Func(
@@ -132,12 +133,12 @@ export const idlFactory = ({ IDL }) => {
     'logo' : IDL.Func([], [IDL.Opt(IDL.Text)], ['query']),
     'metadata' : IDL.Func([], [ManualReply], ['query']),
     'mint' : IDL.Func(
-        [IDL.Principal, IDL.Nat64, IDL.Vec(IDL.Tuple(IDL.Text, GenericValue))],
+        [IDL.Principal, IDL.Nat, IDL.Vec(IDL.Tuple(IDL.Text, GenericValue))],
         [Result],
         [],
       ),
     'name' : IDL.Func([], [IDL.Opt(IDL.Text)], ['query']),
-    'operatorOf' : IDL.Func([IDL.Nat64], [Result_2], ['query']),
+    'operatorOf' : IDL.Func([IDL.Nat], [Result_2], ['query']),
     'operatorTokenIdentifiers' : IDL.Func(
         [IDL.Principal],
         [ManualReply_1],
@@ -148,7 +149,7 @@ export const idlFactory = ({ IDL }) => {
         [ManualReply_2],
         ['query'],
       ),
-    'ownerOf' : IDL.Func([IDL.Nat64], [Result_2], ['query']),
+    'ownerOf' : IDL.Func([IDL.Nat], [Result_2], ['query']),
     'ownerTokenIdentifiers' : IDL.Func(
         [IDL.Principal],
         [ManualReply_1],
@@ -171,14 +172,14 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'symbol' : IDL.Func([], [IDL.Opt(IDL.Text)], ['query']),
-    'tokenMetadata' : IDL.Func([IDL.Nat64], [ManualReply_3], ['query']),
-    'totalSupply' : IDL.Func([], [IDL.Nat64], ['query']),
-    'totalTransactions' : IDL.Func([], [IDL.Nat64], ['query']),
-    'totalUniqueHolders' : IDL.Func([], [IDL.Nat64], ['query']),
-    'transaction' : IDL.Func([IDL.Nat64], [ManualReply_4], ['query']),
-    'transfer' : IDL.Func([IDL.Principal, IDL.Nat64], [Result], []),
+    'tokenMetadata' : IDL.Func([IDL.Nat], [ManualReply_3], ['query']),
+    'totalSupply' : IDL.Func([], [IDL.Nat], ['query']),
+    'totalTransactions' : IDL.Func([], [IDL.Nat], ['query']),
+    'totalUniqueHolders' : IDL.Func([], [IDL.Nat], ['query']),
+    'transaction' : IDL.Func([IDL.Nat], [ManualReply_4], ['query']),
+    'transfer' : IDL.Func([IDL.Principal, IDL.Nat], [Result], []),
     'transferFrom' : IDL.Func(
-        [IDL.Principal, IDL.Principal, IDL.Nat64],
+        [IDL.Principal, IDL.Principal, IDL.Nat],
         [Result],
         [],
       ),

@@ -45,7 +45,8 @@ export type NftError = { 'UnauthorizedOperator' : null } |
   { 'SelfApprove' : null } |
   { 'OperatorNotFound' : null } |
   { 'ExistedNFT' : null } |
-  { 'OwnerNotFound' : null };
+  { 'OwnerNotFound' : null } |
+  { 'Other' : string };
 export type Result = { 'Ok' : bigint } |
   { 'Err' : NftError };
 export type Result_1 = { 'Ok' : boolean } |

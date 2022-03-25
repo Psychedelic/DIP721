@@ -29,7 +29,7 @@ test.serial("simple mint NFT and verify information.", async t => {
         caller: custodianIdentity.getPrincipal(),
         details: [
           ["to", {Principal: aliceIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(1)}]
+          ["token_identifier", {NatContent: BigInt(1)}]
         ]
       }
     });
@@ -247,7 +247,7 @@ test.serial("verify mint information.", async t => {
         caller: custodianIdentity.getPrincipal(),
         details: [
           ["to", {Principal: aliceIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(2)}]
+          ["token_identifier", {NatContent: BigInt(2)}]
         ]
       }
     });
@@ -259,7 +259,7 @@ test.serial("verify mint information.", async t => {
         caller: custodianIdentity.getPrincipal(),
         details: [
           ["to", {Principal: bobIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(3)}]
+          ["token_identifier", {NatContent: BigInt(3)}]
         ]
       }
     });
@@ -271,7 +271,7 @@ test.serial("verify mint information.", async t => {
         caller: custodianIdentity.getPrincipal(),
         details: [
           ["to", {Principal: johnIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(4)}]
+          ["token_identifier", {NatContent: BigInt(4)}]
         ]
       }
     });
@@ -526,7 +526,7 @@ test.serial("verify approve transactions.", async t => {
         caller: bobIdentity.getPrincipal(),
         details: [
           ["operator", {Principal: aliceIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(3)}]
+          ["token_identifier", {NatContent: BigInt(3)}]
         ]
       }
     });
@@ -538,7 +538,7 @@ test.serial("verify approve transactions.", async t => {
         caller: johnIdentity.getPrincipal(),
         details: [
           ["operator", {Principal: aliceIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(4)}]
+          ["token_identifier", {NatContent: BigInt(4)}]
         ]
       }
     });
@@ -550,7 +550,7 @@ test.serial("verify approve transactions.", async t => {
         caller: aliceIdentity.getPrincipal(),
         details: [
           ["operator", {Principal: bobIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(1)}]
+          ["token_identifier", {NatContent: BigInt(1)}]
         ]
       }
     });
@@ -562,7 +562,7 @@ test.serial("verify approve transactions.", async t => {
         caller: aliceIdentity.getPrincipal(),
         details: [
           ["operator", {Principal: johnIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(2)}]
+          ["token_identifier", {NatContent: BigInt(2)}]
         ]
       }
     });
@@ -924,7 +924,7 @@ test.serial("verify approve transactions after updated to new operator.", async 
         caller: aliceIdentity.getPrincipal(),
         details: [
           ["operator", {Principal: custodianIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(1)}]
+          ["token_identifier", {NatContent: BigInt(1)}]
         ]
       }
     });
@@ -936,7 +936,7 @@ test.serial("verify approve transactions after updated to new operator.", async 
         caller: aliceIdentity.getPrincipal(),
         details: [
           ["operator", {Principal: custodianIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(2)}]
+          ["token_identifier", {NatContent: BigInt(2)}]
         ]
       }
     });
@@ -948,7 +948,7 @@ test.serial("verify approve transactions after updated to new operator.", async 
         caller: bobIdentity.getPrincipal(),
         details: [
           ["operator", {Principal: custodianIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(3)}]
+          ["token_identifier", {NatContent: BigInt(3)}]
         ]
       }
     });
@@ -960,7 +960,7 @@ test.serial("verify approve transactions after updated to new operator.", async 
         caller: johnIdentity.getPrincipal(),
         details: [
           ["operator", {Principal: custodianIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(4)}]
+          ["token_identifier", {NatContent: BigInt(4)}]
         ]
       }
     });
@@ -1365,7 +1365,7 @@ test.serial("verify transferFrom transactions.", async t => {
         details: [
           ["owner", {Principal: aliceIdentity.getPrincipal()}],
           ["to", {Principal: custodianIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(1)}]
+          ["token_identifier", {NatContent: BigInt(1)}]
         ]
       }
     });
@@ -1378,7 +1378,7 @@ test.serial("verify transferFrom transactions.", async t => {
         details: [
           ["owner", {Principal: aliceIdentity.getPrincipal()}],
           ["to", {Principal: custodianIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(2)}]
+          ["token_identifier", {NatContent: BigInt(2)}]
         ]
       }
     });
@@ -1391,7 +1391,7 @@ test.serial("verify transferFrom transactions.", async t => {
         details: [
           ["owner", {Principal: bobIdentity.getPrincipal()}],
           ["to", {Principal: custodianIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(3)}]
+          ["token_identifier", {NatContent: BigInt(3)}]
         ]
       }
     });
@@ -1404,7 +1404,7 @@ test.serial("verify transferFrom transactions.", async t => {
         details: [
           ["owner", {Principal: johnIdentity.getPrincipal()}],
           ["to", {Principal: aliceIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(4)}]
+          ["token_identifier", {NatContent: BigInt(4)}]
         ]
       }
     });
@@ -1686,7 +1686,7 @@ test.serial("verify transfer transactions.", async t => {
         details: [
           ["owner", {Principal: custodianIdentity.getPrincipal()}],
           ["to", {Principal: johnIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(1)}]
+          ["token_identifier", {NatContent: BigInt(1)}]
         ]
       }
     });
@@ -1699,7 +1699,7 @@ test.serial("verify transfer transactions.", async t => {
         details: [
           ["owner", {Principal: custodianIdentity.getPrincipal()}],
           ["to", {Principal: johnIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(2)}]
+          ["token_identifier", {NatContent: BigInt(2)}]
         ]
       }
     });
@@ -1712,7 +1712,7 @@ test.serial("verify transfer transactions.", async t => {
         details: [
           ["owner", {Principal: custodianIdentity.getPrincipal()}],
           ["to", {Principal: bobIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(3)}]
+          ["token_identifier", {NatContent: BigInt(3)}]
         ]
       }
     });
@@ -1725,7 +1725,7 @@ test.serial("verify transfer transactions.", async t => {
         details: [
           ["owner", {Principal: aliceIdentity.getPrincipal()}],
           ["to", {Principal: bobIdentity.getPrincipal()}],
-          ["token_identifier", {Nat64Content: BigInt(4)}]
+          ["token_identifier", {NatContent: BigInt(4)}]
         ]
       }
     });
@@ -2459,7 +2459,7 @@ test.serial("verify burn transactions.", async t => {
       Ok: {
         operation: "burn",
         caller: johnIdentity.getPrincipal(),
-        details: [["token_identifier", {Nat64Content: BigInt(1)}]]
+        details: [["token_identifier", {NatContent: BigInt(1)}]]
       }
     });
   });
@@ -2468,7 +2468,7 @@ test.serial("verify burn transactions.", async t => {
       Ok: {
         operation: "burn",
         caller: bobIdentity.getPrincipal(),
-        details: [["token_identifier", {Nat64Content: BigInt(3)}]]
+        details: [["token_identifier", {NatContent: BigInt(3)}]]
       }
     });
   });
@@ -2477,7 +2477,7 @@ test.serial("verify burn transactions.", async t => {
       Ok: {
         operation: "burn",
         caller: johnIdentity.getPrincipal(),
-        details: [["token_identifier", {Nat64Content: BigInt(2)}]]
+        details: [["token_identifier", {NatContent: BigInt(2)}]]
       }
     });
   });
@@ -2486,7 +2486,7 @@ test.serial("verify burn transactions.", async t => {
       Ok: {
         operation: "burn",
         caller: bobIdentity.getPrincipal(),
-        details: [["token_identifier", {Nat64Content: BigInt(4)}]]
+        details: [["token_identifier", {NatContent: BigInt(4)}]]
       }
     });
   });

@@ -30,7 +30,7 @@ type ManualReply = record {
   custodians : vec principal;
   symbol : opt text;
 };
-type ManualReply_1 = variant { Ok : vec nat64; Err : NftError };
+type ManualReply_1 = variant { Ok : vec nat; Err : NftError };
 type ManualReply_2 = variant { Ok : vec TokenMetadata; Err : NftError };
 type ManualReply_3 = variant { Ok : TokenMetadata; Err : NftError };
 type ManualReply_4 = variant { Ok : TxEvent; Err : NftError };
@@ -44,15 +44,16 @@ type NftError = variant {
   OperatorNotFound;
   ExistedNFT;
   OwnerNotFound;
+  Other : text;
 };
-type Result = variant { Ok : nat64; Err : NftError };
+type Result = variant { Ok : nat; Err : NftError };
 type Result_1 = variant { Ok : bool; Err : NftError };
 type Result_2 = variant { Ok : opt principal; Err : NftError };
 type Stats = record {
   cycles : nat;
-  total_transactions : nat64;
-  total_unique_holders : nat64;
-  total_supply : nat64;
+  total_transactions : nat;
+  total_unique_holders : nat;
+  total_supply : nat;
 };
 type SupportedInterface = variant { Burn; Mint; Approval; TransactionHistory };
 type TokenMetadata = record {
@@ -64,7 +65,7 @@ type TokenMetadata = record {
   approved_by : opt principal;
   properties : vec record { text; GenericValue };
   is_burned : bool;
-  token_identifier : nat64;
+  token_identifier : nat;
   burned_at : opt nat64;
   burned_by : opt principal;
   minted_at : nat64;
@@ -98,20 +99,20 @@ type Vec = vec record {
   };
 };
 service : (opt InitArgs) -> {
-  approve : (principal, nat64) -> (Result);
+  approve : (principal, nat) -> (Result);
   balanceOf : (principal) -> (Result) query;
-  burn : (nat64) -> (Result);
+  burn : (nat) -> (Result);
   custodians : () -> (vec principal) query;
   cycles : () -> (nat) query;
   isApprovedForAll : (principal, principal) -> (Result_1) query;
   logo : () -> (opt text) query;
   metadata : () -> (ManualReply) query;
-  mint : (principal, nat64, vec record { text; GenericValue }) -> (Result);
+  mint : (principal, nat, vec record { text; GenericValue }) -> (Result);
   name : () -> (opt text) query;
-  operatorOf : (nat64) -> (Result_2) query;
+  operatorOf : (nat) -> (Result_2) query;
   operatorTokenIdentifiers : (principal) -> (ManualReply_1) query;
   operatorTokenMetadata : (principal) -> (ManualReply_2) query;
-  ownerOf : (nat64) -> (Result_2) query;
+  ownerOf : (nat) -> (Result_2) query;
   ownerTokenIdentifiers : (principal) -> (ManualReply_1) query;
   ownerTokenMetadata : (principal) -> (ManualReply_2) query;
   setApprovalForAll : (principal, bool) -> (Result);
@@ -122,11 +123,11 @@ service : (opt InitArgs) -> {
   stats : () -> (Stats) query;
   supportedInterfaces : () -> (vec SupportedInterface) query;
   symbol : () -> (opt text) query;
-  tokenMetadata : (nat64) -> (ManualReply_3) query;
-  totalSupply : () -> (nat64) query;
-  totalTransactions : () -> (nat64) query;
-  totalUniqueHolders : () -> (nat64) query;
-  transaction : (nat64) -> (ManualReply_4) query;
-  transfer : (principal, nat64) -> (Result);
-  transferFrom : (principal, principal, nat64) -> (Result);
+  tokenMetadata : (nat) -> (ManualReply_3) query;
+  totalSupply : () -> (nat) query;
+  totalTransactions : () -> (nat) query;
+  totalUniqueHolders : () -> (nat) query;
+  transaction : (nat) -> (ManualReply_4) query;
+  transfer : (principal, nat) -> (Result);
+  transferFrom : (principal, principal, nat) -> (Result);
 }
