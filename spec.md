@@ -48,7 +48,7 @@ DIP-721 tries to improve on existing Internet Computer standards in the followin
 ## V1 to V2 -- What's Changed?
 
 - Removed the `Dip721` suffix from methods.
-- Token Identifier is now a `Nat` instead of `String` type.
+- Token Identifier is now a `nat64` instead of `String` type.
 - Simplified data structures.
 - Added safe Rust data storage practices for our [example implememtation](./src/main.rs).
 
@@ -212,7 +212,7 @@ cycles : () -> (nat) query;
 Return total unique user's NFT holders of NFT canister.
 
 ```
-totalUniqueHolders : () -> (nat) query;
+totalUniqueHolders : () -> (nat64) query;
 ```
 
 <br>
@@ -226,7 +226,7 @@ Returns the `Metadata` for `token_identifier`.
 or Returns `NftError` when error.
 
 ```
-tokenMetadata : (nat) -> (variant { Ok : TokenMetadata; Err : NftError }) query;
+tokenMetadata : (nat64) -> (variant { Ok : TokenMetadata; Err : NftError }) query;
 ```
 
 <br>
@@ -240,7 +240,7 @@ Returns the count of NFTs owned by `user`.
 If the user does not own any NFTs, returns an error containing `NftError`.
 
 ```
-balanceOf: (principal) -> (variant { Ok : nat; Err : NftError }) query;
+balanceOf: (principal) -> (variant { Ok : nat64; Err : NftError }) query;
 ```
 
 <br>
@@ -254,7 +254,7 @@ Returns the `Principal` of the owner of the NFT associated with `token_identifie
 Returns an error containing `NftError` if `token_identifier` is invalid.
 
 ```
-ownerOf : (nat) -> (variant { Ok : opt principal; Err : NftError }) query;
+ownerOf : (nat64) -> (variant { Ok : opt principal; Err : NftError }) query;
 ```
 
 <br>
@@ -268,7 +268,7 @@ Returns the list of the `token_identifier` of the NFT associated with owner.
 Returns an error containing `NftError` if `principal` is invalid.
 
 ```
-ownerTokenIdentifiers : (principal) -> (variant { Ok : vec nat; Err : NftError }) query;
+ownerTokenIdentifiers : (principal) -> (variant { Ok : vec nat64; Err : NftError }) query;
 ```
 
 <br>
@@ -296,7 +296,7 @@ Returns the `Principal` of the operator of the NFT associated with `token_identi
 Returns an error containing `NftError` if `token_identifier` is invalid.
 
 ```
-operatorOf : (nat) -> (variant { Ok : opt principal; Err : NftError }) query;
+operatorOf : (nat64) -> (variant { Ok : opt principal; Err : NftError }) query;
 ```
 
 <br>
@@ -310,7 +310,7 @@ Returns the list of the `token_identifier` of the NFT associated with operator.
 Returns an error containing `NftError` if `principal` is invalid.
 
 ```
-operatorTokenIdentifiers : (principal) -> (variant { Ok : vec nat; Err : NftError }) query;
+operatorTokenIdentifiers : (principal) -> (variant { Ok : vec nat64; Err : NftError }) query;
 ```
 
 <br>
@@ -345,12 +345,12 @@ supportedInterfaces : () -> (vec SupportedInterface) query;
 
 ---
 
-Returns a `Nat` that represents the total current supply of NFT tokens.
+Returns a `nat64` that represents the total current supply of NFT tokens.
 
 NFTs that are minted and later burned explicitly or sent to the zero address should also count towards totalSupply.
 
 ```
-totalSupply : () -> (nat) query;
+totalSupply : () -> (nat64) query;
 ```
 
 <br>
@@ -371,10 +371,10 @@ Calling `approve` grants the `operator` the ability to make update calls to the 
 
 Approvals given by the `approve` function are independent from approvals given by the `setApprovalForAll`.
 
-If the approval goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
+If the approval goes through, returns a `nat64` that represents the CAP History transaction ID that can be used at the `transaction` method.
 
 ```
-approve : (principal, nat) -> (variant { Ok : nat; Err : NftError });
+approve : (principal, nat64) -> (variant { Ok : nat64; Err : NftError });
 ```
 
 <br>
@@ -387,10 +387,10 @@ Enable or disable an `operator` to manage all of the tokens for the caller of th
 
 Approvals granted by the `approve` function are independent from the approvals granted by `setApprovalForAll` function.
 
-If the approval goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
+If the approval goes through, returns a `nat64` that represents the CAP History transaction ID that can be used at the `transaction` method.
 
 ```
-setApprovalForAll : (principal, bool) -> (variant { Ok : nat; Err : NftError });
+setApprovalForAll : (principal, bool) -> (variant { Ok : nat64; Err : NftError });
 ```
 
 <br>
@@ -421,10 +421,10 @@ This interface adds transfer functionality to DIP-721 tokens.
 
 ---
 
-Sends the callers nft `token_identifier` to `to` and returns a `Nat` that represents a transaction id that can be used at the `transaction` method.
+Sends the callers nft `token_identifier` to `to` and returns a `nat64` that represents a transaction id that can be used at the `transaction` method.
 
 ```
-transfer : (principal, nat) -> (variant { Ok : nat; Err : NftError });
+transfer : (principal, nat64) -> (variant { Ok : nat64; Err : NftError });
 ```
 
 <br>
@@ -435,10 +435,10 @@ transfer : (principal, nat) -> (variant { Ok : nat; Err : NftError });
 
 Caller of this method is able to transfer the NFT `token_identifier` that is in `from`'s balance to `to`'s balance if the caller is an approved operator to do so.
 
-If the transfer goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
+If the transfer goes through, returns a `nat64` that represents the CAP History transaction ID that can be used at the `transaction` method.
 
 ```
-transferFrom : (principal, principal, nat) -> (variant { Ok : nat; Err : NftError });
+transferFrom : (principal, principal, nat64) -> (variant { Ok : nat64; Err : NftError });
 ```
 
 <br>
@@ -459,10 +459,10 @@ This interface adds mint functionality to DIP-721 tokens.
 
 Mint an NFT for principal `to` that has an ID of `token_identifier` and metadata akin to `properties`. Implementations are encouraged to only allow minting by the owner of the canister.
 
-If the mint goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
+If the mint goes through, returns a `nat64` that represents the CAP History transaction ID that can be used at the `transaction` method.
 
 ```
-mint : (principal, nat, vec record { text; GenericValue }) -> (variant { Ok : nat; Err : NftError });
+mint : (principal, nat64, vec record { text; GenericValue }) -> (variant { Ok : nat64; Err : NftError });
 ```
 
 An example on how to mint a single nft is provided in the [mint-example.md](./docs/mint-example.md)
@@ -484,7 +484,7 @@ Burn an NFT identified by `token_identifier`. Calling burn on a token sets the o
 Implementations are encouraged to only allow burning by the owner of the `token_identifier`.
 
 ```
-burn : (nat) -> (variant { Ok : nat; Err : NftError });
+burn : (nat64) -> (variant { Ok : nat64; Err : NftError });
 ```
 
 ---
@@ -500,7 +500,7 @@ Returns the `TxEvent` that corresponds with `tx_id`.
 If there is no `TxEvent` that corresponds with the `tx_id` entered, returns a `NftError.TxNotFound`.
 
 ```
-transaction : (nat) -> (variant { Ok : TxEvent; Err : NftError }) query;
+transaction : (nat64) -> (variant { Ok : TxEvent; Err : NftError }) query;
 ```
 
 <br>
@@ -509,10 +509,10 @@ transaction : (nat) -> (variant { Ok : TxEvent; Err : NftError }) query;
 
 ---
 
-Returns a `Nat` that represents the total number of transactions that have occured in the NFT canister.
+Returns a `nat64` that represents the total number of transactions that have occured in the NFT canister.
 
 ```
-totalTransactions : () -> (nat) query;
+totalTransactions : () -> (nat64) query;
 ```
 
 <br>
@@ -541,9 +541,9 @@ type Metadata = record {
 ```
 type Stats = record {
   cycles : nat;
-  total_transactions : nat;
-  total_unique_holders : nat;
-  total_supply : nat;
+  total_transactions : nat64;
+  total_unique_holders : nat64;
+  total_supply : nat64;
 };
 ```
 
@@ -579,7 +579,7 @@ type TokenMetadata = record {
   operator : opt principal;
   properties : vec record { text; GenericValue };
   is_burned : bool;
-  token_identifier : nat;
+  token_identifier : nat64;
   burned_at : opt nat64;
   burned_by : opt principal;
   approved_at : opt nat64;
