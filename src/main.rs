@@ -2,10 +2,9 @@
 /// https://github.com/dfinity/cdk-rs/pull/210/files
 use ic_cdk::api::call::ManualReply;
 use ic_cdk::api::{caller, canister_balance128, time, trap};
-use ic_cdk::export::candid::{candid_method, CandidType, Deserialize, Int, Nat};
+use ic_cdk::export::candid::{candid_method, CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use ic_cdk_macros::{init, post_upgrade, pre_upgrade, query, update};
-use num_traits::cast::ToPrimitive;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::ops::Not;
@@ -30,28 +29,28 @@ mod types {
     }
     #[derive(CandidType)]
     pub struct Stats {
-        pub total_transactions: Nat,
-        pub total_supply: Nat,
-        pub cycles: Nat,
-        pub total_unique_holders: Nat,
+        pub total_transactions: usize,
+        pub total_supply: usize,
+        pub cycles: u128,
+        pub total_unique_holders: usize,
     }
-    pub type TokenIdentifier = Nat;
+    pub type TokenIdentifier = u64;
     #[derive(CandidType, Deserialize)]
     pub enum GenericValue {
         BoolContent(bool),
         TextContent(String),
         BlobContent(Vec<u8>),
         Principal(Principal),
-        NatContent(Nat),
         Nat8Content(u8),
         Nat16Content(u16),
         Nat32Content(u32),
         Nat64Content(u64),
-        IntContent(Int),
+        NatContent(u128),
         Int8Content(i8),
         Int16Content(i16),
         Int32Content(i32),
         Int64Content(i64),
+        IntContent(i128),
         NestedContent(Vec<(String, GenericValue)>),
     }
     /// Please notice that the example of internal data structure as below doesn't represent your final storage, please use with caution.
@@ -98,7 +97,6 @@ mod types {
         SelfApprove,
         SelfTransfer,
         TxNotFound,
-        Other(String),
     }
 }
 
@@ -225,7 +223,7 @@ mod ledger {
                 self.owners
                     .entry(new_owner)
                     .or_insert_with(HashSet::new)
-                    .insert(token_identifier.clone());
+                    .insert(*token_identifier);
             }
         }
 
@@ -276,7 +274,7 @@ mod ledger {
                 self.operators
                     .entry(new_operator)
                     .or_insert_with(HashSet::new)
-                    .insert(token_identifier.clone());
+                    .insert(*token_identifier);
             }
         }
 
@@ -427,28 +425,28 @@ fn set_custodians(custodians: HashSet<Principal>) {
 // ==================================================================================================
 #[query(name = "totalTransactions")]
 #[candid_method(query, rename = "totalTransactions")]
-fn total_transactions() -> Nat {
-    ledger::with(|ledger| Nat::from(ledger.tx_count()))
+fn total_transactions() -> usize {
+    ledger::with(|ledger| ledger.tx_count())
 }
 
 /// Returns the total current supply of NFT tokens.
 /// NFTs that are minted and later burned explicitly or sent to the zero address should also count towards totalSupply.
 #[query(name = "totalSupply")]
 #[candid_method(query, rename = "totalSupply")]
-fn total_supply() -> Nat {
-    ledger::with(|ledger| Nat::from(ledger.tokens_count()))
+fn total_supply() -> usize {
+    ledger::with(|ledger| ledger.tokens_count())
 }
 
 #[query(name = "cycles")]
 #[candid_method(query, rename = "cycles")]
-fn cycles() -> Nat {
-    Nat::from(canister_balance128())
+fn cycles() -> u128 {
+    canister_balance128()
 }
 
 #[query(name = "totalUniqueHolders")]
 #[candid_method(query, rename = "totalUniqueHolders")]
-fn total_unique_holders() -> Nat {
-    ledger::with(|ledger| Nat::from(ledger.owners_count()))
+fn total_unique_holders() -> usize {
+    ledger::with(|ledger| ledger.owners_count())
 }
 
 #[query(name = "stats")]
@@ -481,11 +479,11 @@ fn supported_interfaces() -> Vec<SupportedInterface> {
 // ==================================================================================================
 #[query(name = "balanceOf")]
 #[candid_method(query, rename = "balanceOf")]
-fn balance_of(owner: Principal) -> Result<Nat, NftError> {
+fn balance_of(owner: Principal) -> Result<usize, NftError> {
     ledger::with(|ledger| {
         ledger
             .owner_token_identifiers(&owner)
-            .map(|token_identifiers| Nat::from(token_identifiers.len()))
+            .map(|token_identifiers| token_identifiers.len())
     })
 }
 
@@ -567,16 +565,8 @@ fn is_approved_for_all(owner: Principal, operator: Principal) -> Result<bool, Nf
 // ==================================================================================================
 #[query(name = "transaction", manual_reply = true)]
 #[candid_method(query, rename = "transaction")]
-fn transaction(tx_id: Nat) -> ManualReply<Result<TxEvent, NftError>> {
-    ledger::with(|ledger| {
-        ManualReply::one(
-            tx_id
-                .0
-                .to_usize()
-                .ok_or_else(|| NftError::Other("failed to cast usize from nat".into()))
-                .and_then(|index| ledger.get_tx(index - 1).ok_or(NftError::TxNotFound)),
-        )
-    })
+fn transaction(index: usize) -> ManualReply<Result<TxEvent, NftError>> {
+    ledger::with(|ledger| ManualReply::one(ledger.get_tx(index - 1).ok_or(NftError::TxNotFound)))
 }
 
 // ==================================================================================================
@@ -584,7 +574,7 @@ fn transaction(tx_id: Nat) -> ManualReply<Result<TxEvent, NftError>> {
 // ==================================================================================================
 #[update(name = "approve")]
 #[candid_method(update, rename = "approve")]
-fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
+fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<usize, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
         operator
@@ -602,17 +592,17 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
             Some(operator),
         );
         ledger.approve(caller, &token_identifier, Some(operator));
-        Ok(Nat::from(ledger.add_tx(
+        Ok(ledger.add_tx(
             caller,
             "approve".into(),
             vec![
                 ("operator".into(), GenericValue::Principal(operator)),
                 (
                     "token_identifier".into(),
-                    GenericValue::NatContent(token_identifier),
+                    GenericValue::Nat64Content(token_identifier),
                 ),
             ],
-        )))
+        ))
     })
 }
 
@@ -621,7 +611,7 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
 /// otherwise set all caller's nfts to `operator`
 #[update(name = "setApprovalForAll")]
 #[candid_method(update, rename = "setApprovalForAll")]
-fn set_approval_for_all(operator: Principal, is_approved: bool) -> Result<Nat, NftError> {
+fn set_approval_for_all(operator: Principal, is_approved: bool) -> Result<usize, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
         operator
@@ -635,20 +625,20 @@ fn set_approval_for_all(operator: Principal, is_approved: bool) -> Result<Nat, N
             ledger.update_operator_cache(&token_identifier, old_operator, new_operator);
             ledger.approve(caller, &token_identifier, new_operator);
         }
-        Ok(Nat::from(ledger.add_tx(
+        Ok(ledger.add_tx(
             caller,
             "setApprovalForAll".into(),
             vec![
                 ("operator".into(), GenericValue::Principal(operator)),
                 ("is_approved".into(), GenericValue::BoolContent(is_approved)),
             ],
-        )))
+        ))
     })
 }
 
 #[update(name = "transfer")]
 #[candid_method(update, rename = "transfer")]
-fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
+fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<usize, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
         to.ne(&caller).then(|| {}).ok_or(NftError::SelfTransfer)?;
@@ -661,7 +651,7 @@ fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, Nft
         ledger.update_owner_cache(&token_identifier, old_owner, Some(to));
         ledger.update_operator_cache(&token_identifier, old_operator, None);
         ledger.transfer(caller, &token_identifier, Some(to));
-        Ok(Nat::from(ledger.add_tx(
+        Ok(ledger.add_tx(
             caller,
             "transfer".into(),
             vec![
@@ -669,10 +659,10 @@ fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, Nft
                 ("to".into(), GenericValue::Principal(to)),
                 (
                     "token_identifier".into(),
-                    GenericValue::NatContent(token_identifier),
+                    GenericValue::Nat64Content(token_identifier),
                 ),
             ],
-        )))
+        ))
     })
 }
 
@@ -682,7 +672,7 @@ fn transfer_from(
     owner: Principal,
     to: Principal,
     token_identifier: TokenIdentifier,
-) -> Result<Nat, NftError> {
+) -> Result<usize, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
         owner.ne(&to).then(|| {}).ok_or(NftError::SelfTransfer)?;
@@ -699,7 +689,7 @@ fn transfer_from(
         ledger.update_owner_cache(&token_identifier, old_owner, Some(to));
         ledger.update_operator_cache(&token_identifier, old_operator, None);
         ledger.transfer(caller, &token_identifier, Some(to));
-        Ok(Nat::from(ledger.add_tx(
+        Ok(ledger.add_tx(
             caller,
             "transferFrom".into(),
             vec![
@@ -707,10 +697,10 @@ fn transfer_from(
                 ("to".into(), GenericValue::Principal(to)),
                 (
                     "token_identifier".into(),
-                    GenericValue::NatContent(token_identifier),
+                    GenericValue::Nat64Content(token_identifier),
                 ),
             ],
-        )))
+        ))
     })
 }
 
@@ -720,7 +710,7 @@ fn mint(
     to: Principal,
     token_identifier: TokenIdentifier,
     properties: Vec<(String, GenericValue)>,
-) -> Result<Nat, NftError> {
+) -> Result<usize, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
         ledger
@@ -729,9 +719,9 @@ fn mint(
             .then(|| {})
             .ok_or(NftError::ExistedNFT)?;
         ledger.add_token_metadata(
-            token_identifier.clone(),
+            token_identifier,
             TokenMetadata {
-                token_identifier: token_identifier.clone(),
+                token_identifier,
                 owner: Some(to),
                 operator: None,
                 properties,
@@ -747,23 +737,23 @@ fn mint(
             },
         );
         ledger.update_owner_cache(&token_identifier, None, Some(to));
-        Ok(Nat::from(ledger.add_tx(
+        Ok(ledger.add_tx(
             caller,
             "mint".into(),
             vec![
                 ("to".into(), GenericValue::Principal(to)),
                 (
                     "token_identifier".into(),
-                    GenericValue::NatContent(token_identifier),
+                    GenericValue::Nat64Content(token_identifier),
                 ),
             ],
-        )))
+        ))
     })
 }
 
 #[update(name = "burn")]
 #[candid_method(update, rename = "burn")]
-fn burn(token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
+fn burn(token_identifier: TokenIdentifier) -> Result<usize, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
         ledger.owner_of(&token_identifier).and_then(|old_owner| {
@@ -775,14 +765,14 @@ fn burn(token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
             ledger.update_owner_cache(&token_identifier, old_owner, None);
             ledger.update_operator_cache(&token_identifier, old_operator, None);
             ledger.burn(caller, &token_identifier);
-            Ok(Nat::from(ledger.add_tx(
+            Ok(ledger.add_tx(
                 caller,
                 "burn".into(),
                 vec![(
                     "token_identifier".into(),
-                    GenericValue::NatContent(token_identifier),
+                    GenericValue::Nat64Content(token_identifier),
                 )],
-            )))
+            ))
         })
     })
 }
