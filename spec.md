@@ -561,6 +561,7 @@ type GenericValue = variant {
   Nat16Content : nat16;
   Int32Content : int32;
   Int8Content : int8;
+  FloatContent : float64;
   Int16Content : int16;
   BlobContent : vec nat8;
   NestedContent : Vec;
@@ -704,6 +705,7 @@ type Vec = vec record {
     Nat16Content : nat16;
     Int32Content : int32;
     Int8Content : int8;
+    FloatContent : float64;
     Int16Content : int16;
     BlobContent : vec nat8;
     NestedContent : Vec;

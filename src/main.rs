@@ -51,6 +51,7 @@ mod types {
         Int32Content(i32),
         Int64Content(i64),
         IntContent(i128),
+        FloatContent(f64), // motoko only support f64
         NestedContent(Vec<(String, GenericValue)>),
     }
     /// Please notice that the example of internal data structure as below doesn't represent your final storage, please use with caution.

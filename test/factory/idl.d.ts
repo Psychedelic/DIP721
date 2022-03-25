@@ -9,6 +9,7 @@ export type GenericValue = { 'Nat64Content' : bigint } |
   { 'Nat16Content' : number } |
   { 'Int32Content' : number } |
   { 'Int8Content' : number } |
+  { 'FloatContent' : number } |
   { 'Int16Content' : number } |
   { 'BlobContent' : Array<number> } |
   { 'NestedContent' : Vec } |
@@ -95,6 +96,7 @@ export type Vec = Array<
       { 'Nat16Content' : number } |
       { 'Int32Content' : number } |
       { 'Int8Content' : number } |
+      { 'FloatContent' : number } |
       { 'Int16Content' : number } |
       { 'BlobContent' : Array<number> } |
       { 'NestedContent' : Vec } |
