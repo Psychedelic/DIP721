@@ -482,7 +482,6 @@ dependencies = [
  "candid",
  "ic-cdk",
  "ic-cdk-macros",
- "num-traits",
  "serde",
 ]
 
