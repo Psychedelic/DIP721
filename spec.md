@@ -48,7 +48,7 @@ DIP-721 tries to improve on existing Internet Computer standards in the followin
 ## V1 to V2 -- What's Changed?
 
 - Removed the `Dip721` suffix from methods.
-- Token Identifier is now a `Nat` instead of `String` type.
+- Token Identifier is now a `nat` instead of `String` type.
 - Simplified data structures.
 - Added safe Rust data storage practices for our [example implememtation](./src/main.rs).
 
@@ -73,6 +73,18 @@ Returns the `Metadata` of the NFT canister which includes `custodians`, `logo`, 
 
 ```
 metadata: () -> (Metadata) query;
+```
+
+<br>
+
+#### stats
+
+---
+
+Returns the `Stats` of the NFT canister which includes `cycles`, `totalSupply`, `totalTransactions`, `totalUniqueHolders`.
+
+```
+stats: () -> (Stats) query;
 ```
 
 <br>
@@ -177,6 +189,30 @@ Caller must be the custodian of NFT canister.
 
 ```
 setCustodians : (vec principal) -> ();
+```
+
+<br>
+
+#### cycles
+
+---
+
+Return cycles balance of NFT canister.
+
+```
+cycles : () -> (nat) query;
+```
+
+<br>
+
+#### totalUniqueHolders
+
+---
+
+Return total unique user's NFT holders of NFT canister.
+
+```
+totalUniqueHolders : () -> (nat) query;
 ```
 
 <br>
@@ -309,7 +345,7 @@ supportedInterfaces : () -> (vec SupportedInterface) query;
 
 ---
 
-Returns a `Nat` that represents the total current supply of NFT tokens.
+Returns a `nat` that represents the total current supply of NFT tokens.
 
 NFTs that are minted and later burned explicitly or sent to the zero address should also count towards totalSupply.
 
@@ -335,7 +371,7 @@ Calling `approve` grants the `operator` the ability to make update calls to the 
 
 Approvals given by the `approve` function are independent from approvals given by the `setApprovalForAll`.
 
-If the approval goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
+If the approval goes through, returns a `nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
 
 ```
 approve : (principal, nat) -> (variant { Ok : nat; Err : NftError });
@@ -351,7 +387,7 @@ Enable or disable an `operator` to manage all of the tokens for the caller of th
 
 Approvals granted by the `approve` function are independent from the approvals granted by `setApprovalForAll` function.
 
-If the approval goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
+If the approval goes through, returns a `nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
 
 ```
 setApprovalForAll : (principal, bool) -> (variant { Ok : nat; Err : NftError });
@@ -385,7 +421,7 @@ This interface adds transfer functionality to DIP-721 tokens.
 
 ---
 
-Sends the callers nft `token_identifier` to `to` and returns a `Nat` that represents a transaction id that can be used at the `transaction` method.
+Sends the callers nft `token_identifier` to `to` and returns a `nat` that represents a transaction id that can be used at the `transaction` method.
 
 ```
 transfer : (principal, nat) -> (variant { Ok : nat; Err : NftError });
@@ -399,7 +435,7 @@ transfer : (principal, nat) -> (variant { Ok : nat; Err : NftError });
 
 Caller of this method is able to transfer the NFT `token_identifier` that is in `from`'s balance to `to`'s balance if the caller is an approved operator to do so.
 
-If the transfer goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
+If the transfer goes through, returns a `nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
 
 ```
 transferFrom : (principal, principal, nat) -> (variant { Ok : nat; Err : NftError });
@@ -423,7 +459,7 @@ This interface adds mint functionality to DIP-721 tokens.
 
 Mint an NFT for principal `to` that has an ID of `token_identifier` and metadata akin to `properties`. Implementations are encouraged to only allow minting by the owner of the canister.
 
-If the mint goes through, returns a `Nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
+If the mint goes through, returns a `nat` that represents the CAP History transaction ID that can be used at the `transaction` method.
 
 ```
 mint : (principal, nat, vec record { text; GenericValue }) -> (variant { Ok : nat; Err : NftError });
@@ -473,7 +509,7 @@ transaction : (nat) -> (variant { Ok : TxEvent; Err : NftError }) query;
 
 ---
 
-Returns a `Nat` that represents the total number of transactions that have occured in the NFT canister.
+Returns a `nat` that represents the total number of transactions that have occured in the NFT canister.
 
 ```
 totalTransactions : () -> (nat) query;
@@ -500,6 +536,17 @@ type Metadata = record {
 };
 ```
 
+### Stats
+
+```
+type Stats = record {
+  cycles : nat;
+  total_transactions : nat;
+  total_unique_holders : nat;
+  total_supply : nat;
+};
+```
+
 ### GenericValue
 
 ```
@@ -514,6 +561,7 @@ type GenericValue = variant {
   Nat16Content : nat16;
   Int32Content : int32;
   Int8Content : int8;
+  FloatContent : float64;
   Int16Content : int16;
   BlobContent : vec nat8;
   NestedContent : Vec;
@@ -609,7 +657,8 @@ type NftError = variant {
   TxNotFound;
   SelfApprove;
   OperatorNotFound;
-  Unauthorized;
+  UnauthorizedOwner;
+  UnauthorizedOperator;
   ExistedNFT;
   OwnerNotFound;
   Other : text;
@@ -656,6 +705,7 @@ type Vec = vec record {
     Nat16Content : nat16;
     Int32Content : int32;
     Int8Content : int8;
+    FloatContent : float64;
     Int16Content : int16;
     BlobContent : vec nat8;
     NestedContent : Vec;

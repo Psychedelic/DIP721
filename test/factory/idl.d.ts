@@ -9,6 +9,7 @@ export type GenericValue = { 'Nat64Content' : bigint } |
   { 'Nat16Content' : number } |
   { 'Int32Content' : number } |
   { 'Int8Content' : number } |
+  { 'FloatContent' : number } |
   { 'Int16Content' : number } |
   { 'BlobContent' : Array<number> } |
   { 'NestedContent' : Vec } |
@@ -20,11 +21,7 @@ export interface InitArgs {
   'custodians' : [] | [Array<Principal>],
   'symbol' : [] | [string],
 }
-export type ManualReply = { 'Ok' : bigint } |
-  { 'Err' : NftError };
-export type ManualReply_1 = { 'Ok' : boolean } |
-  { 'Err' : NftError };
-export interface ManualReply_2 {
+export interface ManualReply {
   'logo' : [] | [string],
   'name' : [] | [string],
   'created_at' : bigint,
@@ -32,25 +29,36 @@ export interface ManualReply_2 {
   'custodians' : Array<Principal>,
   'symbol' : [] | [string],
 }
-export type ManualReply_3 = { 'Ok' : [] | [Principal] } |
+export type ManualReply_1 = { 'Ok' : Array<bigint> } |
   { 'Err' : NftError };
-export type ManualReply_4 = { 'Ok' : Array<bigint> } |
+export type ManualReply_2 = { 'Ok' : Array<TokenMetadata> } |
   { 'Err' : NftError };
-export type ManualReply_5 = { 'Ok' : Array<TokenMetadata> } |
+export type ManualReply_3 = { 'Ok' : TokenMetadata } |
   { 'Err' : NftError };
-export type ManualReply_6 = { 'Ok' : TokenMetadata } |
+export type ManualReply_4 = { 'Ok' : TxEvent } |
   { 'Err' : NftError };
-export type ManualReply_7 = { 'Ok' : TxEvent } |
-  { 'Err' : NftError };
-export type NftError = { 'SelfTransfer' : null } |
+export type NftError = { 'UnauthorizedOperator' : null } |
+  { 'SelfTransfer' : null } |
   { 'TokenNotFound' : null } |
+  { 'UnauthorizedOwner' : null } |
   { 'TxNotFound' : null } |
   { 'SelfApprove' : null } |
   { 'OperatorNotFound' : null } |
-  { 'Unauthorized' : null } |
   { 'ExistedNFT' : null } |
   { 'OwnerNotFound' : null } |
   { 'Other' : string };
+export type Result = { 'Ok' : bigint } |
+  { 'Err' : NftError };
+export type Result_1 = { 'Ok' : boolean } |
+  { 'Err' : NftError };
+export type Result_2 = { 'Ok' : [] | [Principal] } |
+  { 'Err' : NftError };
+export interface Stats {
+  'cycles' : bigint,
+  'total_transactions' : bigint,
+  'total_unique_holders' : bigint,
+  'total_supply' : bigint,
+}
 export type SupportedInterface = { 'Burn' : null } |
   { 'Mint' : null } |
   { 'Approval' : null } |
@@ -89,6 +97,7 @@ export type Vec = Array<
       { 'Nat16Content' : number } |
       { 'Int32Content' : number } |
       { 'Int8Content' : number } |
+      { 'FloatContent' : number } |
       { 'Int16Content' : number } |
       { 'BlobContent' : Array<number> } |
       { 'NestedContent' : Vec } |
@@ -97,44 +106,45 @@ export type Vec = Array<
   ]
 >;
 export interface _SERVICE {
-  'approve' : (arg_0: Principal, arg_1: bigint) => Promise<ManualReply>,
-  'balanceOf' : (arg_0: Principal) => Promise<ManualReply>,
-  'burn' : (arg_0: bigint) => Promise<ManualReply>,
+  'approve' : (arg_0: Principal, arg_1: bigint) => Promise<Result>,
+  'balanceOf' : (arg_0: Principal) => Promise<Result>,
+  'burn' : (arg_0: bigint) => Promise<Result>,
   'custodians' : () => Promise<Array<Principal>>,
+  'cycles' : () => Promise<bigint>,
   'isApprovedForAll' : (arg_0: Principal, arg_1: Principal) => Promise<
-      ManualReply_1
+      Result_1
     >,
   'logo' : () => Promise<[] | [string]>,
-  'metadata' : () => Promise<ManualReply_2>,
+  'metadata' : () => Promise<ManualReply>,
   'mint' : (
       arg_0: Principal,
       arg_1: bigint,
       arg_2: Array<[string, GenericValue]>,
-    ) => Promise<ManualReply>,
+    ) => Promise<Result>,
   'name' : () => Promise<[] | [string]>,
-  'operatorOf' : (arg_0: bigint) => Promise<ManualReply_3>,
-  'operatorTokenIdentifiers' : (arg_0: Principal) => Promise<ManualReply_4>,
-  'operatorTokenMetadata' : (arg_0: Principal) => Promise<ManualReply_5>,
-  'ownerOf' : (arg_0: bigint) => Promise<ManualReply_3>,
-  'ownerTokenIdentifiers' : (arg_0: Principal) => Promise<ManualReply_4>,
-  'ownerTokenMetadata' : (arg_0: Principal) => Promise<ManualReply_5>,
-  'setApprovalForAll' : (arg_0: Principal, arg_1: boolean) => Promise<
-      ManualReply
-    >,
+  'operatorOf' : (arg_0: bigint) => Promise<Result_2>,
+  'operatorTokenIdentifiers' : (arg_0: Principal) => Promise<ManualReply_1>,
+  'operatorTokenMetadata' : (arg_0: Principal) => Promise<ManualReply_2>,
+  'ownerOf' : (arg_0: bigint) => Promise<Result_2>,
+  'ownerTokenIdentifiers' : (arg_0: Principal) => Promise<ManualReply_1>,
+  'ownerTokenMetadata' : (arg_0: Principal) => Promise<ManualReply_2>,
+  'setApprovalForAll' : (arg_0: Principal, arg_1: boolean) => Promise<Result>,
   'setCustodians' : (arg_0: Array<Principal>) => Promise<undefined>,
   'setLogo' : (arg_0: string) => Promise<undefined>,
   'setName' : (arg_0: string) => Promise<undefined>,
   'setSymbol' : (arg_0: string) => Promise<undefined>,
+  'stats' : () => Promise<Stats>,
   'supportedInterfaces' : () => Promise<Array<SupportedInterface>>,
   'symbol' : () => Promise<[] | [string]>,
-  'tokenMetadata' : (arg_0: bigint) => Promise<ManualReply_6>,
+  'tokenMetadata' : (arg_0: bigint) => Promise<ManualReply_3>,
   'totalSupply' : () => Promise<bigint>,
   'totalTransactions' : () => Promise<bigint>,
-  'transaction' : (arg_0: bigint) => Promise<ManualReply_7>,
-  'transfer' : (arg_0: Principal, arg_1: bigint) => Promise<ManualReply>,
+  'totalUniqueHolders' : () => Promise<bigint>,
+  'transaction' : (arg_0: bigint) => Promise<ManualReply_4>,
+  'transfer' : (arg_0: Principal, arg_1: bigint) => Promise<Result>,
   'transferFrom' : (
       arg_0: Principal,
       arg_1: Principal,
       arg_2: bigint,
-    ) => Promise<ManualReply>,
+    ) => Promise<Result>,
 }
