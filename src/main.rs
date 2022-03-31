@@ -1,5 +1,3 @@
-/// TODO: use ManualReply when new ic_cdk version release
-/// https://github.com/dfinity/cdk-rs/pull/210/files
 use ic_cdk::api::call::ManualReply;
 use ic_cdk::api::{caller, canister_balance128, time, trap};
 use ic_cdk::export::candid::{candid_method, CandidType, Deserialize, Int, Nat};

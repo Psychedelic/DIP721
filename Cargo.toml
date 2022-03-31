@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 candid = "0.7.4"
-ic-cdk = { git = "https://github.com/dfinity/cdk-rs", rev = "a44316600ec1fd918567facd8aa4a650ef765228" }
-ic-cdk-macros = { git = "https://github.com/dfinity/cdk-rs", rev = "a44316600ec1fd918567facd8aa4a650ef765228" }
+ic-cdk = "0.5.0"
+ic-cdk-macros = "0.5.0"
 serde = "1.0.132"
 num-traits = "0.2.14"
