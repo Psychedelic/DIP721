@@ -1,5 +1,6 @@
-import FileHound from "filehound";
 import fs from "fs";
+
+import FileHound from "filehound";
 
 const args = process.argv;
 if (args.length < 3) throw new Error("Missing path arguments");

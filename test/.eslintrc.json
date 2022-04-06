@@ -39,14 +39,15 @@
     "comma-dangle": ["error", "never"],
     "semi": ["error", "always"],
     "max-len": ["error", {"code": 120, "ignoreComments": true, "ignoreTrailingComments": true}],
-    "sort-imports": [
+    "import/order": [
       "error",
       {
-        "ignoreCase": false,
-        "ignoreDeclarationSort": false,
-        "ignoreMemberSort": false,
-        "memberSyntaxSortOrder": ["none", "all", "multiple", "single"],
-        "allowSeparatedGroups": false
+        "groups": ["builtin", "external", "internal"],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
       }
     ]
   },

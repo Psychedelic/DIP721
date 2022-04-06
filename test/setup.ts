@@ -1,9 +1,11 @@
+import {readFileSync} from "fs";
+
 import {Actor, HttpAgent, Identity} from "@dfinity/agent";
 import {Ed25519KeyIdentity} from "@dfinity/identity";
-import {_SERVICE as Service} from "./factory/idl.d";
 import fetch from "isomorphic-fetch";
+
 import {idlFactory} from "./factory/idl";
-import {readFileSync} from "fs";
+import {_SERVICE as Service} from "./factory/idl.d";
 
 export const aliceIdentity = Ed25519KeyIdentity.generate();
 export const bobIdentity = Ed25519KeyIdentity.generate();
