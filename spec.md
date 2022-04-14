@@ -594,18 +594,6 @@ type TokenMetadata = record {
 
 All of the following are reserved by the spec to verify and display assets across all applications.
 
-Noted that `data` and `location` are mutual exclusive, only one of them is required.
-
-#### data - **Required**
-
----
-
-blob asset data.
-
-```
-{"data", BlobContent(<blob asset data of the NFT>)}
-```
-
 #### location - **Required**
 
 ---
@@ -645,6 +633,18 @@ URL location for the preview thumbnail for asset content
 ```
 {"thumbnail", TextContent(<thumbnail URL of the NFT>)}
 ```
+
+#### Private properties - **Optional**
+
+---
+
+To store any private properties that should not be displayed in a dapps frontend (eg. Plug Wallet's trait chips), simply prefix the key with an `_`.
+
+```
+{"_hidden", TextContent(<developer-focused property>)}
+```
+
+Developers should keep in mind though, that storing large amounts of data directly in the metadata could lead to errors due to the IC's 2MB message limit, and is not recommended.
 
 <br>
 
