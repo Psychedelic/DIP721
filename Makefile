@@ -31,6 +31,7 @@ test: stop-replica build
 
 format:
 	npm --prefix test run prettier
+	npm --prefix test run lint
 	cargo fmt --all
 
 lint:

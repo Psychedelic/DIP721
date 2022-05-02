@@ -1,5 +1,6 @@
-import {aliceActor, bobActor, custodianActor, custodianIdentity, johnActor} from "../setup";
 import test, {Assertions} from "ava";
+
+import {aliceActor, bobActor, custodianActor, custodianIdentity, johnActor} from "../setup";
 
 const normalActors = [aliceActor, bobActor, johnActor];
 const allActors = [...normalActors, custodianActor];

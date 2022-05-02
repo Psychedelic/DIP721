@@ -1,3 +1,6 @@
+import test from "ava";
+
+import {TokenMetadata} from "../factory/idl.d";
 import {
   aliceActor,
   aliceIdentity,
@@ -8,8 +11,6 @@ import {
   johnActor,
   johnIdentity
 } from "../setup";
-import {TokenMetadata} from "../factory/idl.d";
-import test from "ava";
 
 const normalActors = [aliceActor, bobActor, johnActor];
 const allActors = [...normalActors, custodianActor];
