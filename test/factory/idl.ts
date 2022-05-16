@@ -125,6 +125,8 @@ export const idlFactory = ({ IDL }) => {
     'burn' : IDL.Func([IDL.Nat], [Result], []),
     'custodians' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'cycles' : IDL.Func([], [IDL.Nat], ['query']),
+    'dfxInfo' : IDL.Func([], [IDL.Text], ['query']),
+    'gitCommitHash' : IDL.Func([], [IDL.Text], ['query']),
     'isApprovedForAll' : IDL.Func(
         [IDL.Principal, IDL.Principal],
         [Result_1],
@@ -160,6 +162,7 @@ export const idlFactory = ({ IDL }) => {
         [ManualReply_2],
         ['query'],
       ),
+    'rustToolchainInfo' : IDL.Func([], [IDL.Text], ['query']),
     'setApprovalForAll' : IDL.Func([IDL.Principal, IDL.Bool], [Result], []),
     'setCustodians' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
     'setLogo' : IDL.Func([IDL.Text], [], []),
