@@ -104,6 +104,8 @@ service : (opt InitArgs) -> {
   burn : (nat) -> (Result);
   custodians : () -> (vec principal) query;
   cycles : () -> (nat) query;
+  dfxInfo : () -> (text) query;
+  gitCommitHash : () -> (text) query;
   isApprovedForAll : (principal, principal) -> (Result_1) query;
   logo : () -> (opt text) query;
   metadata : () -> (ManualReply) query;
@@ -115,6 +117,7 @@ service : (opt InitArgs) -> {
   ownerOf : (nat) -> (Result_2) query;
   ownerTokenIdentifiers : (principal) -> (ManualReply_1) query;
   ownerTokenMetadata : (principal) -> (ManualReply_2) query;
+  rustToolchainInfo : () -> (text) query;
   setApprovalForAll : (principal, bool) -> (Result);
   setCustodians : (vec principal) -> ();
   setLogo : (text) -> ();

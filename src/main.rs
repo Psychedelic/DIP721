@@ -1,3 +1,4 @@
+use compile_time_run::run_command_str;
 use ic_cdk::api::call::ManualReply;
 use ic_cdk::api::{caller, canister_balance128, time, trap};
 use ic_cdk::export::candid::{candid_method, CandidType, Deserialize, Int, Nat};
@@ -362,6 +363,27 @@ fn is_canister_custodian() -> Result<(), String> {
             .then(|| ())
             .ok_or_else(|| "Caller is not an custodian of canister".into())
     })
+}
+
+// ==================================================================================================
+// cover metadata
+// ==================================================================================================
+#[query(name = "gitCommitHash")]
+#[candid_method(query, rename = "gitCommitHash")]
+fn git_commit_hash() -> &'static str {
+    run_command_str!("git", "rev-parse", "HEAD")
+}
+
+#[query(name = "rustToolchainInfo")]
+#[candid_method(query, rename = "rustToolchainInfo")]
+fn rust_toolchain_info() -> &'static str {
+    run_command_str!("rustup", "show")
+}
+
+#[query(name = "dfxInfo")]
+#[candid_method(query, rename = "dfxInfo")]
+fn dfx_info() -> &'static str {
+    run_command_str!("dfx", "--version")
 }
 
 // ==================================================================================================
