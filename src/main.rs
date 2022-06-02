@@ -91,7 +91,7 @@ mod types {
         ExistedNFT,
         SelfApprove,
         SelfTransfer,
-        Other(String),
+        // Other(String), // for debugging
     }
 }
 
