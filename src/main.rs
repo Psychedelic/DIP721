@@ -785,16 +785,14 @@ fn burn(token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
         ledger.update_owner_cache(&token_identifier, old_owner, None);
         ledger.update_operator_cache(&token_identifier, old_operator, None);
         ledger.burn(caller, &token_identifier);
-        
+
         insert_sync(IndefiniteEvent {
             caller,
             operation: "mint".into(),
-            details: vec![
-                (
-                    "token_identifier".into(),
-                    DetailValue::from(token_identifier.to_string()),
-                ),
-            ],
+            details: vec![(
+                "token_identifier".into(),
+                DetailValue::from(token_identifier.to_string()),
+            )],
         });
 
         Ok(ledger.inc_tx())
