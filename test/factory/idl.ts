@@ -109,7 +109,6 @@ export const idlFactory = ({ IDL }) => {
     'Burn' : IDL.Null,
     'Mint' : IDL.Null,
     'Approval' : IDL.Null,
-    'TransactionHistory' : IDL.Null,
   });
   const ManualReply_3 = IDL.Variant({ 'Ok' : TokenMetadata, 'Err' : NftError });
   const TxEvent = IDL.Record({
@@ -179,7 +178,6 @@ export const idlFactory = ({ IDL }) => {
     'totalSupply' : IDL.Func([], [IDL.Nat], ['query']),
     'totalTransactions' : IDL.Func([], [IDL.Nat], ['query']),
     'totalUniqueHolders' : IDL.Func([], [IDL.Nat], ['query']),
-    'transaction' : IDL.Func([IDL.Nat], [ManualReply_4], ['query']),
     'transfer' : IDL.Func([IDL.Principal, IDL.Nat], [Result], []),
     'transferFrom' : IDL.Func(
         [IDL.Principal, IDL.Principal, IDL.Nat],

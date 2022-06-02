@@ -61,8 +61,7 @@ export interface Stats {
 }
 export type SupportedInterface = { 'Burn' : null } |
   { 'Mint' : null } |
-  { 'Approval' : null } |
-  { 'TransactionHistory' : null };
+  { 'Approval' : null };
 export interface TokenMetadata {
   'transferred_at' : [] | [bigint],
   'transferred_by' : [] | [Principal],
@@ -143,7 +142,6 @@ export interface _SERVICE {
   'totalSupply' : () => Promise<bigint>,
   'totalTransactions' : () => Promise<bigint>,
   'totalUniqueHolders' : () => Promise<bigint>,
-  'transaction' : (arg_0: bigint) => Promise<ManualReply_4>,
   'transfer' : (arg_0: Principal, arg_1: bigint) => Promise<Result>,
   'transferFrom' : (
       arg_0: Principal,
