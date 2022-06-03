@@ -1,4 +1,6 @@
 import type { Principal } from '@dfinity/principal';
+import type { ActorMethod } from '@dfinity/agent';
+
 export type GenericValue = { 'Nat64Content' : bigint } |
   { 'Nat32Content' : number } |
   { 'BoolContent' : boolean } |
@@ -16,6 +18,7 @@ export type GenericValue = { 'Nat64Content' : bigint } |
   { 'Principal' : Principal } |
   { 'TextContent' : string };
 export interface InitArgs {
+  'cap' : [] | [Principal],
   'logo' : [] | [string],
   'name' : [] | [string],
   'custodians' : [] | [Array<Principal>],
@@ -35,18 +38,14 @@ export type ManualReply_2 = { 'Ok' : Array<TokenMetadata> } |
   { 'Err' : NftError };
 export type ManualReply_3 = { 'Ok' : TokenMetadata } |
   { 'Err' : NftError };
-export type ManualReply_4 = { 'Ok' : TxEvent } |
-  { 'Err' : NftError };
 export type NftError = { 'UnauthorizedOperator' : null } |
   { 'SelfTransfer' : null } |
   { 'TokenNotFound' : null } |
   { 'UnauthorizedOwner' : null } |
-  { 'TxNotFound' : null } |
   { 'SelfApprove' : null } |
   { 'OperatorNotFound' : null } |
   { 'ExistedNFT' : null } |
-  { 'OwnerNotFound' : null } |
-  { 'Other' : string };
+  { 'OwnerNotFound' : null };
 export type Result = { 'Ok' : bigint } |
   { 'Err' : NftError };
 export type Result_1 = { 'Ok' : boolean } |
@@ -77,12 +76,6 @@ export interface TokenMetadata {
   'minted_at' : bigint,
   'minted_by' : Principal,
 }
-export interface TxEvent {
-  'time' : bigint,
-  'operation' : string,
-  'details' : Array<[string, GenericValue]>,
-  'caller' : Principal,
-}
 export type Vec = Array<
   [
     string,
@@ -105,47 +98,40 @@ export type Vec = Array<
   ]
 >;
 export interface _SERVICE {
-  'approve' : (arg_0: Principal, arg_1: bigint) => Promise<Result>,
-  'balanceOf' : (arg_0: Principal) => Promise<Result>,
-  'burn' : (arg_0: bigint) => Promise<Result>,
-  'custodians' : () => Promise<Array<Principal>>,
-  'cycles' : () => Promise<bigint>,
-  'dfxInfo' : () => Promise<string>,
-  'gitCommitHash' : () => Promise<string>,
-  'isApprovedForAll' : (arg_0: Principal, arg_1: Principal) => Promise<
-      Result_1
-    >,
-  'logo' : () => Promise<[] | [string]>,
-  'metadata' : () => Promise<ManualReply>,
-  'mint' : (
-      arg_0: Principal,
-      arg_1: bigint,
-      arg_2: Array<[string, GenericValue]>,
-    ) => Promise<Result>,
-  'name' : () => Promise<[] | [string]>,
-  'operatorOf' : (arg_0: bigint) => Promise<Result_2>,
-  'operatorTokenIdentifiers' : (arg_0: Principal) => Promise<ManualReply_1>,
-  'operatorTokenMetadata' : (arg_0: Principal) => Promise<ManualReply_2>,
-  'ownerOf' : (arg_0: bigint) => Promise<Result_2>,
-  'ownerTokenIdentifiers' : (arg_0: Principal) => Promise<ManualReply_1>,
-  'ownerTokenMetadata' : (arg_0: Principal) => Promise<ManualReply_2>,
-  'rustToolchainInfo' : () => Promise<string>,
-  'setApprovalForAll' : (arg_0: Principal, arg_1: boolean) => Promise<Result>,
-  'setCustodians' : (arg_0: Array<Principal>) => Promise<undefined>,
-  'setLogo' : (arg_0: string) => Promise<undefined>,
-  'setName' : (arg_0: string) => Promise<undefined>,
-  'setSymbol' : (arg_0: string) => Promise<undefined>,
-  'stats' : () => Promise<Stats>,
-  'supportedInterfaces' : () => Promise<Array<SupportedInterface>>,
-  'symbol' : () => Promise<[] | [string]>,
-  'tokenMetadata' : (arg_0: bigint) => Promise<ManualReply_3>,
-  'totalSupply' : () => Promise<bigint>,
-  'totalTransactions' : () => Promise<bigint>,
-  'totalUniqueHolders' : () => Promise<bigint>,
-  'transfer' : (arg_0: Principal, arg_1: bigint) => Promise<Result>,
-  'transferFrom' : (
-      arg_0: Principal,
-      arg_1: Principal,
-      arg_2: bigint,
-    ) => Promise<Result>,
+  'approve' : ActorMethod<[Principal, bigint], Result>,
+  'balanceOf' : ActorMethod<[Principal], Result>,
+  'burn' : ActorMethod<[bigint], Result>,
+  'custodians' : ActorMethod<[], Array<Principal>>,
+  'cycles' : ActorMethod<[], bigint>,
+  'dfxInfo' : ActorMethod<[], string>,
+  'gitCommitHash' : ActorMethod<[], string>,
+  'isApprovedForAll' : ActorMethod<[Principal, Principal], Result_1>,
+  'logo' : ActorMethod<[], [] | [string]>,
+  'metadata' : ActorMethod<[], ManualReply>,
+  'mint' : ActorMethod<
+    [Principal, bigint, Array<[string, GenericValue]>],
+    Result,
+  >,
+  'name' : ActorMethod<[], [] | [string]>,
+  'operatorOf' : ActorMethod<[bigint], Result_2>,
+  'operatorTokenIdentifiers' : ActorMethod<[Principal], ManualReply_1>,
+  'operatorTokenMetadata' : ActorMethod<[Principal], ManualReply_2>,
+  'ownerOf' : ActorMethod<[bigint], Result_2>,
+  'ownerTokenIdentifiers' : ActorMethod<[Principal], ManualReply_1>,
+  'ownerTokenMetadata' : ActorMethod<[Principal], ManualReply_2>,
+  'rustToolchainInfo' : ActorMethod<[], string>,
+  'setApprovalForAll' : ActorMethod<[Principal, boolean], Result>,
+  'setCustodians' : ActorMethod<[Array<Principal>], undefined>,
+  'setLogo' : ActorMethod<[string], undefined>,
+  'setName' : ActorMethod<[string], undefined>,
+  'setSymbol' : ActorMethod<[string], undefined>,
+  'stats' : ActorMethod<[], Stats>,
+  'supportedInterfaces' : ActorMethod<[], Array<SupportedInterface>>,
+  'symbol' : ActorMethod<[], [] | [string]>,
+  'tokenMetadata' : ActorMethod<[bigint], ManualReply_3>,
+  'totalSupply' : ActorMethod<[], bigint>,
+  'totalTransactions' : ActorMethod<[], bigint>,
+  'totalUniqueHolders' : ActorMethod<[], bigint>,
+  'transfer' : ActorMethod<[Principal, bigint], Result>,
+  'transferFrom' : ActorMethod<[Principal, Principal, bigint], Result>,
 }

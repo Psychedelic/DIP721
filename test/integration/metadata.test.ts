@@ -5,25 +5,25 @@ import {aliceActor, bobActor, custodianActor, custodianIdentity, johnActor} from
 const normalActors = [aliceActor, bobActor, johnActor];
 const allActors = [...normalActors, custodianActor];
 
-const testName = async (t: Assertions) => {
+test("CRUD name", async (t: Assertions) => {
   (await Promise.all(allActors.map(actor => actor.name()))).forEach(result => t.deepEqual(result, []));
   await t.notThrowsAsync(custodianActor.setName("nft"));
   (await Promise.all(allActors.map(actor => actor.name()))).forEach(result => t.deepEqual(result, ["nft"]));
-};
+});
 
-const testLogo = async (t: Assertions) => {
+test("CRUD logo", async (t: Assertions) => {
   (await Promise.all(allActors.map(actor => actor.logo()))).forEach(result => t.deepEqual(result, []));
   await t.notThrowsAsync(custodianActor.setLogo("nftLogo"));
   (await Promise.all(allActors.map(actor => actor.logo()))).forEach(result => t.deepEqual(result, ["nftLogo"]));
-};
+});
 
-const testSymbol = async (t: Assertions) => {
+test("CRUD symbol", async (t: Assertions) => {
   (await Promise.all(allActors.map(actor => actor.symbol()))).forEach(result => t.deepEqual(result, []));
   await t.notThrowsAsync(custodianActor.setSymbol("nftSymbol"));
   (await Promise.all(allActors.map(actor => actor.symbol()))).forEach(result => t.deepEqual(result, ["nftSymbol"]));
-};
+});
 
-const testCustodians = async (t: Assertions) => {
+test("CRUD custodians", async (t: Assertions) => {
   (await Promise.all(allActors.map(actor => actor.custodians()))).forEach(result =>
     t.is(result.filter(custodians => custodians.toText() === custodianIdentity.getPrincipal().toText()).length, 1)
   );
@@ -33,22 +33,24 @@ const testCustodians = async (t: Assertions) => {
   (await Promise.all(allActors.map(actor => actor.custodians()))).forEach(result =>
     t.deepEqual(result, [custodianIdentity.getPrincipal()])
   );
-};
+});
 
-test("simple CRUD metadata.", async t => {
-  await Promise.all([testName(t), testLogo(t), testSymbol(t), testCustodians(t)]);
+test("interfaces", async (t: Assertions) => {
+  (await Promise.all(allActors.map(actor => actor.supportedInterfaces()))).forEach(result => {
+    t.deepEqual(result, [{Approval: null}, {Mint: null}, {Burn: null}]);
+  });
+});
+
+test("metadata", async t => {
   (await Promise.all(allActors.map(actor => actor.metadata()))).forEach(result => {
     t.deepEqual(result.name, ["nft"]);
     t.deepEqual(result.logo, ["nftLogo"]);
     t.deepEqual(result.symbol, ["nftSymbol"]);
     t.deepEqual(result.custodians, [custodianIdentity.getPrincipal()]);
   });
-  (await Promise.all(allActors.map(actor => actor.supportedInterfaces()))).forEach(result => {
-    t.deepEqual(result, [{Approval: null}, {Mint: null}, {Burn: null}, {TransactionHistory: null}]);
-  });
 });
 
-test("error on unauthorize updating metadata.", async t => {
+test("error on unauthorized metadata update", async t => {
   // setName error when caller is not an custodian
   (await Promise.allSettled(normalActors.map(actor => actor.setName("nft")))).forEach(promise =>
     t.is(promise.status, "rejected")

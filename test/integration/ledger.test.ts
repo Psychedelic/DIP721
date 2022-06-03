@@ -1045,7 +1045,7 @@ test.serial("verify approve information after updated to new operator.", async t
   );
 });
 
-test.serial("error on query old operator information.", async t => {
+test.serial("error on querying old operator information.", async t => {
   // operatorTokenMetadata error when non-existed operator
   (await Promise.all(allActors.map(actor => actor.operatorTokenMetadata(aliceIdentity.getPrincipal())))).forEach(
     result => {
@@ -1100,7 +1100,7 @@ test.serial("error on self transferFrom.", async t => {
 });
 
 // invalid owner
-test.serial("error on unauthorize owner when transferFrom.", async t => {
+test.serial("error on unauthorized owner when calling transferFrom.", async t => {
   t.deepEqual(
     await custodianActor.transferFrom(custodianIdentity.getPrincipal(), aliceIdentity.getPrincipal(), BigInt(1)),
     {
@@ -1122,7 +1122,7 @@ test.serial("error on unauthorize owner when transferFrom.", async t => {
 });
 
 // invalid operator
-test.serial("error on unauthorize operator when transferFrom.", async t => {
+test.serial("error on unauthorized operator when calling transferFrom.", async t => {
   t.deepEqual(await bobActor.transferFrom(aliceIdentity.getPrincipal(), custodianIdentity.getPrincipal(), BigInt(1)), {
     Err: {UnauthorizedOperator: null}
   });
@@ -1396,7 +1396,7 @@ test.serial("error on self transfer.", async t => {
 });
 
 // invalid owner
-test.serial("error on unauthorize owner when transfer.", async t => {
+test.serial("error on unauthorized owner when calling transfer.", async t => {
   t.deepEqual(await aliceActor.transfer(custodianIdentity.getPrincipal(), BigInt(1)), {
     Err: {UnauthorizedOwner: null}
   });
