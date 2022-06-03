@@ -788,7 +788,7 @@ fn burn(token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
 
         insert_sync(IndefiniteEvent {
             caller,
-            operation: "mint".into(),
+            operation: "burn".into(),
             details: vec![(
                 "token_identifier".into(),
                 DetailValue::from(token_identifier.to_string()),
