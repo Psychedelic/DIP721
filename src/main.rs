@@ -603,7 +603,7 @@ fn approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat
             ],
         });
 
-        Ok(ledger.inc_tx())
+        Ok(ledger.inc_tx() - 1)
     })
 }
 
@@ -643,7 +643,7 @@ fn set_approval_for_all(operator: Principal, is_approved: bool) -> Result<Nat, N
             ],
         });
 
-        Ok(ledger.inc_tx())
+        Ok(ledger.inc_tx() - 1)
     })
 }
 
@@ -676,7 +676,7 @@ fn transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, Nft
             ],
         });
 
-        Ok(ledger.inc_tx())
+        Ok(ledger.inc_tx() - 1)
     })
 }
 
@@ -717,7 +717,7 @@ fn transfer_from(
             ],
         });
 
-        Ok(ledger.inc_tx())
+        Ok(ledger.inc_tx() - 1)
     })
 }
 
@@ -767,7 +767,7 @@ fn mint(
             ],
         });
 
-        Ok(ledger.inc_tx())
+        Ok(ledger.inc_tx() - 1)
     })
 }
 
@@ -795,7 +795,7 @@ fn burn(token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
             )],
         });
 
-        Ok(ledger.inc_tx())
+        Ok(ledger.inc_tx() - 1)
     })
 }
 

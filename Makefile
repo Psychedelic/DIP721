@@ -5,7 +5,7 @@ TEST_CUSTODIAN_PRINCIPAL = $(shell cat test/custodian-test-principal)
 CAP_ID ?= $(shell cd cap && dfx canister id ic-history-router)
 
 cap-local:
-	# Verifying cap... $(shell [[ -z "$(CAP_ID)" ]] && cd cap && dfx deploy ic-history-router)
+	# Verifying cap... $(shell [ -z "$(CAP_ID)" ] && cd cap && dfx deploy ic-history-router)
 	@echo "cap local canister id: $(CAP_ID)"
 
 init:
@@ -32,7 +32,7 @@ start-replica:
 stop-replica:
 	dfx stop
 
-test: stop-replica build cap-local
+test: clean-dfx build cap-local
 	dfx canister install nft --argument '(opt record{custodians=opt vec{principal"$(TEST_CUSTODIAN_PRINCIPAL)"}; cap=opt principal"$(CAP_ID)"})'
 	npm --prefix test t
 	dfx stop
