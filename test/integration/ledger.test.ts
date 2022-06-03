@@ -2453,7 +2453,7 @@ test.serial("verify transactions after burn.", async t => {
       }
     },
     {
-      id: "25",
+      id: "27",
       tx: {
         caller: bobIdentity.getPrincipal(),
         operation: "burn",
