@@ -212,7 +212,6 @@ test.serial("Get cap token contract root bucket", async t => {
     witness: false
   });
   capRootBucket = bucketResponse.toString();
-  console.log(" [DEBUG] Root bucket:", capRootBucket);
   t.true(capRootBucket.length > 0);
 });
 
