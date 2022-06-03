@@ -2445,7 +2445,7 @@ test.serial("verify transactions after burn.", async t => {
     {
       id: "26",
       tx: {
-        caller: bobIdentity.getPrincipal(),
+        caller: johnIdentity.getPrincipal(),
         operation: "burn",
         details: {
           token_identifier: {Text: "2"}
