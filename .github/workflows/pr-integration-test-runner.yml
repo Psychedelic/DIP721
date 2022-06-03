@@ -85,5 +85,8 @@ jobs:
           chmod +x ./didc-linux64
           ln -s "$(pwd)/didc-linux64" /usr/local/bin/didc
 
+      - name: Install ic-cdk-optimizer
+        run: cargo install ic-cdk-optimizer
+
       - name: Integration tests
         run: make lint && make test
