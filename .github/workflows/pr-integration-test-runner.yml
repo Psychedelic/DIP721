@@ -85,7 +85,16 @@ jobs:
           chmod +x ./didc-linux64
           ln -s "$(pwd)/didc-linux64" /usr/local/bin/didc
 
+      - name: Cache ic-cdk-optimizer
+        id: cache-optimizer
+        uses: actions/cache@v2
+        with:
+          path: |
+            $(which ic-cdk-optimizer)
+          key: cache-optimizer-${{ hashFiles('dfx.json')}}
+
       - name: Install ic-cdk-optimizer
+        if: steps.cache-optimizer.outputs.cache-hit != 'true'
         run: cargo install ic-cdk-optimizer
 
       - name: Integration tests
