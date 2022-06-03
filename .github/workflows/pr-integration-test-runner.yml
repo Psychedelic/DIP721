@@ -48,6 +48,10 @@ jobs:
           override: true
           target: wasm32-unknown-unknown
 
+      - name: Install ic-cdk-optimizer
+        if: steps.cache-rust.outputs.cache-hit != 'true'
+        run: cargo install ic-cdk-optimizer
+
       # - name: Install ic-cdk-optimizer
         # if: steps.cache-rust.outputs.cache-hit != 'true'
         # run: cargo install ic-cdk-optimizer
@@ -84,18 +88,6 @@ jobs:
           wget https://github.com/dfinity/candid/releases/download/"$DFX_CANDID_RELEASE"/didc-linux64
           chmod +x ./didc-linux64
           ln -s "$(pwd)/didc-linux64" /usr/local/bin/didc
-
-      - name: Cache ic-cdk-optimizer
-        id: cache-optimizer
-        uses: actions/cache@v2
-        with:
-          path: |
-            $(which ic-cdk-optimizer)
-          key: cache-optimizer-${{ hashFiles('dfx.json')}}
-
-      - name: Install ic-cdk-optimizer
-        if: steps.cache-optimizer.outputs.cache-hit != 'true'
-        run: cargo install ic-cdk-optimizer
 
       - name: Integration tests
         run: make lint && make test
