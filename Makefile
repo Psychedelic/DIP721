@@ -1,9 +1,15 @@
-.PHONY: init candid build local stop-replica test format lint clean
+.PHONY: init candid build local cap-local start-replica stop-replica test format lint clean dfx-clean
 
-LOCAL_CUSTODIAN_PRINCIPAL=$(shell dfx identity get-principal)
-TEST_CUSTODIAN_PRINCIPAL=$(shell cat test/custodian-test-principal)
+LOCAL_CUSTODIAN_PRINCIPAL = $(shell dfx identity get-principal)
+TEST_CUSTODIAN_PRINCIPAL = $(shell cat test/custodian-test-principal)
+CAP_ID ?= $(shell cd cap && dfx canister id ic-history-router)
+
+cap-local:
+	# Verifying cap... $(shell [[ -z "$(CAP_ID)" ]] && cd cap && dfx deploy ic-history-router)
+	@echo "cap local canister id: $(CAP_ID)"
 
 init:
+	git submodule update --init --recursive
 	npm --prefix test i
 	cargo check
 
@@ -13,19 +19,21 @@ candid:
 	echo "// @ts-nocheck" > test/factory/idl.ts
 	didc bind -t js nft.did >> test/factory/idl.ts
 
-build: candid
-	dfx ping local || dfx start --clean --background
+build: candid start-replica
 	dfx canister create nft
 	dfx build nft
 
-local: build
-	dfx deploy nft --argument '(opt record{custodians=opt vec{principal"$(LOCAL_CUSTODIAN_PRINCIPAL)"}})'
+local: build cap-local
+	dfx deploy nft --argument '(opt record{custodians=opt vec{principal"$(LOCAL_CUSTODIAN_PRINCIPAL)"}; cap=opt principal"$(CAP_ID)"})'
+
+start-replica:
+	dfx ping local || dfx start --clean --background
 
 stop-replica:
 	dfx stop
 
-test: stop-replica build
-	dfx canister install nft --argument '(opt record{custodians=opt vec{principal"$(TEST_CUSTODIAN_PRINCIPAL)"}})'
+test: stop-replica build cap-local
+	dfx canister install nft --argument '(opt record{custodians=opt vec{principal"$(TEST_CUSTODIAN_PRINCIPAL)"}; cap=opt principal"$(CAP_ID)"})'
 	npm --prefix test t
 	dfx stop
 
@@ -39,6 +47,9 @@ lint:
 	cargo fmt --all -- --check
 	cargo clippy --all-targets --all-features -- -D warnings -D clippy::all
 
-clean:
+clean: clean-dfx
 	cargo clean
 	npm --prefix test run clean
+
+clean-dfx: stop-replica
+	rm -rf .dfx cap/.dfx
