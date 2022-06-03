@@ -16,7 +16,7 @@ export const johnIdentity = Ed25519KeyIdentity.generate();
 const secretKey = readFileSync("./custodian-test-secret", {encoding: "utf8"});
 export const custodianIdentity = Ed25519KeyIdentity.fromSecretKey(Buffer.from(secretKey, "hex"));
 
-const canisterIds = JSON.parse(readFileSync("../canister_ids.json", {encoding: "utf8"}));
+const canisterIds = JSON.parse(readFileSync("../.dfx/local/canister_ids.json", {encoding: "utf8"}));
 
 const createActor = async (identity: Identity): Promise<Service> => {
   const agent = new HttpAgent({host: "http://127.0.0.1:8000", fetch, identity});
