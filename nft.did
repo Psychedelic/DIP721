@@ -43,7 +43,6 @@ type NftError = variant {
   OperatorNotFound;
   ExistedNFT;
   OwnerNotFound;
-  Other : text;
 };
 type Result = variant { Ok : nat; Err : NftError };
 type Result_1 = variant { Ok : bool; Err : NftError };
