@@ -2,6 +2,7 @@ import {readFileSync} from "fs";
 
 import {Actor, HttpAgent, Identity} from "@dfinity/agent";
 import {Ed25519KeyIdentity} from "@dfinity/identity";
+import {CapRouter} from "@psychedelic/cap-js";
 import fetch from "isomorphic-fetch";
 
 import {idlFactory} from "./factory/idl";
@@ -16,13 +17,17 @@ export const johnIdentity = Ed25519KeyIdentity.generate();
 const secretKey = readFileSync("./custodian-test-secret", {encoding: "utf8"});
 export const custodianIdentity = Ed25519KeyIdentity.fromSecretKey(Buffer.from(secretKey, "hex"));
 
-const canisterIds = JSON.parse(readFileSync("../.dfx/local/canister_ids.json", {encoding: "utf8"}));
+export const nftCanisterId = JSON.parse(readFileSync("../.dfx/local/canister_ids.json", {encoding: "utf8"}))["nft"]
+  .local as string;
+export const capCanisterId = JSON.parse(readFileSync("../cap/.dfx/local/canister_ids.json", {encoding: "utf8"}))[
+  "ic-history-router"
+].local as string;
 
 const createActor = async (identity: Identity): Promise<Service> => {
   const agent = new HttpAgent({host: "http://127.0.0.1:8000", fetch, identity});
 
   const actor = Actor.createActor<Service>(idlFactory, {
-    canisterId: canisterIds["nft"].local as string,
+    canisterId: nftCanisterId,
     agent
   });
 
@@ -39,3 +44,13 @@ export const aliceActor = await createActor(aliceIdentity);
 export const bobActor = await createActor(bobIdentity);
 export const johnActor = await createActor(johnIdentity);
 export const custodianActor = await createActor(custodianIdentity);
+
+export const capRouter = await CapRouter.init({
+  canisterId: capCanisterId,
+  host: "http://127.0.0.1:8000"
+});
+
+export const stringify = (obj: any) =>
+  JSON.stringify(obj, (_, value) =>
+    typeof value === "bigint" ? value.toString() : typeof value === "object" && value._isPrincipal ? value.toText() : value, 2
+  );
