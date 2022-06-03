@@ -182,7 +182,10 @@ test.serial("error on query non-existed information.", async t => {
 
 test.serial("Get cap token contract root bucket", async t => {
   const principal = Principal.fromText(nftCanisterId);
-  let { canister: bucketResponse} = await capRouter.get_token_contract_root_bucket({tokenId: principal, witness: false});
+  const {canister: bucketResponse} = await capRouter.get_token_contract_root_bucket({
+    tokenId: principal,
+    witness: false
+  });
   capRootBucket = bucketResponse.toString();
   console.log(" [DEBUG] Root bucket:", capRootBucket);
   t.true(capRootBucket.length > 0);
@@ -190,14 +193,16 @@ test.serial("Get cap token contract root bucket", async t => {
 
 test.serial("verify mint transaction", async t => {
   // get transaction
-  const transaction = await (await CapRoot.init({
-    "host": "http://127.0.0.1:8000",
-    "canisterId": capRootBucket,
-  })).get_transaction(BigInt(0));
-  
+  const transaction = await (
+    await CapRoot.init({
+      host: "http://127.0.0.1:8000",
+      canisterId: capRootBucket
+    })
+  ).get_transaction(BigInt(0));
+
   console.log(" [DEBUG] Transaction:\n", stringify(transaction));
   t.like(transaction, {
-    Found: [[{"operation": "mint", "details": [["token_identifier", {"Text": "1"}]]}]],
+    Found: [[{operation: "mint", details: [["token_identifier", {Text: "1"}]]}]]
   });
 });
 

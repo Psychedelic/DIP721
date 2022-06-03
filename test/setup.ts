@@ -50,7 +50,14 @@ export const capRouter = await CapRouter.init({
   host: "http://127.0.0.1:8000"
 });
 
-export const stringify = (obj: any) =>
-  JSON.stringify(obj, (_, value) =>
-    typeof value === "bigint" ? value.toString() : typeof value === "object" && value._isPrincipal ? value.toText() : value, 2
+export const stringify = (obj: object): string =>
+  JSON.stringify(
+    obj,
+    (_, value) =>
+      (typeof value === "bigint"
+        ? value.toString()
+        : typeof value === "object" && value._isPrincipal
+        ? value.toText()
+        : value),
+    2
   );
