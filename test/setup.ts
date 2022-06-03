@@ -8,6 +8,8 @@ import fetch from "isomorphic-fetch";
 import {idlFactory} from "./factory/idl";
 import {_SERVICE as Service} from "./factory/idl.d";
 
+export const host = "http://127.0.0.1:8000";
+
 export const aliceIdentity = Ed25519KeyIdentity.generate();
 export const bobIdentity = Ed25519KeyIdentity.generate();
 export const johnIdentity = Ed25519KeyIdentity.generate();
@@ -24,7 +26,7 @@ export const capCanisterId = JSON.parse(readFileSync("../cap/.dfx/local/canister
 ].local as string;
 
 const createActor = async (identity: Identity): Promise<Service> => {
-  const agent = new HttpAgent({host: "http://127.0.0.1:8000", fetch, identity});
+  const agent = new HttpAgent({host, fetch, identity});
 
   const actor = Actor.createActor<Service>(idlFactory, {
     canisterId: nftCanisterId,
@@ -47,17 +49,5 @@ export const custodianActor = await createActor(custodianIdentity);
 
 export const capRouter = await CapRouter.init({
   canisterId: capCanisterId,
-  host: "http://127.0.0.1:8000"
+  host
 });
-
-export const stringify = (obj: object): string =>
-  JSON.stringify(
-    obj,
-    (_, value) =>
-      (typeof value === "bigint"
-        ? value.toString()
-        : typeof value === "object" && value._isPrincipal
-        ? value.toText()
-        : value),
-    2
-  );
