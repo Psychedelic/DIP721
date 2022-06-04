@@ -74,7 +74,6 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            /usr/local/lib/node_modules
             $(pwd)/test/node_modules
           key: cache-cache-npm-integration-tests-${{ hashFiles('./test/package.json') }}
 
