@@ -70,12 +70,10 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            /usr/local/lib/node_modules
             $(pwd)/test/node_modules
           key: cache-cache-npm-integration-tests-${{ hashFiles('./test/package.json') }}
 
       - name: Install global npm modules
-        if: steps.cache-npm-integration-tests.outputs.cache-hit != 'true'
         run: cd test && npm install
 
       - name: Candid didc install
