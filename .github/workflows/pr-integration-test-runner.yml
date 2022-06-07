@@ -58,7 +58,7 @@ jobs:
         with:
           path: |
             /usr/local/bin/dfx
-          key: cache-dfx-${{ hashFiles('dfx.json') }}
+          key: cache-dfx-${{ hashFiles('dfx.json') }}-
 
       - name: Install DFX
         if: steps.cache-dfx.outputs.cache-hit != 'true'
@@ -70,7 +70,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            $(pwd)/node_modules
+            /usr/local/lib/node_modules
             $(pwd)/test/node_modules
           key: cache-cache-npm-integration-tests-${{ hashFiles('./test/package.json') }}
 
