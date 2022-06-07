@@ -17,6 +17,7 @@ type GenericValue = variant {
   TextContent : text;
 };
 type InitArgs = record {
+  cap : opt principal;
   logo : opt text;
   name : opt text;
   custodians : opt vec principal;
@@ -33,18 +34,15 @@ type ManualReply = record {
 type ManualReply_1 = variant { Ok : vec nat; Err : NftError };
 type ManualReply_2 = variant { Ok : vec TokenMetadata; Err : NftError };
 type ManualReply_3 = variant { Ok : TokenMetadata; Err : NftError };
-type ManualReply_4 = variant { Ok : TxEvent; Err : NftError };
 type NftError = variant {
   UnauthorizedOperator;
   SelfTransfer;
   TokenNotFound;
   UnauthorizedOwner;
-  TxNotFound;
   SelfApprove;
   OperatorNotFound;
   ExistedNFT;
   OwnerNotFound;
-  Other : text;
 };
 type Result = variant { Ok : nat; Err : NftError };
 type Result_1 = variant { Ok : bool; Err : NftError };
@@ -55,7 +53,7 @@ type Stats = record {
   total_unique_holders : nat;
   total_supply : nat;
 };
-type SupportedInterface = variant { Burn; Mint; Approval; TransactionHistory };
+type SupportedInterface = variant { Burn; Mint; Approval };
 type TokenMetadata = record {
   transferred_at : opt nat64;
   transferred_by : opt principal;
@@ -70,12 +68,6 @@ type TokenMetadata = record {
   burned_by : opt principal;
   minted_at : nat64;
   minted_by : principal;
-};
-type TxEvent = record {
-  time : nat64;
-  operation : text;
-  details : vec record { text; GenericValue };
-  caller : principal;
 };
 type Vec = vec record {
   text;
@@ -130,7 +122,6 @@ service : (opt InitArgs) -> {
   totalSupply : () -> (nat) query;
   totalTransactions : () -> (nat) query;
   totalUniqueHolders : () -> (nat) query;
-  transaction : (nat) -> (ManualReply_4) query;
   transfer : (principal, nat) -> (Result);
   transferFrom : (principal, principal, nat) -> (Result);
 }
