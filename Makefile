@@ -2,10 +2,10 @@
 
 LOCAL_CUSTODIAN_PRINCIPAL = $(shell dfx identity get-principal)
 TEST_CUSTODIAN_PRINCIPAL = $(shell cat test/custodian-test-principal)
-CAP_ID ?= $(shell cd cap && dfx canister id ic-history-router)
+CAP_ID ?= $(shell cd cap && dfx canister id cap-router)
 
 cap-local:
-	# Verifying cap... $(shell [ -z "$(CAP_ID)" ] && cd cap && dfx deploy ic-history-router)
+	# Verifying cap... $(shell [ -z "$(CAP_ID)" ] && cd cap && dfx deploy cap-router)
 	@echo "cap local canister id: $(CAP_ID)"
 
 init:
