@@ -10,6 +10,9 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::ops::Not;
 use types::*;
+
+mod legacy;
+
 mod types {
     use super::*;
     #[derive(CandidType, Deserialize)]
@@ -339,7 +342,7 @@ fn init(args: Option<InitArgs>) {
     ledger::with_mut(|ledger| ledger.init_metadata(caller(), args));
 }
 
-fn is_canister_custodian() -> Result<(), String> {
+pub fn is_canister_custodian() -> Result<(), String> {
     ledger::with(|ledger| {
         ledger
             .metadata()
@@ -406,25 +409,25 @@ fn dip721_metadata() -> ManualReply<Metadata> {
 
 #[update(guard = "is_canister_custodian")]
 #[candid_method(update)]
-fn set_name(name: String) {
+fn dip721_set_name(name: String) {
     ledger::with_mut(|ledger| ledger.metadata_mut().name = Some(name));
 }
 
 #[update(guard = "is_canister_custodian")]
 #[candid_method(update)]
-fn set_logo(logo: String) {
+fn dip721_set_logo(logo: String) {
     ledger::with_mut(|ledger| ledger.metadata_mut().logo = Some(logo));
 }
 
 #[update(guard = "is_canister_custodian")]
 #[candid_method(update)]
-fn set_symbol(symbol: String) {
+fn dip721_set_symbol(symbol: String) {
     ledger::with_mut(|ledger| ledger.metadata_mut().symbol = Some(symbol));
 }
 
 #[update(guard = "is_canister_custodian")]
 #[candid_method(update)]
-fn set_custodians(custodians: HashSet<Principal>) {
+fn dip721_set_custodians(custodians: HashSet<Principal>) {
     ledger::with_mut(|ledger| ledger.metadata_mut().custodians = custodians);
 }
 

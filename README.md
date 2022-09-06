@@ -6,18 +6,22 @@
 [DIP-721](spec.md) is an ERC-721 style non-fungible token standard built mirroring its Ethereum counterpart and adapting it to the Internet Computer, maintaining the same interface.
 
 This standard aims to adopt the EIP-721 to the Internet Computer; providing a
-simple, non-ambiguous, extendable API for the transfer and tracking ownership of NFTs and expanding/building upon the EXT standard with partial compatibility.
+simple, non-ambiguous, extendable API for the transfer and tracking ownership of NFTs
 
 ## 📒 Table of Contents
 
-- [Specification](#-specification)
-- [Community](#-community)
-- [NFT Implementation example](#-nft-implementation-example)
-- [Contribution guideline](#-contributing)
+- [💎 DIP-721](#-dip-721)
+  - [📒 Table of Contents](#-table-of-contents)
+  - [🎓 Specification](#-specification)
+  - [👋 Community](#-community)
+  - [👩 NFT Implementation example](#-nft-implementation-example)
+  - [🙏 Contributing](#-contributing)
 
 ## 🎓 Specification
 
 The document for the [DIP-721](spec.md) is available [here](spec.md).
+
+There are 2 versions of the v2 spec. One with namespace and snakecase, and one non namespaced and camel case. The legacy.rs provides the initial v2 spec without namespace, but the final version that should be used and integrated against has the namespace.
 
 ⚠️ This is an an in-development standard, consider it a work in progress as we finalize details in its design and gather feedback from the community.
 
