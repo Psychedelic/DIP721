@@ -348,8 +348,8 @@ pub fn is_canister_custodian() -> Result<(), String> {
             .metadata()
             .custodians
             .contains(&caller())
-            .then(|| ())
-            .ok_or_else(|| "Caller is not an custodian of canister".into())
+            .then_some(())(|| ())
+        .ok_or_else(|| "Caller is not an custodian of canister".into())
     })
 }
 
@@ -580,15 +580,12 @@ fn dip721_is_approved_for_all(owner: Principal, operator: Principal) -> Result<b
 fn dip721_approve(operator: Principal, token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
-        operator
-            .ne(&caller)
-            .then(|| ())
-            .ok_or(NftError::SelfApprove)?;
+        operator.ne(&caller).then_some(())(|| ()).ok_or(NftError::SelfApprove)?;
         ledger
             .owner_of(&token_identifier)?
             .eq(&Some(caller))
-            .then(|| ())
-            .ok_or(NftError::UnauthorizedOwner)?;
+            .then_some(())(|| ())
+        .ok_or(NftError::UnauthorizedOwner)?;
         ledger.update_operator_cache(
             &token_identifier,
             ledger.operator_of(&token_identifier)?,
@@ -620,10 +617,7 @@ fn dip721_approve(operator: Principal, token_identifier: TokenIdentifier) -> Res
 fn dip721_set_approval_for_all(operator: Principal, is_approved: bool) -> Result<Nat, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
-        operator
-            .ne(&caller)
-            .then(|| ())
-            .ok_or(NftError::SelfApprove)?;
+        operator.ne(&caller).then_some(())(|| ()).ok_or(NftError::SelfApprove)?;
         let owner_token_identifiers = ledger.owner_token_identifiers(&caller)?.clone();
         for token_identifier in owner_token_identifiers {
             let old_operator = ledger.operator_of(&token_identifier)?;
@@ -657,13 +651,10 @@ fn dip721_set_approval_for_all(operator: Principal, is_approved: bool) -> Result
 fn dip721_transfer(to: Principal, token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
-        to.ne(&caller).then(|| ()).ok_or(NftError::SelfTransfer)?;
+        to.ne(&caller).then_some(())(|| ()).ok_or(NftError::SelfTransfer)?;
         let old_owner = ledger.owner_of(&token_identifier)?;
         let old_operator = ledger.operator_of(&token_identifier)?;
-        old_owner
-            .eq(&Some(caller))
-            .then(|| ())
-            .ok_or(NftError::UnauthorizedOwner)?;
+        old_owner.eq(&Some(caller)).then_some(())(|| ()).ok_or(NftError::UnauthorizedOwner)?;
         ledger.update_owner_cache(&token_identifier, old_owner, Some(to));
         ledger.update_operator_cache(&token_identifier, old_operator, None);
         ledger.transfer(caller, &token_identifier, Some(to));
@@ -694,16 +685,11 @@ fn dip721_transfer_from(
 ) -> Result<Nat, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
-        owner.ne(&to).then(|| ()).ok_or(NftError::SelfTransfer)?;
+        owner.ne(&to).then_some(())(|| ()).ok_or(NftError::SelfTransfer)?;
         let old_owner = ledger.owner_of(&token_identifier)?;
         let old_operator = ledger.operator_of(&token_identifier)?;
-        old_owner
-            .eq(&Some(owner))
-            .then(|| ())
-            .ok_or(NftError::UnauthorizedOwner)?;
-        old_operator
-            .eq(&Some(caller))
-            .then(|| ())
+        old_owner.eq(&Some(owner)).then_some(())(|| ()).ok_or(NftError::UnauthorizedOwner)?;
+        old_operator.eq(&Some(caller)).then_some(())(|| ())
             .ok_or(NftError::UnauthorizedOperator)?;
         ledger.update_owner_cache(&token_identifier, old_owner, Some(to));
         ledger.update_operator_cache(&token_identifier, old_operator, None);
@@ -738,8 +724,8 @@ fn dip721_mint(
         ledger
             .is_token_existed(&token_identifier)
             .not()
-            .then(|| ())
-            .ok_or(NftError::ExistedNFT)?;
+            .then_some(())(|| ())
+        .ok_or(NftError::ExistedNFT)?;
         ledger.add_token_metadata(
             token_identifier.clone(),
             TokenMetadata {
@@ -782,10 +768,7 @@ fn dip721_burn(token_identifier: TokenIdentifier) -> Result<Nat, NftError> {
     ledger::with_mut(|ledger| {
         let caller = caller();
         let old_owner = ledger.owner_of(&token_identifier)?;
-        old_owner
-            .eq(&Some(caller))
-            .then(|| ())
-            .ok_or(NftError::UnauthorizedOwner)?;
+        old_owner.eq(&Some(caller)).then_some(())(|| ()).ok_or(NftError::UnauthorizedOwner)?;
         let old_operator = ledger.operator_of(&token_identifier)?;
         ledger.update_owner_cache(&token_identifier, old_owner, None);
         ledger.update_operator_cache(&token_identifier, old_operator, None);
