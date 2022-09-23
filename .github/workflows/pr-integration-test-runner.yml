@@ -16,7 +16,7 @@ jobs:
     env:
       CI: 1
       DEBUG: 0
-      DFX_VERSION: 0.9.3
+      DFX_VERSION: 0.11.1
       DFX_WARNING: -version_check
       NODE_ENV: ci
       DFX_CANDID_RELEASE: 2022-01-06
@@ -48,9 +48,9 @@ jobs:
           override: true
           target: wasm32-unknown-unknown
 
-      - name: Install ic-cdk-optimizer
-        if: steps.cache-rust.outputs.cache-hit != 'true'
-        run: cargo install ic-cdk-optimizer
+      # - name: Install ic-cdk-optimizer
+        # if: steps.cache-rust.outputs.cache-hit != 'true'
+        # run: cargo install ic-cdk-optimizer
 
       - name: Cache Dfx
         id: cache-dfx
