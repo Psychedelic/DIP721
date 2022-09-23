@@ -6,6 +6,11 @@
       "package": "nft",
       "candid": "nft.did",
       "type": "rust"
+    },
+    "cap-router": {
+    	"type": "custom",
+    	"wasm": "cap/wasm/cap_router.wasm",
+    	"candid": "cap/candid/router.did"
     }
   },
   "defaults": {
