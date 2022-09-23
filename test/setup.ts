@@ -19,7 +19,7 @@ export const johnIdentity = Ed25519KeyIdentity.generate();
 const secretKey = readFileSync("./custodian-test-secret", {encoding: "utf8"});
 export const custodianIdentity = Ed25519KeyIdentity.fromSecretKey(Buffer.from(secretKey, "hex"));
 
-let canister_ids = JSON.parse(readFileSync("../.dfx/local/canister_ids.json", {encoding: "utf8"}));
+const canister_ids = JSON.parse(readFileSync("../.dfx/local/canister_ids.json", {encoding: "utf8"}));
 
 export const nftCanisterId = canister_ids["nft"].local as string;
 export const capCanisterId = canister_ids["cap-router"].local as string;
