@@ -1,11 +1,16 @@
 {
   "version": 1,
-  "dfx": "0.9.3",
+  "dfx": "0.11.1",
   "canisters": {
     "nft": {
       "package": "nft",
       "candid": "nft.did",
       "type": "rust"
+    },
+    "cap-router": {
+    	"type": "custom",
+    	"wasm": "cap/wasm/cap_router.wasm",
+    	"candid": "cap/candid/router.did"
     }
   },
   "defaults": {
